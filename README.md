@@ -2,7 +2,9 @@
 
 Python pipeline that discovers TikTok / Instagram / Reddit content about real places, with zero AI usage in the loop. Shared so we can develop it together into something that runs 24/7.
 
-Start with [HANDOFF.md](HANDOFF.md) for the limitations and the roadmap. The code lives in [ingest/](ingest/) with its own README explaining the flow.
+Start with [HANDOFF.md](HANDOFF.md) for the limitations and the roadmap. The code lives in [ingest/](ingest/) with its own README explaining the flow. Build targets are specced in [specs/](specs/): the 24/7 cloud runner and the scored review queue.
+
+Pipeline: `reddit_ingest.py` (or `tiktok_ingest.py`) -> `enrich.py` (score + intent + templated reply draft, no AI) -> `db.py` (push to Supabase, dedupe in DB). The GitHub Actions workflow in `.github/workflows/nightly-ingest.yml` runs the Reddit leg nightly once the repo secrets are set; run `supabase/schema.sql` in your Supabase project first.
 
 ## Quick start
 

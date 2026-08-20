@@ -30,7 +30,7 @@ except ImportError:
 import config as C
 
 HERE = pathlib.Path(__file__).resolve().parent
-ENV_PATH = pathlib.Path(r"C:\Users\wjack\ghl-cli\.env")
+ENV_PATH = pathlib.Path(os.environ.get("ENV_FILE", HERE.parent / ".env"))
 
 
 # ---------------------------------------------------------------- secrets ---
@@ -226,6 +226,7 @@ def build_candidate(post, place, conf, lat, lng, cat):
         "place": place,
         "location_confidence": conf,
         "upvotes": post.get("ups", 0),
+        "created_utc": post.get("created_utc"),
         "subreddit": post.get("subreddit"),
         "author": post.get("author"),
         "embeds": embeds,

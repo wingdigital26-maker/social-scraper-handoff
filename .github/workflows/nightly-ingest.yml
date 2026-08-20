@@ -1,0 +1,34 @@
+name: nightly-ingest
+on:
+  schedule:
+    - cron: "0 8 * * *" # 3am Central
+  workflow_dispatch: {}
+
+jobs:
+  reddit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Ingest Reddit
+        working-directory: ingest
+        run: python reddit_ingest.py
+        env:
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+      - name: Score + draft
+        working-directory: ingest
+        run: python enrich.py
+      - name: Push to Supabase
+        working-directory: ingest
+        run: python db.py --source reddit
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      # TikTok leg intentionally NOT here: GitHub runner IPs are datacenter IPs
+      # and get blocked almost immediately. Run tiktok_ingest.py from a home
+      # machine on a schedule, then enrich.py + db.py --source tiktok the same way.
