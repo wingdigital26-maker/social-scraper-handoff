@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.pyc
+candidates.jsonl
+seen_ids.txt
+seen_tiktok_ids.txt
