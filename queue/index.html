@@ -1,0 +1,60 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Review Queue</title>
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { max-width: 860px; margin: 24px auto; padding: 0 16px; }
+  .card { border: 1px solid #8884; border-radius: 10px; padding: 14px 16px; margin: 12px 0; }
+  .meta { font-size: 13px; opacity: .75; margin: 4px 0 8px; }
+  .score { font-weight: 700; }
+  textarea { width: 100%; min-height: 64px; border-radius: 6px; padding: 8px; box-sizing: border-box; }
+  button { margin: 6px 6px 0 0; padding: 7px 14px; border-radius: 6px; border: 1px solid #8886; cursor: pointer; }
+  .ok { background: #16a34a; color: #fff; border: 0; }
+  .no { background: #dc2626; color: #fff; border: 0; }
+  .empty { text-align: center; opacity: .6; margin-top: 60px; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border: 1px solid #8886; border-radius: 99px; margin-right: 6px; }
+</style>
+<h2>Review queue <span id="count"></span></h2>
+<div id="list"></div>
+<script>
+async function load() {
+  const rows = await (await fetch('/api/queue')).json();
+  document.getElementById('count').textContent = rows.length ? `(${rows.length})` : '';
+  const list = document.getElementById('list');
+  list.innerHTML = rows.length ? '' : '<p class="empty">Queue is empty. Nice.</p>';
+  for (const r of rows) {
+    const d = document.createElement('div');
+    d.className = 'card';
+    d.innerHTML = `
+      <div><b>${esc(r.title || r.place_name || '(untitled)')}</b></div>
+      <div class="meta">
+        <span class="tag">${r.source}</span><span class="tag">${r.intent || '?'}</span>
+        <span class="tag">${r.category || '?'}</span>
+        score <span class="score">${r.score ?? '-'}</span> · ${r.upvotes ?? 0} upvotes
+        ${r.url ? ` · <a href="${esc(r.url)}" target="_blank">open post</a>` : ''}
+      </div>
+      <textarea placeholder="No draft — write one or skip">${esc(r.draft_reply || '')}</textarea>
+      <div>
+        <button class="ok">Approve</button>
+        <button class="no">Skip</button>
+        <button class="copy">Copy reply</button>
+        <button class="sent">Mark sent</button>
+      </div>`;
+    const ta = d.querySelector('textarea');
+    const act = async (action) => {
+      await fetch('/api/action', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id: r.id, action, draft_reply: ta.value})});
+      d.remove();
+      const n = document.querySelectorAll('.card').length;
+      document.getElementById('count').textContent = n ? `(${n})` : '';
+    };
+    d.querySelector('.ok').onclick = () => act('approve');
+    d.querySelector('.no').onclick = () => act('reject');
+    d.querySelector('.sent').onclick = () => act('sent');
+    d.querySelector('.copy').onclick = () => navigator.clipboard.writeText(ta.value);
+    list.appendChild(d);
+  }
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+load();
+</script>

@@ -1,0 +1,32 @@
+name: health-check
+on:
+  schedule:
+    - cron: "0 15 * * *" # 10am Central, after the nightly window
+  workflow_dispatch: {}
+
+jobs:
+  staleness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if no ingest run logged in 48h
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python3 - <<'EOF'
+          import datetime, json, os, urllib.request
+          url = os.environ["SUPABASE_URL"] + "/rest/v1/run_log?order=ran_at.desc&limit=1&select=ran_at,source,found,inserted"
+          req = urllib.request.Request(url, headers={
+              "apikey": os.environ["SUPABASE_SERVICE_KEY"],
+              "Authorization": "Bearer " + os.environ["SUPABASE_SERVICE_KEY"]})
+          rows = json.load(urllib.request.urlopen(req, timeout=30))
+          if not rows:
+              raise SystemExit("STALE: run_log is empty — ingest has never run")
+          last = datetime.datetime.fromisoformat(rows[0]["ran_at"].replace("Z", "+00:00"))
+          age = datetime.datetime.now(datetime.timezone.utc) - last
+          print(f"last run: {rows[0]}")
+          if age > datetime.timedelta(hours=48):
+              raise SystemExit(f"STALE: last ingest run was {age} ago")
+          if (rows[0]["found"] or 0) == 0:
+              print("::warning::last run found 0 candidates — check sources")
+          EOF
