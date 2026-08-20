@@ -11,6 +11,7 @@ Env (real env vars, or a .env file at repo root / $ENV_FILE):
     python db.py --in candidates.jsonl    # push raw (unscored) candidates
 """
 import argparse
+import datetime
 import json
 import os
 import pathlib
@@ -54,7 +55,7 @@ def to_row(c: dict) -> dict:
         "score": c.get("score"),
         "intent": c.get("intent"),
         "draft_reply": c.get("draft_reply"),
-        "posted_at": (__import__("datetime").datetime.utcfromtimestamp(posted).isoformat() + "Z") if posted else None,
+        "posted_at": (datetime.datetime.fromtimestamp(posted, datetime.timezone.utc).isoformat()) if posted else None,
     }
 
 
