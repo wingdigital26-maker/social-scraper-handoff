@@ -18,6 +18,7 @@ create table if not exists candidates (
   score         real,
   intent        text,                        -- question | showcase | complaint
   draft_reply   text,
+  ghl_pushed    bool not null default false,
   status        text not null default 'new', -- new | queued | approved | rejected | sent
   discovered_at timestamptz default now(),
   posted_at     timestamptz,

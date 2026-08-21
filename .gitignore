@@ -4,3 +4,5 @@ __pycache__/
 candidates.jsonl
 seen_ids.txt
 seen_tiktok_ids.txt
+seen_youtube_ids.txt
+candidates.enriched.jsonl

@@ -20,6 +20,16 @@ jobs:
         env:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+      - name: Ingest YouTube (skips if no key)
+        working-directory: ingest
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          if [ -z "$YOUTUBE_API_KEY" ]; then
+            echo "YOUTUBE_API_KEY not set — skipping YouTube leg"
+          else
+            python youtube_ingest.py
+          fi
       - name: Score + draft
         working-directory: ingest
         run: python enrich.py

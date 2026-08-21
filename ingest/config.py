@@ -87,6 +87,24 @@ TIKTOK_VALIDATE_SLEEP = 0.8   # seconds between oEmbed validation calls
 # Minimum like count to keep a discovered video (mirrors MIN_UPVOTES on Reddit).
 TIKTOK_MIN_LIKES = 0          # 0 = keep all; raise once volume is proven
 
+# --- YouTube discovery (OFFICIAL API — the durable video leg) ---------------
+# Needs YOUTUBE_API_KEY (free, 10k quota units/day; each search = 100 units,
+# so 16 queries = ~1,600/day, well under). Searches target region-specific
+# phrases; the Reddit place/geocode/region gates filter the rest.
+YOUTUBE_QUERIES = [
+    "abandoned places dallas", "abandoned places fort worth", "urbex dallas",
+    "urbex texas", "abandoned texas exploring", "abandoned houston",
+    "abandoned austin", "abandoned san antonio", "hidden gems dallas",
+    "rooftop view dallas", "storm drain tunnel texas", "ghost town texas",
+    "abandoned hospital texas", "abandoned mall texas", "urbex fort worth",
+    "abandoned factory dallas",
+]
+YOUTUBE_PER_QUERY = 25       # results per search (max 50)
+YOUTUBE_ORDER = "relevance"  # relevance | viewCount | date
+YOUTUBE_SLEEP = 0.5          # seconds between API calls (quota, not rate, is the limit)
+YOUTUBE_MIN_LIKES = 0        # raise once volume is proven
+YOUTUBE_SEEN_FILE = "seen_youtube_ids.txt"
+
 # --- Output ---------------------------------------------------------------
 CANDIDATES_FILE = "candidates.jsonl"   # one JSON spot-candidate per line
 SEEN_FILE = "seen_ids.txt"             # reddit post ids already processed (dedupe across runs)
