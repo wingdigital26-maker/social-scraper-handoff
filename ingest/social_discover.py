@@ -100,8 +100,8 @@ def clean_name(title, platform):
     # ("Infinite Roofing · Instagram photos and ..." -> "Infinite Roofing").
     t = re.split(r"\s*(?:Instagram photos|Instagram Photos|on TikTok|on Instagram|on LinkedIn)",
                  t)[0]
-    t = re.split(r"\s*[|·—]\s*|\s+-\s+", t)[0].strip()
-    t = re.sub(r"\s*\(@[^)]*\)?\s*$", " ", t)       # "Name (@handle)" / truncated "(@hand"
+    t = re.split(r"\s*[|·—]\s*|\s+-\s+", t)[0].strip(" •·-|,")
+    t = re.sub(r"\s*\(@[^)]*\)?[\s•·|,-]*$", " ", t)  # "Name (@handle)" / truncated "(@hand"
     for _ in range(3):                              # peel repeated platform tails
         new = _BOILERPLATE.sub("", t).strip(" •·-|")
         if new == t:

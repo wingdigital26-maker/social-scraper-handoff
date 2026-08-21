@@ -20,6 +20,22 @@ create table if not exists candidates (
   draft_reply   text,
   ghl_pushed    bool not null default false,
   status        text not null default 'new', -- new | queued | approved | rejected | sent
+
+  -- prospect audit (filled by audit_prospect.py)
+  website           text,
+  phone             text,
+  email             text,
+  gmb_rating        real,
+  gmb_reviews       int,
+  bad_review_themes text,
+  seo_rank          int,      -- position for "{niche} {city}", null = not found
+  has_blog          bool,
+  has_service_pages bool,
+  page_count        int,
+  ssl_ok            bool,
+  audit_gaps        jsonb default '[]',  -- ["no blog", "1.9 star rating", ...]
+  need_score        real,     -- how badly they need Wing Digital, 0-1
+  audited_at        timestamptz,
   discovered_at timestamptz default now(),
   posted_at     timestamptz,
   unique (source, source_id)

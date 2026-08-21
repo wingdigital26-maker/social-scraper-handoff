@@ -59,3 +59,47 @@ The vision: monitor socials for relevant conversations, auto-draft replies, and 
 3. Move output from `candidates.jsonl` to SQLite (or Supabase) so multiple runs merge cleanly.
 4. Wrap the whole thing in one `run_all.py` entrypoint suitable for cron.
 5. Experiment: how long does the yt-dlp TikTok path survive from a VPS vs home IP? That decides whether we need a paid data provider.
+
+## Prospect mode (added 2026-08-21)
+
+The pipeline now has a second, more valuable mode: finding CLIENTS instead of
+places. Same plumbing, different input.
+
+```
+social_discover.py   niche + city -> public search index -> TikTok/IG/LinkedIn
+                     profiles -> candidates.jsonl
+audit_prospect.py    each prospect -> Google Maps (free gosom binary) + their
+                     own website + SERP position -> need_score + gap list
+enrich.py            score + intent + templated first-touch DM draft
+db.py                -> Supabase
+queue/serve.py       ranked review queue: approve / edit / skip / copy
+queue/ghl_push.py    approved -> GoHighLevel contacts tagged social-lead
+```
+
+**Why search-index discovery instead of scraping the platforms.** TikTok blocks
+direct scraping (measured: two runs, zero results), Instagram walls everything
+behind login, and LinkedIn bans accounts and litigates over scraping. But all
+three let Google index their public profiles. Querying the index gets the same
+data with no blocks, no login, no keys, and no ToS problem. This is the single
+most important design decision in the project.
+
+**Data honesty rules baked into audit_prospect.py.** These exist because early
+versions produced claims that would embarrass someone on a sales call:
+
+- A website is only accepted when ownership is VERIFIED (domain matches the
+  business name within a length ratio, or the name is in the page title).
+  An early version matched a roofer to ultimate-guitar.com.
+- Length guards on every fuzzy match. "roofingdallas" must not match
+  "metalroofingdallas" — different company. Same guard stops a Dallas prospect
+  matching a same-named Colorado business.
+- Unreadable site (403/timeout) never counts as "no blog" or "thin site".
+  Unknown is not missing; it emits "verify by hand" instead.
+- Review numbers are only trusted from a snippet that names the business.
+- "Not ranking" is only scored when a website was actually found, so the
+  same weakness is never counted twice.
+
+**Known limitations.** Website discovery is conservative and will return None
+rather than guess, so some real sites are missed. Google Maps fast-mode returns
+review_count = 0 (browser mode hits a consent gate), so review counts come from
+search snippets and are best-effort. Maps results are cached per niche+city in
+.maps_cache/ — delete that folder to refresh.
