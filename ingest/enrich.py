@@ -46,10 +46,23 @@ TEMPLATES = {
         "Shame about {place}. A few similar {category} spots in the area are still accessible if you're looking for a replacement.",
         "Heard the same about {place}. If it helps, not everything like it in that area is gone yet.",
     ],
+    # Prospect outreach: first-touch openers for businesses found via
+    # social_discover.py. Deliberately low-pressure and specific — no pitch,
+    # no pricing, no link. A human edits and sends these from the queue.
+    "prospect": [
+        "Been seeing {name} around the {city} {category} scene. Curious how you're currently handling new leads coming in from social.",
+        "Came across {name} while looking at {category} companies in {city}. Your work looks solid. Are you doing anything to capture leads off these posts?",
+        "{name} keeps showing up in {city} {category} searches, which is a good sign. Is the phone ringing from it, or mostly just views?",
+        "Noticed {name} is active on social but I could not find much beyond it. Would it be useful to see what {city} folks are searching for in {category}?",
+    ],
 }
 
 
-def classify_intent(text: str) -> str:
+def classify_intent(text: str, c: dict | None = None) -> str:
+    # Prospects (from social_discover.py) get the outreach lane, not the
+    # spot-commentary lanes — they were found by niche+city, not by a post.
+    if c and c.get("prospect_type"):
+        return "prospect"
     t = text.lower()
     if any(k in t for k in HOT_KEYWORDS):
         return "question"
@@ -85,7 +98,8 @@ def draft(c: dict, intent: str) -> str | None:
         return None  # can't fill cleanly -> human writes it
     pool = TEMPLATES[intent]
     pick = int(hashlib.sha1(str(c.get("id", place)).encode()).hexdigest(), 16) % len(pool)
-    return pool[pick].format(place=place, category=category)
+    return pool[pick].format(place=place, category=category,
+                             name=c.get("name") or place, city=c.get("place") or "")
 
 
 def main():
@@ -106,7 +120,7 @@ def main():
             skipped += 1
             continue
         text = f"{c.get('name', '')} {c.get('title', '')} {c.get('desc', '')}"
-        c["intent"] = classify_intent(text)
+        c["intent"] = classify_intent(text, c)
         c["score"] = score(c, now)
         c["draft_reply"] = draft(c, c["intent"])
         rows.append(c)
