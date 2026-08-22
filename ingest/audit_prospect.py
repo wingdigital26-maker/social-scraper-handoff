@@ -135,6 +135,14 @@ def _owns_site(name, host, html):
     title = _norm(m.group(1) if m else "")
     if not title or not n:
         return False
+    # A title match alone is not enough: spam/doorway domains mirror a real
+    # business name in their <title> to game search. Caught for real —
+    # "roofingcontractors.faculty.bio" titled itself "Bumble Roofing of Greater
+    # Dallas" while the real site was bumbleroofing.com. Require at least one
+    # distinctive word of the name to appear in the host itself.
+    toks_h = _tokens(name)
+    if toks_h and not any(t in h for t in toks_h):
+        return False
     if n in title:
         # Same length guard as the domain check: a generic name like
         # "roofingdallas" sits inside "metalroofingdallas", a different company.
@@ -144,8 +152,17 @@ def _owns_site(name, host, html):
     return bool(toks) and all(_norm(t) in title for t in toks)
 
 
-def find_website(name, city):
-    """Find and VERIFY the business's own site. Returns None unless confirmed."""
+def find_website(name, city, is_person=False):
+    """Find and VERIFY the business's own site. Returns None unless confirmed.
+
+    For PERSON profiles (LinkedIn /in/) this returns None outright. Personal
+    names are not distinctive enough to match a domain safely — searching
+    "Brian Eddy" surfaced brianeddymd.com, a psychiatrist in Connecticut, and
+    attached it to a Dallas roofing prospect. A person is a contact AT a
+    company, not a business whose website we can infer from their name.
+    """
+    if is_person:
+        return None
     seen_hosts = set()
     for q in (f'"{name}" {city} official website', f'{name} {city}'):
         for r in search(q, 8):
@@ -391,12 +408,18 @@ def seo_rank(name, niche, city, website):
 
 
 # --------------------------------------------------------------- the model ---
-def need_score(a):
+def need_score(a, is_person=False):
     """How badly does this business need what Wing Digital sells? 0 = fine, 1 = desperate.
 
     Every component is a real, sellable gap. Weights favour the problems Wing
     actually fixes: invisibility in search, no content engine, reputation drag.
     """
+    # A person (LinkedIn /in/) is a decision-maker to contact, not a business
+    # to audit. Scoring them on "no website" or "no blog" would be nonsense and
+    # would float them above real businesses in the queue.
+    if is_person:
+        return None, ["person profile — decision-maker contact, audit their company instead"]
+
     gaps, pts, total = [], 0.0, 0.0
 
     def add(weight, bad, label):
@@ -452,7 +475,10 @@ def audit(c, maps_recs=None):
                     "address": maps.get("address")}
         print(f"      matched on Maps: {maps.get('title')}")
 
-    website = c.get("website") or maps_out.get("website") or find_website(name, city)
+    # LinkedIn /in/ URLs are people; everything else is a business page.
+    is_person = "/in/" in (c.get("url") or "") or c.get("prospect_type") == "person"
+    website = (c.get("website") or maps_out.get("website")
+               or find_website(name, city, is_person=is_person))
     site = crawl_site(website) if website else {"website": None}
     if site.get("error"):
         print(f"      site unreachable: {site['error']}")
@@ -470,7 +496,7 @@ def audit(c, maps_recs=None):
     if not a.get("site_read"):        # do not report unverified content signals
         for k in ("has_blog", "has_service_pages", "page_count", "ssl_ok"):
             a[k] = None
-    a["need_score"], gaps = need_score(a)
+    a["need_score"], gaps = need_score(a, is_person=is_person)
     a["audit_gaps"] = gaps
     a.pop("site_read", None)          # scoring input, not a DB column
     a["audited_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -505,7 +531,7 @@ def main():
          "Content-Type": "application/json", "Prefer": "return=minimal"}
 
     params = {"audited_at": "is.null", "status": "eq.new",
-              "select": "id,title,place_name,category,website",
+              "select": "id,title,place_name,category,website,url",
               "order": "id.asc"}
     if args.limit:
         params["limit"] = str(args.limit)
