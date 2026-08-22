@@ -46,6 +46,43 @@ SOCIAL_JUNK = ("/p/", "/reel/", "/explore", "/hashtag", "/posts", "/photos",
                "/videos", "/events", "/groups", "/pages", "/sharer", "/login",
                "/help", "/legal", "/privacy", "/directory", "/jobs")
 
+# Filler that appears in a handle but not the legal name (or vice versa) and
+# says nothing about identity. Stripped from BOTH sides before comparing.
+_FILLER = re.compile(r"(and|the|llc|inc|ltd|co|company|official|tx|dfw|"
+                     r"services|service|group)", re.I)
+
+
+def _cmp_key(s):
+    """Identity key for name-vs-handle comparison.
+
+    A_norm strips filler on word boundaries, which works on 'Texas Roofing
+    Project' but not on the handle 'texasroofingproject' where no boundaries
+    exist. That asymmetry made exact matches look like 62-74% mismatches, so
+    nearly every profile got flagged. Compare like for like instead.
+    """
+    s = re.sub(r"[^a-z0-9]", "", (s or "").lower())
+    return _FILLER.sub("", s)
+
+
+def _social_confidence(name, handle):
+    """confirmed | verify. Conservative: 'verify' means a human should look."""
+    n, h = _cmp_key(name), _cmp_key(handle)
+    if not n or not h:
+        return "verify"
+    if h.isdigit():
+        return "verify"                 # opaque numeric profile id, unverifiable
+    if n == h:
+        return "confirmed"
+    # A short handle that opens the business name is normal (jempro_ for
+    # "Jempro Roofing & Restoration Services").
+    if len(h) >= 5 and n.startswith(h):
+        return "confirmed"
+    if n in h or h in n:
+        ratio = min(len(n), len(h)) / max(len(n), len(h))
+        # 'south' vs 'southern' lands here and stays flagged, which is the point.
+        return "confirmed" if ratio >= 0.85 else "verify"
+    return "verify"
+
 
 def find_socials(name, city):
     """Locate this business's own profile on each platform, via the index."""
@@ -74,11 +111,8 @@ def find_socials(name, city):
             # page for "SOUTHERN Industrial Electric" — a different company.
             # Token containment cannot separate those, so anything short of a
             # close match is handed to a human instead of asserted as fact.
-            nn = A._norm(name)
-            ratio = (min(len(nn), len(hn)) / max(len(nn), len(hn), 1))
-            confident = nn == hn or (nn in hn or hn in nn) and ratio >= 0.9
             hit = {"handle": handle, "url": url,
-                   "confidence": "confirmed" if confident else "verify"}
+                   "confidence": _social_confidence(name, handle)}
             break
         if hit:
             out[platform] = hit
