@@ -19,11 +19,16 @@ Pacing: the search index throttles aggressive querying, so pairs are spaced by
 PAIR_SLEEP. A full 43-city x 1-niche sweep takes a few hours — run it overnight.
 """
 import argparse
+import functools
 import json
 import pathlib
 import subprocess
 import sys
 import time
+
+# Long runs are almost always redirected to a log. Python block-buffers a
+# redirected stdout, so progress would sit invisible for hours — flush always.
+print = functools.partial(print, flush=True)  # noqa: A001
 
 HERE = pathlib.Path(__file__).resolve().parent
 STATE_FILE = HERE / "sweep_state.json"
