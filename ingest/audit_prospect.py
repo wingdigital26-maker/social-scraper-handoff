@@ -25,6 +25,7 @@ import pathlib
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -77,6 +78,25 @@ def search(query, limit=6):
     except Exception as e:
         print(f"      search failed: {str(e)[:70]}")
         return []
+
+
+def sb_request(method, url, *, retries=4, **kw):
+    """Supabase call with backoff. A single transient blip used to kill a
+    whole sweep step mid-run, so every DB call goes through here."""
+    delay = 2
+    for attempt in range(retries):
+        try:
+            r = requests.request(method, url, timeout=45, **kw)
+            if r.status_code < 500:
+                return r
+            last = f"HTTP {r.status_code}"
+        except Exception as e:
+            last = str(e)[:80]
+        if attempt < retries - 1:
+            time.sleep(delay)
+            delay *= 2
+    print(f"      DB call failed after {retries} tries: {last}")
+    return None
 
 
 # ------------------------------------------------------------ who are they ---
@@ -211,12 +231,25 @@ MAPS_BIN_DIR = pathlib.Path(r"C:\Users\wjack\github-tools\gosom-google-maps-scra
 MAPS_CACHE_DIR = pathlib.Path(__file__).resolve().parent / ".maps_cache"
 # fast-mode needs a geo anchor; add cities as the pipeline expands.
 CITY_COORDS = {
-    "dallas": (32.7767, -96.7970), "fort worth": (32.7555, -97.3308),
-    "plano": (33.0198, -96.6989), "arlington": (32.7357, -97.1081),
-    "frisco": (33.1507, -96.8236), "mckinney": (33.1972, -96.6398),
-    "denton": (33.2148, -97.1331), "irving": (32.8140, -96.9489),
-    "garland": (32.9126, -96.6389), "houston": (29.7604, -95.3698),
-    "austin": (30.2672, -97.7431), "san antonio": (29.4241, -98.4936),
+    "dallas": (32.7767, -96.797), "fort worth": (32.7555, -97.3308), "arlington": (32.7357, -97.1081),
+    "grand prairie": (32.7459, -96.9978), "irving": (32.814, -96.9489), "garland": (32.9126, -96.6389),
+    "mesquite": (32.7668, -96.5992), "coppell": (32.9546, -96.99), "farmers branch": (32.9268, -96.8961),
+    "carrollton": (32.9756, -96.89), "plano": (33.0198, -96.6989), "frisco": (33.1507, -96.8236),
+    "mckinney": (33.1972, -96.6398), "allen": (33.1032, -96.6706), "richardson": (32.9483, -96.7299),
+    "denton": (33.2148, -97.1331), "lewisville": (33.0462, -96.9942), "flower mound": (33.0146, -97.0969),
+    "grapevine": (32.9343, -97.0781), "euless": (32.8371, -97.0819), "bedford": (32.844, -97.1431),
+    "hurst": (32.8235, -97.1706), "north richland hills": (32.8343, -97.2289),
+    "haltom city": (32.7996, -97.2692), "mansfield": (32.5632, -97.1417),
+    "cedar hill": (32.5885, -96.9561), "desoto": (32.5896, -96.857), "lancaster": (32.5921, -96.7561),
+    "duncanville": (32.6518, -96.9083), "rockwall": (32.9312, -96.4597), "addison": (32.9618, -96.8292),
+    "cleburne": (32.3476, -97.3867), "waxahachie": (32.3865, -96.8483), "burleson": (32.5421, -97.3208),
+    "keller": (32.9346, -97.2289), "southlake": (32.9412, -97.1342), "wylie": (33.0151, -96.5389),
+    "murphy": (33.0151, -96.613), "sachse": (32.9762, -96.5952), "the colony": (33.089, -96.8861),
+    "little elm": (33.1626, -96.9375), "prosper": (33.2362, -96.8011), "celina": (33.3245, -96.7847),
+    "anna": (33.3487, -96.5486), "forney": (32.7482, -96.4719), "midlothian": (32.4832, -96.9944),
+    # non-DFW, kept for when the pipeline expands beyond the metro
+    "houston": (29.7604, -95.3698), "austin": (30.2672, -97.7431),
+    "san antonio": (29.4241, -98.4936),
 }
 
 
@@ -452,6 +485,8 @@ def main():
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--local", action="store_true", help="audit candidates.enriched.jsonl")
+    ap.add_argument("--workers", type=int, default=4,
+                    help="prospects audited concurrently (1 = serial)")
     args = ap.parse_args()
 
     if args.local:
@@ -474,8 +509,9 @@ def main():
               "order": "id.asc"}
     if args.limit:
         params["limit"] = str(args.limit)
-    r = requests.get(f"{url}/rest/v1/candidates", headers=h, params=params, timeout=30)
-    r.raise_for_status()
+    r = sb_request("GET", f"{url}/rest/v1/candidates", headers=h, params=params)
+    if r is None or not r.ok:
+        sys.exit("Could not read the queue from Supabase.")
     rows = r.json()
     if not rows:
         print("Nothing to audit."); return
@@ -486,14 +522,29 @@ def main():
     for c in rows:
         groups.setdefault((c.get("category") or "", c.get("place_name") or ""), []).append(c)
 
+    def do_one(c, recs):
+        a = audit(c, recs)
+        if args.dry_run:
+            return
+        sb_request("PATCH", f"{url}/rest/v1/candidates", headers=h,
+                   params={"id": f"eq.{c['id']}"}, json=a)
+
     for (niche, city), group in groups.items():
         recs = maps_cache(niche, city) if niche and city else []
-        for c in group:
-            a = audit(c, recs)
-            if args.dry_run:
-                continue
-            requests.patch(f"{url}/rest/v1/candidates", headers=h,
-                           params={"id": f"eq.{c['id']}"}, json=a, timeout=30)
+        if args.workers > 1:
+            # Each prospect is independent network I/O, so a few in flight at
+            # once turns an hours-long pass into minutes. Kept modest so the
+            # search index does not start throttling us.
+            with ThreadPoolExecutor(max_workers=args.workers) as pool:
+                futures = [pool.submit(do_one, c, recs) for c in group]
+                for f in as_completed(futures):
+                    try:
+                        f.result()
+                    except Exception as e:
+                        print(f"      audit error: {str(e)[:90]}")
+        else:
+            for c in group:
+                do_one(c, recs)
     print("\nDone. Queue is now ranked by need_score.")
 
 

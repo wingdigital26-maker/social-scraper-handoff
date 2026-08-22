@@ -1,0 +1,8 @@
+{
+  "done": [],
+  "failed": [
+    "roofing/Plano: audit: raise ConnectionError(e, request=request) | requests.exceptions.ConnectionError: HTTPSConnectionPool(host='klzmpjregrcxumaxfsug.supabase.co', port=443): Max ret",
+    "roofing/Frisco: audit: timed out after 3600s"
+  ],
+  "stats": {}
+}
