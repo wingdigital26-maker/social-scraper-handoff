@@ -194,6 +194,10 @@ def main():
                 print(f"    {n}")
             if ok:
                 state["done"].append([niche, city])
+                # Clear any earlier failure for this pair — otherwise --status
+                # keeps reporting cities that have since succeeded.
+                state["failed"] = [f for f in state["failed"]
+                                   if not f.startswith(f"{niche}/{city}:")]
             else:
                 state["failed"].append(f"{niche}/{city}: {notes[-1] if notes else 'unknown'}")
             save_state(state)

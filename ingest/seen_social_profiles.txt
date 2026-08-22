@@ -6,6 +6,7 @@ instagram:_dynamisroofing_
 instagram:a.h_roofing
 instagram:aberoofing
 instagram:abl_roofing_and_cladding
+instagram:addisonroof
 instagram:aesthetic_roofing_systems_llc
 instagram:ajmurphy_roofing
 instagram:allen.roofing13
@@ -64,6 +65,7 @@ instagram:eisforemmanuel_
 instagram:elementroofingin
 instagram:emmaknorman
 instagram:englandroofingcontractors
+instagram:executiveexteriors
 instagram:farmers_roofing
 instagram:fencesandmorewylie
 instagram:firemanroofingbedford
@@ -81,6 +83,7 @@ instagram:ghtroofing
 instagram:grandprairietxroofingpro
 instagram:grapevinetxroofingpro
 instagram:greennationgc
+instagram:hhexteriorsinc
 instagram:homesouthroofing
 instagram:hprplano
 instagram:huerteroroofing
@@ -118,6 +121,7 @@ instagram:masseys_roofing
 instagram:matrapainting
 instagram:matrixroofingregina
 instagram:matuteroofing
+instagram:max.roofing
 instagram:mckinney_sons_construction
 instagram:mckinneyroof
 instagram:mckinneyroofingand
@@ -149,6 +153,7 @@ instagram:old_colony_roofing
 instagram:oldcolonyroofing
 instagram:oldsouthroofing
 instagram:painterroofingandconstruction
+instagram:perfectionroofingllc
 instagram:pilar_txllc
 instagram:pine_ridge_roofing
 instagram:planoroofing
@@ -225,7 +230,12 @@ linkedin:ackhurst-roofing-pty-ltd
 linkedin:aclad-uk-limited
 linkedin:adam-browning-4246b87b
 linkedin:adam-gonzales-480a1833a
+linkedin:addison-heatherly-080354334
+linkedin:addison-mixson-494082211
+linkedin:addison-tobar-a286a0428
+linkedin:addisonkaasa
 linkedin:adela-rios-684959b9
+linkedin:adison-norman-b20269160
 linkedin:adrian-griggs-8677122ab
 linkedin:ahlers-commercial-roofing-and-construction
 linkedin:ahlers-roofing-and-construction
@@ -233,6 +243,7 @@ linkedin:al-browning-63b40014
 linkedin:alamar-construction-llc
 linkedin:alan-holder-61847814
 linkedin:alans-roofing
+linkedin:alex-addison-965bb0321
 linkedin:alex-edwards1994
 linkedin:allen-consulting-inc
 linkedin:allen-friel-68a194258
@@ -343,6 +354,7 @@ linkedin:bulldog-roofing-northern-colorado
 linkedin:butcher-
 linkedin:caleb-wilson-470146387
 linkedin:calidadlewisville-roofing-70923a59
+linkedin:calub-bottelberghe-9b8a57132
 linkedin:cameron-mendoza-a0a06048
 linkedin:camilo-huerta-04708a269
 linkedin:carrolltontxroofingpro
@@ -394,6 +406,7 @@ linkedin:curtis-jackson-20a1186
 linkedin:curtis-szott-59bb5a19b
 linkedin:cyndi-mclaughlin-b82b02246
 linkedin:dallas-millett-a18295109
+linkedin:dallas-roofers-333b24a0
 linkedin:dallas-tx-roofing-pro
 linkedin:dallascommercialroofing
 linkedin:dallasroofers
@@ -446,6 +459,7 @@ linkedin:elevated-roofing
 linkedin:elite-roofing-llc
 linkedin:eliteexteriors
 linkedin:ember-roofing
+linkedin:enable-design-build
 linkedin:energy-smart-homes
 linkedin:eric-richardson-b360a28a
 linkedin:eric-wylie-7a7885b
@@ -530,6 +544,7 @@ linkedin:javier-ortiz-626550b2
 linkedin:jay-ryan-1ba762308
 linkedin:jayson-ishola-3a9545b9
 linkedin:jboehm
+linkedin:jeff-addison-6588b8218
 linkedin:jeff-gowins-b559b785
 linkedin:jeff-james-aa71609
 linkedin:jenkinsroofing
@@ -613,6 +628,7 @@ linkedin:m
 linkedin:mac-roofing-contracting-ltd
 linkedin:manny-medrano-bba664123
 linkedin:mansfield-tx-roofing-pro
+linkedin:marcon-roofing-inc.
 linkedin:maria-nguyen-088a442b9
 linkedin:maria-sharp-255011293
 linkedin:mario-azurdia-39432b191
@@ -768,6 +784,7 @@ linkedin:russell-breaux-29716321
 linkedin:russtarafdar
 linkedin:ryan-andersen-b3299855
 linkedin:ryan-koesel
+linkedin:ryaneil-kaamino-2a7a6310b
 linkedin:sachse-construction
 linkedin:salomon-maron-b3332873
 linkedin:sam-whiteway-635977a8
@@ -782,6 +799,7 @@ linkedin:sergey-drobot-1588a7153
 linkedin:servicemasterbycentury
 linkedin:shaun-leedham-954742118
 linkedin:sheldon-murphy-tsmroofing
+linkedin:sherry-york-2860a084
 linkedin:shield-roofing-0625b81b6
 linkedin:shtereb
 linkedin:sid-falco-56218719
@@ -822,6 +840,7 @@ linkedin:taylor-davis-0875899
 linkedin:taylor-roofing-maintenance-ltd
 linkedin:taylor-roofs
 linkedin:terry-peasel-185714269
+linkedin:terry-ray-4a41a7b5
 linkedin:texas-tile-roofing-llc
 linkedin:the-exterior-company-llc
 linkedin:the-garland-company-inc-
@@ -872,6 +891,7 @@ linkedin:west-michigan-roofing-
 linkedin:white-castle-roofing
 linkedin:will-ulmer-99389295
 linkedin:willard-company
+linkedin:william-hardy-0268b0154
 linkedin:william-rhodes-65a8b320
 linkedin:wylie-roof-0b8653284
 linkedin:wylie-roof-6412a0109

@@ -1,0 +1,16 @@
+Sweeping 2 city+niche pairs (43 already done). Rough estimate: 0h 18m.
+Resumable — safe to stop with Ctrl-C and rerun.
+
+[1/2] roofing in Euless
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 9 candidates (9 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 9 candidates, 9 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[2/2] roofing in Addison
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 20 candidates (20 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 20 candidates, 20 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+
+45 pairs complete, 4 failed.
+Review at: python queue/serve.py

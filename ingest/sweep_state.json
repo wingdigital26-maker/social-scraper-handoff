@@ -171,13 +171,16 @@
     [
       "roofing",
       "Cleburne"
+    ],
+    [
+      "roofing",
+      "Euless"
+    ],
+    [
+      "roofing",
+      "Addison"
     ]
   ],
-  "failed": [
-    "roofing/Plano: audit: raise ConnectionError(e, request=request) | requests.exceptions.ConnectionError: HTTPSConnectionPool(host='klzmpjregrcxumaxfsug.supabase.co', port=443): Max ret",
-    "roofing/Frisco: audit: timed out after 3600s",
-    "roofing/Euless: discover: ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | UnicodeEncodeError: 'charmap' codec can't encode characters in position 16-21: character maps to <unde",
-    "roofing/Addison: discover: ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | UnicodeEncodeError: 'charmap' codec can't encode character '\\u2661' in position 13: character maps to "
-  ],
+  "failed": [],
   "stats": {}
 }
