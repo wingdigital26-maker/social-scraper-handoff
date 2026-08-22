@@ -53,6 +53,13 @@ NOT_A_WEBSITE = re.compile(
     r"homeadvisor|indeed|glassdoor)\.", re.I)
 
 PHONE_RE = re.compile(r"\(?\b\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b")
+
+# DFW-area area codes. A prospect whose phone sits outside these is probably a
+# same-name business in another state — caught for real with an Oklahoma
+# "Litz Roofing" (405) and an India-hosted "Sunaura Solar" (.in) surfacing in a
+# Plano search. Flagged, not deleted: the human decides.
+DFW_AREA_CODES = {"214", "469", "972", "817", "682", "945", "940", "430", "903"}
+FOREIGN_TLD = re.compile(r"\.(in|uk|au|ca|pk|ph|ng|de|fr|ru|cn|br|za)$", re.I)
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]{2,}")
 RATING_RE = re.compile(r"([0-5][.,]\d)\s*(?:out of 5|stars?|★|/\s*5)", re.I)
 REVIEWS_RE = re.compile(r"([\d,]{1,7})\s*(?:google\s*)?reviews?", re.I)
@@ -447,6 +454,17 @@ def need_score(a, is_person=False):
         add(0.05, not a.get("phone") and not a.get("email"), "no contact info on site")
     elif a.get("website"):
         gaps.append("site could not be read (blocked or down) — verify by hand")
+
+    # Geography sanity — surfaced as a warning so nobody calls the wrong state.
+    host = urlparse(a.get("website") or "").netloc
+    if host and FOREIGN_TLD.search(host.split(":")[0]):
+        gaps.append("WARNING: non-US website domain — likely a different company")
+    ph = a.get("phone") or ""
+    digits = re.sub(r"\D", "", ph)
+    if len(digits) >= 10:
+        code = digits[-10:-7]
+        if code not in DFW_AREA_CODES:
+            gaps.append(f"WARNING: {code} area code is outside DFW — verify this is the right company")
 
     rating = a.get("gmb_rating")
     add(0.05, rating is not None and rating < 4.3, f"rating {rating}" if rating else "low rating")

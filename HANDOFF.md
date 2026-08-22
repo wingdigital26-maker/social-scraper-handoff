@@ -103,3 +103,37 @@ rather than guess, so some real sites are missed. Google Maps fast-mode returns
 review_count = 0 (browser mode hits a consent gate), so review counts come from
 search snippets and are best-effort. Maps results are cached per niche+city in
 .maps_cache/ — delete that folder to refresh.
+
+## Batch sweep (added 2026-08-22)
+
+`sweep.py` runs the whole prospect pipeline across every DFW city x niche pair:
+
+```bash
+python ingest/sweep.py --niches roofing              # 45 DFW cities
+python ingest/sweep.py --tier core                   # 10 biggest cities
+python ingest/sweep.py --niches roofing,hvac --cities Dallas,Plano
+python ingest/sweep.py --status                      # progress
+python ingest/sweep.py --no-audit                    # discover now, audit later
+```
+
+Resumable: each finished pair is recorded in `sweep_state.json`, so Ctrl-C and
+rerun continues where it stopped. Run it overnight — a full sweep is hours.
+
+**Bugs found by actually running it, all fixed.** Worth knowing about, because
+each one was invisible until real data went through:
+
+- One transient Supabase connection blip killed an entire step. Every DB call
+  now retries with backoff.
+- The audit re-scanned the whole unaudited backlog each pair, so every city took
+  longer than the last until it hit the timeout. Batches are now bounded.
+- The audit ran serially at roughly a minute per prospect. It now runs
+  concurrently (`--workers`, default 4).
+- A failed audit used to discard a successful discovery. Prospects are already
+  in Supabase by then, so the pair is kept and a later audit pass finishes it.
+
+**Geography warnings.** A Plano sweep surfaced an Oklahoma "Litz Roofing" (405
+area code) and an India-hosted "Sunaura Solar" (.in domain). Same-name
+businesses in other states are a real failure mode for name-based discovery, so
+prospects now carry an explicit WARNING gap when the area code is outside DFW or
+the domain is a non-US TLD. They are flagged, never silently deleted — the human
+decides.
