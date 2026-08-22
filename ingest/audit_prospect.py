@@ -117,6 +117,19 @@ def _tokens(name):
             if len(w) > 2 and w not in STOPWORDS]
 
 
+_CC_SECOND = {"co", "com", "net", "org", "gov", "ac"}   # e.g. co.uk, com.au
+
+
+def _registrable(host):
+    """'shop.example.co.uk' -> 'example'. Good-enough eTLD+1 without a PSL."""
+    labels = (host or "").lower().split(":")[0].strip(".").split(".")
+    if len(labels) < 2:
+        return labels[0] if labels else ""
+    if len(labels) >= 3 and labels[-2] in _CC_SECOND and len(labels[-1]) == 2:
+        return labels[-3]
+    return labels[-2]
+
+
 def _owns_site(name, host, html):
     """Is this site really this business? Requires positive evidence.
 
@@ -126,8 +139,11 @@ def _owns_site(name, host, html):
     sales call, so an unverified site is treated as no site at all.
     """
     n = _norm(name)
-    # domain minus www/tld, e.g. "www.mtnroofing.com" -> "mtnroofing"
-    h = _norm(re.sub(r"^www\.|\.[a-z.]{2,10}$", "", host or ""))
+    # Compare against the REGISTRABLE domain, not the full host. Doorway spam
+    # hides the business name in a subdomain on a shared domain — caught for
+    # real with "bannerroofingconstructionllc.discoveredats.com". A business
+    # that owns its web presence owns the domain itself.
+    h = _norm(_registrable(host))
     if n and h and (n in h or h in n):
         short, long_ = sorted((len(n), len(h)))
         # Length guard: "roofingdallas" must not match "metalroofingdallas",
@@ -149,6 +165,10 @@ def _owns_site(name, host, html):
     # distinctive word of the name to appear in the host itself.
     toks_h = _tokens(name)
     if toks_h and not any(t in h for t in toks_h):
+        return False
+    if not toks_h and n and n not in h:
+        # Name is all generic words (e.g. "M&R Roofing"): with nothing
+        # distinctive to check, a title match alone is not enough evidence.
         return False
     if n in title:
         # Same length guard as the domain check: a generic name like
