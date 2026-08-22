@@ -1,0 +1,225 @@
+Sweeping 45 city+niche pairs (0 already done). Rough estimate: 6h 45m.
+Resumable — safe to stop with Ctrl-C and rerun.
+
+[1/45] roofing in Dallas
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 36 candidates (36 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 36 candidates, 36 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[2/45] roofing in Fort Worth
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 28 candidates (28 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 28 candidates, 28 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[3/45] roofing in Arlington
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 25 candidates (25 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 25 candidates, 25 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[4/45] roofing in Plano
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 5 candidates (5 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 5 candidates, 5 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[5/45] roofing in Irving
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 20 candidates (20 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 20 candidates, 20 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[6/45] roofing in Garland
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 21 candidates (21 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 21 candidates, 21 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[7/45] roofing in Frisco
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 2 candidates (2 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 2 candidates, 2 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[8/45] roofing in McKinney
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 28 candidates (28 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 28 candidates, 28 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[9/45] roofing in Denton
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 21 candidates (21 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 21 candidates, 21 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[10/45] roofing in Grand Prairie
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 18 candidates (18 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 18 candidates, 18 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[11/45] roofing in Mesquite
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 18 candidates (18 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 18 candidates, 18 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[12/45] roofing in Carrollton
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 19 candidates (19 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 19 candidates, 19 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[13/45] roofing in Richardson
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 22 candidates (22 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 22 candidates, 22 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[14/45] roofing in Lewisville
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 10 candidates (10 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 10 candidates, 10 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[15/45] roofing in Allen
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 32 candidates (32 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 32 candidates, 32 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[16/45] roofing in Flower Mound
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 24 candidates (24 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 24 candidates, 24 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[17/45] roofing in Coppell
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 20 candidates (20 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 20 candidates, 20 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[18/45] roofing in Farmers Branch
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 13 candidates (13 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 13 candidates, 13 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[19/45] roofing in Grapevine
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 15 candidates (15 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 15 candidates, 15 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[20/45] roofing in Euless
+    discover: ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | UnicodeEncodeError: 'charmap' codec can't encode characters in position 16-21: character maps to <unde
+[21/45] roofing in Bedford
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 25 candidates (25 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 25 candidates, 25 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[22/45] roofing in Hurst
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 18 candidates (18 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 18 candidates, 18 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[23/45] roofing in North Richland Hills
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 23 candidates (23 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 23 candidates, 23 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[24/45] roofing in Haltom City
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 18 candidates (18 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 18 candidates, 18 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[25/45] roofing in Keller
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 22 candidates (22 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 22 candidates, 22 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[26/45] roofing in Southlake
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 21 candidates (21 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 21 candidates, 21 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[27/45] roofing in Mansfield
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 18 candidates (18 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 18 candidates, 18 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[28/45] roofing in Cedar Hill
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 18 candidates (18 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 18 candidates, 18 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[29/45] roofing in DeSoto
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 21 candidates (21 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 21 candidates, 21 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[30/45] roofing in Lancaster
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 31 candidates (31 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 31 candidates, 31 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[31/45] roofing in Duncanville
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 7 candidates (7 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 7 candidates, 7 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[32/45] roofing in Rockwall
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 26 candidates (26 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 26 candidates, 26 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[33/45] roofing in Addison
+    discover: ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | UnicodeEncodeError: 'charmap' codec can't encode character '\u2661' in position 13: character maps to 
+[34/45] roofing in Wylie
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 20 candidates (20 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 20 candidates, 20 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[35/45] roofing in Murphy
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 16 candidates (16 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 16 candidates, 16 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[36/45] roofing in Sachse
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 16 candidates (16 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 16 candidates, 16 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[37/45] roofing in The Colony
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 23 candidates (23 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 23 candidates, 23 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[38/45] roofing in Little Elm
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 21 candidates (21 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 21 candidates, 21 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[39/45] roofing in Prosper
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 15 candidates (15 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 15 candidates, 15 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[40/45] roofing in Celina
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 16 candidates (16 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 16 candidates, 16 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[41/45] roofing in Anna
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 31 candidates (31 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 31 candidates, 31 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[42/45] roofing in Forney
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 5 candidates (5 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 5 candidates, 5 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[43/45] roofing in Waxahachie
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 16 candidates (16 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 16 candidates, 16 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[44/45] roofing in Midlothian
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 14 candidates (14 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 14 candidates, 14 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+[45/45] roofing in Cleburne
+    discover: Appended to C:\Users\wjack\social-scraper-handoff\ingest\candidates.jsonl | Next:  python enrich.py  &&  python db.py --source social
+    enrich: enriched 10 candidates (10 drafted, 0 bad lines) -> C:\Users\wjack\social-scraper-handoff\ingest\candidates.enriched.jsonl
+    push: pushed 10 candidates, 10 new (rest were dupes)
+    audit:  | Done. Queue is now ranked by need_score.
+
+43 pairs complete, 4 failed.
+Review at: python queue/serve.py

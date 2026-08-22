@@ -63,6 +63,28 @@ NOT_A_WEBSITE = re.compile(
 
 PHONE_RE = re.compile(r"\(?\b\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b")
 
+# Template/demo placeholders that look like real numbers. A prospect list is
+# worthless if it sends someone dialling 469-000-0000, which a Frisco site
+# really did publish.
+FAKE_PHONE = re.compile(r"^(?:\d{3})?(?:000\d{4}|1234567|0000000|9999999|"
+                        r"55501\d{2}|1111111|123456\d)$")
+
+
+def clean_phone(raw):
+    """Return a real-looking phone, or None. Rejects placeholders outright."""
+    if not raw:
+        return None
+    d = re.sub(r"\D", "", raw)
+    if len(d) == 11 and d.startswith("1"):
+        d = d[1:]
+    if len(d) != 10:
+        return None
+    if FAKE_PHONE.match(d) or len(set(d)) <= 2:
+        return None
+    if d[3:] == "0000000" or d[3:6] in ("000", "555"):
+        return None
+    return raw.strip()
+
 # DFW-area area codes. A prospect whose phone sits outside these is probably a
 # same-name business in another state — caught for real with an Oklahoma
 # "Litz Roofing" (405) and an India-hosted "Sunaura Solar" (.in) surfacing in a
@@ -116,9 +138,18 @@ def sb_request(method, url, *, retries=4, **kw):
 
 
 # ------------------------------------------------------------ who are they ---
+# Words too generic to prove a domain belongs to a business. "4X Construction
+# Group LLC" was matched to mansfieldgroup.net purely because both contain
+# "group" — a distinctive token has to be something only this company uses.
 STOPWORDS = {"roofing", "roof", "hvac", "plumbing", "the", "and", "llc", "inc",
              "co", "company", "services", "service", "of", "greater", "tx",
-             "texas", "construction", "contractors", "contractor"}
+             "texas", "construction", "contractors", "contractor",
+             "group", "pros", "pro", "team", "solutions", "partners", "systems",
+             "associates", "enterprises", "industries", "brothers", "bros",
+             "sons", "home", "homes", "exteriors", "remodeling", "restoration",
+             "builders", "building", "general", "quality", "best", "top",
+             "local", "american", "usa", "dfw", "metroplex", "north", "south",
+             "east", "west", "your", "expert", "experts", "master", "premier"}
 
 
 def _tokens(name):
@@ -252,7 +283,7 @@ def crawl_site(url):
         for l in internal)
 
     phones = PHONE_RE.findall(html)
-    sig["phone"] = phones[0] if phones else None
+    sig["phone"] = next((c for c in (clean_phone(x) for x in phones) if c), None)
     emails = [e for e in EMAIL_RE.findall(html)
               if not re.search(r"\.(png|jpg|jpeg|gif|svg|webp|css|js)$", e, re.I)
               and "sentry" not in e.lower() and "example" not in e.lower()]
@@ -270,7 +301,7 @@ def crawl_site(url):
                     sig["email"] = more[0]
                 if not sig["phone"]:
                     p = PHONE_RE.findall(c.text)
-                    sig["phone"] = p[0] if p else None
+                    sig["phone"] = next((c for c in (clean_phone(x) for x in p) if c), None)
             except Exception:
                 pass
     return sig
@@ -516,7 +547,7 @@ def audit(c, maps_recs=None):
     maps = match_business(name, maps_recs or [])
     maps_out = {}
     if maps:
-        maps_out = {"phone": maps.get("phone") or None,
+        maps_out = {"phone": clean_phone(maps.get("phone")),
                     "website": (maps.get("website") or "").split("?")[0] or None,
                     "gmb_rating": maps.get("review_rating") or None,
                     "address": maps.get("address")}
