@@ -41,6 +41,15 @@ except ImportError:
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from db import load_env
 
+# Windows consoles default to cp1252 and business names routinely contain
+# symbols and emoji it cannot encode. Without this, printing a single
+# prospect name raises UnicodeEncodeError and kills the whole run.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"}
 SEARCH_SLEEP = 2.0

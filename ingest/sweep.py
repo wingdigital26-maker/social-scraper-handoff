@@ -26,6 +26,15 @@ import subprocess
 import sys
 import time
 
+# Windows consoles default to cp1252 and business names routinely contain
+# symbols and emoji it cannot encode. Without this, printing a single
+# prospect name raises UnicodeEncodeError and kills the whole run.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 # Long runs are almost always redirected to a log. Python block-buffers a
 # redirected stdout, so progress would sit invisible for hours — flush always.
 print = functools.partial(print, flush=True)  # noqa: A001

@@ -3,11 +3,153 @@
     [
       "roofing",
       "Dallas"
+    ],
+    [
+      "roofing",
+      "Fort Worth"
+    ],
+    [
+      "roofing",
+      "Arlington"
+    ],
+    [
+      "roofing",
+      "Plano"
+    ],
+    [
+      "roofing",
+      "Irving"
+    ],
+    [
+      "roofing",
+      "Garland"
+    ],
+    [
+      "roofing",
+      "Frisco"
+    ],
+    [
+      "roofing",
+      "McKinney"
+    ],
+    [
+      "roofing",
+      "Denton"
+    ],
+    [
+      "roofing",
+      "Grand Prairie"
+    ],
+    [
+      "roofing",
+      "Mesquite"
+    ],
+    [
+      "roofing",
+      "Carrollton"
+    ],
+    [
+      "roofing",
+      "Richardson"
+    ],
+    [
+      "roofing",
+      "Lewisville"
+    ],
+    [
+      "roofing",
+      "Allen"
+    ],
+    [
+      "roofing",
+      "Flower Mound"
+    ],
+    [
+      "roofing",
+      "Coppell"
+    ],
+    [
+      "roofing",
+      "Farmers Branch"
+    ],
+    [
+      "roofing",
+      "Grapevine"
+    ],
+    [
+      "roofing",
+      "Bedford"
+    ],
+    [
+      "roofing",
+      "Hurst"
+    ],
+    [
+      "roofing",
+      "North Richland Hills"
+    ],
+    [
+      "roofing",
+      "Haltom City"
+    ],
+    [
+      "roofing",
+      "Keller"
+    ],
+    [
+      "roofing",
+      "Southlake"
+    ],
+    [
+      "roofing",
+      "Mansfield"
+    ],
+    [
+      "roofing",
+      "Cedar Hill"
+    ],
+    [
+      "roofing",
+      "DeSoto"
+    ],
+    [
+      "roofing",
+      "Lancaster"
+    ],
+    [
+      "roofing",
+      "Duncanville"
+    ],
+    [
+      "roofing",
+      "Rockwall"
+    ],
+    [
+      "roofing",
+      "Wylie"
+    ],
+    [
+      "roofing",
+      "Murphy"
+    ],
+    [
+      "roofing",
+      "Sachse"
+    ],
+    [
+      "roofing",
+      "The Colony"
+    ],
+    [
+      "roofing",
+      "Little Elm"
     ]
   ],
   "failed": [
     "roofing/Plano: audit: raise ConnectionError(e, request=request) | requests.exceptions.ConnectionError: HTTPSConnectionPool(host='klzmpjregrcxumaxfsug.supabase.co', port=443): Max ret",
-    "roofing/Frisco: audit: timed out after 3600s"
+    "roofing/Frisco: audit: timed out after 3600s",
+    "roofing/Euless: discover: ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | UnicodeEncodeError: 'charmap' codec can't encode characters in position 16-21: character maps to <unde",
+    "roofing/Addison: discover: ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ | UnicodeEncodeError: 'charmap' codec can't encode character '\\u2661' in position 13: character maps to "
   ],
   "stats": {}
 }
