@@ -1,0 +1,73 @@
+name: sonar-watch
+# Per-client social monitoring, always on, PC off.
+#
+# Separate from sonar-daily (which discovers new prospect BUSINESSES). This
+# watches for PEOPLE publicly asking for what each client sells, and files a
+# drafted reply in the CRM under that client.
+#
+# Paced deliberately: the search index rate-limits on burst volume — several
+# hundred rapid queries and it refuses across every backend — so this runs
+# little and often rather than hammering once.
+on:
+  schedule:
+    - cron: "0 13 * * *"   # 8am Central
+    - cron: "0 17 * * *"   # 12pm Central
+    - cron: "0 22 * * *"   # 5pm Central
+  workflow_dispatch:
+    inputs:
+      client:
+        description: "one client name, or blank for all"
+        default: ""
+      phrases:
+        description: "intent phrases per city per platform"
+        default: "2"
+
+concurrency:
+  group: sonar-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ddgs requests
+
+      - name: Watch social for every active client
+        working-directory: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          CLIENT="${{ github.event.inputs.client }}"
+          PHRASES="${{ github.event.inputs.phrases || 2 }}"
+          if [ -n "$CLIENT" ]; then
+            python watch_social.py --client "$CLIENT" --phrases "$PHRASES" --limit 25
+          else
+            python watch_social.py --all --phrases "$PHRASES" --limit 40
+          fi
+
+      - name: CRM queue depth
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python - <<'PY'
+          import os, json, urllib.request
+          u, k = os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"]
+          req = urllib.request.Request(
+              f"{u}/rest/v1/outbound?select=client,status&limit=5000",
+              headers={"apikey": k, "Authorization": f"Bearer {k}"})
+          rows = json.load(urllib.request.urlopen(req, timeout=30))
+          by = {}
+          for r in rows:
+              d = by.setdefault(r["client"], {})
+              d[r["status"]] = d.get(r["status"], 0) + 1
+          for c, d in sorted(by.items()):
+              print(f"{c}: " + ", ".join(f"{k2}={v}" for k2, v in sorted(d.items())))
+          PY

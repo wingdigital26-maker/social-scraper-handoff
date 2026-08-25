@@ -487,11 +487,17 @@ def need_score(a, is_person=False):
     if is_person:
         return None, ["person profile — decision-maker contact, audit their company instead"]
 
-    gaps, pts, total = [], 0.0, 0.0
+    # Fixed denominator. Dividing by only the MEASURED weight meant a prospect
+    # with no findable website scored 1.00 off three small gaps, outranking a
+    # fully audited business with six real ones — "we know nothing about them"
+    # ranked as "needs us most". Unmeasured checks now simply contribute
+    # nothing instead of shrinking the scale.
+    FULL_WEIGHT = 1.00
+    gaps, pts, measured = [], 0.0, 0.0
 
     def add(weight, bad, label):
-        nonlocal pts, total
-        total += weight
+        nonlocal pts, measured
+        measured += weight
         if bad:
             pts += weight
             gaps.append(label)
@@ -533,7 +539,11 @@ def need_score(a, is_person=False):
     if a.get("bad_review_themes"):
         gaps.append(f"complaints: {a['bad_review_themes']}")
 
-    return round(pts / total, 3) if total else None, gaps
+    # Say so when little could actually be checked, so a thin record is never
+    # mistaken for a well-evidenced one.
+    if measured < 0.35:
+        gaps.append(f"low confidence: only {int(measured * 100)}% of checks were possible")
+    return round(pts / FULL_WEIGHT, 3), gaps
 
 
 # ------------------------------------------------------------------ audit ----
