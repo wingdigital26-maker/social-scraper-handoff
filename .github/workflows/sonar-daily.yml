@@ -1,0 +1,66 @@
+name: sonar-daily
+# Sonar's 24/7 lane. Runs with Jack's PC off.
+# Verified 2026-08-25: a hosted runner reaches the search index (3/3), fetches
+# prospect sites (3/3) and writes to Supabase (200). See probe-runner.yml.
+on:
+  schedule:
+    - cron: "0 8 * * *"    # 3am Central, discovery slice + audit
+    - cron: "0 20 * * *"   # 3pm Central, audit-only catch-up
+  workflow_dispatch:
+    inputs:
+      pairs:
+        description: "city+niche pairs to sweep this run"
+        default: "4"
+      audit_only:
+        description: "skip discovery, just clear the audit backlog"
+        type: boolean
+        default: false
+
+concurrency:
+  group: sonar-daily          # never let two runs fight over the same backlog
+  cancel-in-progress: false
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ddgs requests
+
+      - name: Run Sonar
+        working-directory: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          # The 3pm schedule and the audit_only input both mean "no discovery".
+          if [ "${{ github.event.inputs.audit_only }}" = "true" ] || [ "${{ github.event.schedule }}" = "0 20 * * *" ]; then
+            python cloud_run.py --audit-only
+          else
+            python cloud_run.py --pairs "${{ github.event.inputs.pairs || 4 }}"
+          fi
+
+      - name: Report queue depth
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python - <<'PY'
+          import os, urllib.request
+          u, k = os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"]
+          def count(q):
+              req = urllib.request.Request(f"{u}/rest/v1/candidates?{q}&select=id",
+                  headers={"apikey": k, "Authorization": f"Bearer {k}",
+                           "Prefer": "count=exact", "Range": "0-0"})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return r.headers.get("content-range", "?/?").split("/")[-1]
+          print(f"total prospects : {count('id=gt.0')}")
+          print(f"awaiting review : {count('status=eq.new')}")
+          print(f"high need (0.7+): {count('need_score=gte.0.7')}")
+          print(f"unaudited       : {count('audited_at=is.null')}")
+          PY
