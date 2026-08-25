@@ -1,0 +1,347 @@
+<title>Mid-Tier Dial Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F3F5F7; --surface:#FFFFFF; --sunk:#EAEEF1;
+  --ink:#12171C; --ink-2:#4C5A66; --ink-3:#77848E;
+  --rule:#D9E0E6; --rule-2:#C3CDD5;
+  --accent:#1F5867; --accent-soft:#E2EDF0; --accent-ink:#164450;
+  --warn:#A0522A; --warn-soft:#F7EBE2; --warn-rule:#E0BFA5;
+  --good:#3F6B4F; --good-soft:#E6EFE8;
+  --shadow:0 1px 2px rgba(18,23,28,.06), 0 4px 14px rgba(18,23,28,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1317; --surface:#161D23; --sunk:#1D262D;
+    --ink:#E7ECEF; --ink-2:#A3B0BA; --ink-3:#7C8A94;
+    --rule:#28333B; --rule-2:#374651;
+    --accent:#63B3C4; --accent-soft:#14313A; --accent-ink:#8FCCD9;
+    --warn:#D89052; --warn-soft:#2E2118; --warn-rule:#5A4029;
+    --good:#79B08C; --good-soft:#1A2A20;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1317; --surface:#161D23; --sunk:#1D262D;
+  --ink:#E7ECEF; --ink-2:#A3B0BA; --ink-3:#7C8A94;
+  --rule:#28333B; --rule-2:#374651;
+  --accent:#63B3C4; --accent-soft:#14313A; --accent-ink:#8FCCD9;
+  --warn:#D89052; --warn-soft:#2E2118; --warn-rule:#5A4029;
+  --good:#79B08C; --good-soft:#1A2A20;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; padding:0 1.15rem 5rem;
+  background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:64rem; margin:0 auto}
+
+/* ---------- header ---------- */
+header.top{padding:3rem 0 1.6rem}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.7rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); font-weight:600; margin:0 0 .85rem;
+}
+h1{
+  font-family:Archivo,system-ui,sans-serif; font-weight:700;
+  font-size:clamp(1.85rem,5vw,2.9rem); line-height:1.03; letter-spacing:-.025em;
+  margin:0 0 .7rem; text-wrap:balance;
+}
+.lede{margin:0; color:var(--ink-2); max-width:56ch; font-size:1.03rem}
+.lede b{color:var(--ink); font-weight:600}
+
+/* ---------- the two findings ---------- */
+.findings{
+  display:grid; gap:.9rem; grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));
+  margin:2rem 0 0; padding:0; list-style:none;
+}
+.finding{
+  background:var(--surface); border:1px solid var(--rule); border-left:3px solid var(--accent);
+  border-radius:7px; padding:.95rem 1.1rem; box-shadow:var(--shadow);
+}
+.finding .num{
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:1.5rem; font-weight:600; color:var(--accent); line-height:1.1; display:block;
+}
+.finding p{margin:.2rem 0 0; color:var(--ink-2); font-size:.9rem}
+
+.note{
+  margin:1.6rem 0 0; padding:.9rem 1.1rem; background:var(--sunk);
+  border:1px solid var(--rule); border-radius:7px; color:var(--ink-2); font-size:.9rem;
+}
+.note b{color:var(--ink)}
+
+/* ---------- list ---------- */
+.sheet{margin:2.6rem 0 0; display:grid; gap:1.1rem;
+  grid-template-columns:repeat(auto-fill,minmax(22rem,1fr))}
+
+.lead{
+  background:var(--surface); border:1px solid var(--rule); border-radius:9px;
+  padding:1.15rem 1.25rem 1.3rem; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:.85rem;
+}
+.lead-top{display:flex; gap:.75rem; align-items:flex-start}
+.rank{
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:.72rem; font-weight:600; color:var(--accent-ink);
+  background:var(--accent-soft); border-radius:4px; padding:.22rem .45rem;
+  line-height:1.2; margin-top:.2rem; flex:none;
+}
+.lead h2{
+  font-family:Archivo,sans-serif; font-weight:600; font-size:1.06rem;
+  margin:0; line-height:1.25; letter-spacing:-.012em; text-wrap:balance;
+}
+.where{margin:.18rem 0 0; font-size:.82rem; color:var(--ink-3)}
+.where a{color:var(--accent); text-decoration:none; border-bottom:1px solid currentColor}
+.where a:hover,.where a:focus{opacity:.72}
+
+.dial{display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap}
+.tel{
+  font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:1.42rem; font-weight:600; letter-spacing:-.01em;
+  color:var(--ink); text-decoration:none; border-bottom:2px solid var(--accent);
+}
+.tel:hover,.tel:focus{color:var(--accent)}
+.who{font-size:.9rem; color:var(--ink-2)}
+.who b{color:var(--ink); font-weight:600}
+
+.angle{
+  margin:0; padding:.8rem .95rem; background:var(--accent-soft);
+  border-radius:6px; font-size:.93rem; line-height:1.5; color:var(--ink);
+}
+.angle .k{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:.63rem;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--accent-ink);
+  font-weight:600; margin-bottom:.35rem;
+}
+
+.chips{display:flex; flex-wrap:wrap; gap:.32rem; margin:0; padding:0; list-style:none}
+.chips li{
+  font-family:"IBM Plex Mono",monospace; font-size:.71rem; font-variant-numeric:tabular-nums;
+  color:var(--ink-2); background:var(--sunk); border:1px solid var(--rule);
+  border-radius:20px; padding:.18rem .58rem;
+}
+.chips li.miss{color:var(--warn); border-color:var(--warn-rule); background:var(--warn-soft)}
+.chips li.has{color:var(--good); border-color:var(--good); background:var(--good-soft)}
+
+.socials{font-size:.82rem; color:var(--ink-2); margin:0; line-height:1.7}
+.socials .k{
+  font-family:"IBM Plex Mono",monospace; font-size:.63rem; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:600; margin-right:.4rem;
+}
+.socials code{
+  font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+  background:var(--sunk); border-radius:3px; padding:.05rem .3rem; color:var(--ink-2);
+}
+
+.flag{
+  background:var(--warn-soft); border:1px solid var(--warn-rule);
+  border-radius:6px; padding:.75rem .9rem;
+}
+.flag .k{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:.63rem;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--warn);
+  font-weight:600; margin-bottom:.3rem;
+}
+.flag p{margin:0; font-size:.85rem; color:var(--ink-2); line-height:1.5}
+.flag p + p{margin-top:.4rem}
+
+footer{
+  margin-top:3.5rem; padding-top:1.3rem; border-top:1px solid var(--rule);
+  color:var(--ink-3); font-size:.85rem; max-width:60ch;
+}
+a:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:3px}
+@media (max-width:36rem){
+  .sheet{grid-template-columns:1fr}
+  header.top{padding-top:2rem}
+}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">Wing Digital &middot; Mid tier &middot; 24 Aug 2026</p>
+  <h1>The middle twelve</h1>
+  <p class="lede">Pulled from 30 researched DFW contractors, skipping both ends. These sit between the shops with nothing to work with and the ones already doing it right. <b>They have real websites, real reviews and real followings, and they still do not rank.</b></p>
+
+  <ul class="findings">
+    <li class="finding"><span class="num">11 / 12</span><p>do not rank for their own trade in their own city</p></li>
+    <li class="finding"><span class="num">9 / 12</span><p>have no blog, so nothing feeds their search presence</p></li>
+    <li class="finding"><span class="num">11 / 12</span><p>are already active on at least one social platform</p></li>
+  </ul>
+
+  <p class="note"><b>Why this tier.</b> The top of the list needs everything built from scratch and often cannot pay for it. The bottom is already ranking and will not feel the problem. These twelve are spending effort on marketing that is not converting into search visibility, which is the easiest gap to name on a first call.</p>
+</header>
+
+<main class="sheet">
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">1</span>
+      <div><h2>Hunt Roofing and Contracting</h2>
+      <p class="where">Cleburne &middot; roofing &middot; <a href="https://huntroofing.net" target="_blank" rel="noopener">huntroofing.net</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:8172025433">(817) 202-5433</a><span class="who">ask for <b>Marty Hunt</b></span></div>
+    <p class="angle"><span class="k">The angle</span>Sixty pages of website and not one of them ranks, with no social presence anywhere. The only lead here invisible on both fronts at once.</p>
+    <ul class="chips"><li>60 pages</li><li class="miss">no blog</li><li class="miss">no service pages</li><li class="miss">no socials found</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">email</span><code>Huntcontracting12@gmail.com</code></p>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">2</span>
+      <div><h2>Griffin Electrical Group</h2>
+      <p class="where">Cedar Hill &middot; commercial electrical &middot; <a href="https://griffinelectricalgroup.com" target="_blank" rel="noopener">griffinelectricalgroup.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:2148764338">(214) 876-4338</a><span class="who">ask for <b>Christopher Griffin</b></span></div>
+    <p class="angle"><span class="k">The angle</span>A four page site carrying a commercial electrical business. The thinnest presence on this list, which makes it the clearest before and after.</p>
+    <ul class="chips"><li>4 pages</li><li class="miss">no blog</li><li class="has">has service pages</li><li>6 reviews</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">social</span>Instagram <code>@griffinllc</code></p>
+    <div class="flag"><span class="k">Check before you dial</span>
+      <p>The Facebook and LinkedIn pages found for this name may belong to a different company. The Facebook one carries a 405 area code, which is Oklahoma.</p>
+      <p>The contact email on their site is <code>contact@sansoxygen.com</code>, an unrelated domain. Worth asking about rather than assuming.</p>
+    </div>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">3</span>
+      <div><h2>Elevation Roofing</h2>
+      <p class="where">Waxahachie &middot; roofing &middot; <a href="https://www.elevationroofrepair.com" target="_blank" rel="noopener">elevationroofrepair.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:2149490562">(214) 949-0562</a><span class="who">ask for <b>Jared Cunningham</b></span></div>
+    <p class="angle"><span class="k">The angle</span>Four active social platforms, more than anyone else on this sheet, feeding a website that would not load. If the site really is down, that is the whole call.</p>
+    <ul class="chips"><li class="has">4 platforms</li><li class="miss">site unreadable</li></ul>
+    <p class="socials"><span class="k">social</span>Instagram <code>@elevationroofingltd</code> &middot; TikTok <code>@elevationroofinggroup</code> &middot; Facebook <code>@elevationroofingtx</code> &middot; LinkedIn <code>@elevation-roofing-llc</code></p>
+    <div class="flag"><span class="k">Check before you dial</span>
+      <p>Their site did not respond when checked. It may be blocked to automated requests rather than genuinely down, so open it yourself first. Do not claim their site is down without looking.</p>
+    </div>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">4</span>
+      <div><h2>Salinas Construction</h2>
+      <p class="where">Grand Prairie &middot; roofing &middot; <a href="https://www.salinasroofingflooring.com" target="_blank" rel="noopener">salinasroofingflooring.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:4695589238">(469) 558-9238</a><span class="who">ask for <b>Nicolas Salinas</b></span></div>
+    <p class="angle"><span class="k">The angle</span>A clean 5.0 across 23 reviews and three live social accounts. He is earning trust and losing search, which is a good problem to name out loud.</p>
+    <ul class="chips"><li>16 pages</li><li class="miss">no blog</li><li class="has">has service pages</li><li>5.0&#9733; / 23 reviews</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">social</span>Instagram <code>@salinas.construction.inc</code> &middot; Facebook <code>@Salinasconstrllc</code> &middot; LinkedIn <code>@salinas-construction-inc</code><br><span class="k">email</span><code>nicolas@salinasroofingflooring.com</code></p>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">5</span>
+      <div><h2>South Industrial Electric</h2>
+      <p class="where">Hurst &middot; commercial electrical &middot; <a href="https://sietx.com" target="_blank" rel="noopener">sietx.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:2147498120">(214) 749-8120</a><span class="who">ask for <b>Fernando Silva</b></span></div>
+    <p class="angle"><span class="k">The angle</span>Thirty nine pages, the biggest commercial site in this group, with no search visibility to show for it. Commercial electrical work has high job values, so the gap is expensive.</p>
+    <ul class="chips"><li>39 pages</li><li class="miss">no blog</li><li class="has">has service pages</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">social</span>LinkedIn <code>@south-industrial-electric</code><br><span class="k">email</span><code>fsilva@sietx.com</code></p>
+    <div class="flag"><span class="k">Check before you dial</span>
+      <p>Two social accounts matched this name and both belong to other companies: <b>Southwest</b> Industrial Electric on Instagram and <b>Southern</b> Industrial Electric on Facebook. Do not mention their social presence on this call.</p>
+    </div>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">6</span>
+      <div><h2>RCSA Roofing &amp; Construction</h2>
+      <p class="where">Richardson &middot; roofing &middot; <a href="http://www.rcsausa.com" target="_blank" rel="noopener">rcsausa.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:9723607891">(972) 360-7891</a><span class="who">ask for <b>Benjamin Nguyen</b></span></div>
+    <p class="angle"><span class="k">The angle</span>Thirty five pages with no content engine behind them. Their site is also still on plain http rather than https, which is a concrete, checkable thing to open with.</p>
+    <ul class="chips"><li>35 pages</li><li class="miss">no blog</li><li class="has">has service pages</li><li class="miss">http, not https</li></ul>
+    <p class="socials"><span class="k">social</span>Instagram <code>@rcsaroofingandconstruction</code><br><span class="k">email</span><code>info@rcsausa.co</code></p>
+    <div class="flag"><span class="k">Check before you dial</span>
+      <p>The Facebook match is an opaque numeric profile id that could not be tied to this business either way.</p>
+    </div>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">7</span>
+      <div><h2>Lang Electric</h2>
+      <p class="where">Burleson &middot; commercial electrical &middot; <a href="https://www.langelectricllc.net" target="_blank" rel="noopener">langelectricllc.net</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:8179171521">(817) 917-1521</a><span class="who">ask for <b>Donald Lang</b></span></div>
+    <p class="angle"><span class="k">The angle</span>Three live social accounts including TikTok, pushing traffic at a site with no blog and no ranking. The effort is already there, the plumbing is not.</p>
+    <ul class="chips"><li>16 pages</li><li class="miss">no blog</li><li class="has">has service pages</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">social</span>Instagram <code>@langelectric</code> &middot; TikTok <code>@lang_electric</code> &middot; Facebook <code>@LangElectricMS</code><br><span class="k">email</span><code>Langelectricllc@outlook.com</code></p>
+    <div class="flag"><span class="k">Check before you dial</span>
+      <p>The LinkedIn result is a <b>California</b> company with a similar name. Ignore it.</p>
+    </div>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">8</span>
+      <div><h2>Spyder Roofing</h2>
+      <p class="where">Garland &middot; roofing &middot; <a href="https://www.spyderroofing.com" target="_blank" rel="noopener">spyderroofing.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:9727071875">(972) 707-1875</a><span class="who">ask for <b>Luis Garcia</b></span></div>
+    <p class="angle"><span class="k">The angle</span>Forty five pages and an active TikTok, still not ranking. They are producing plenty; nothing is organised into something search can reward.</p>
+    <ul class="chips"><li>45 pages</li><li class="miss">no blog</li><li class="has">has service pages</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">social</span>Instagram <code>@spyderroofing</code> &middot; TikTok <code>@spyderroofing</code></p>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">9</span>
+      <div><h2>Riverbend Roofing &amp; Exteriors</h2>
+      <p class="where">Azle &middot; roofing &middot; <a href="https://www.riverbendexteriors.com" target="_blank" rel="noopener">riverbendexteriors.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:8177794860">(817) 779-4860</a><span class="who">ask for <b>Dalton Horan</b></span></div>
+    <p class="angle"><span class="k">The angle</span>They run a blog but have no service pages, which is backwards. Service pages are what actually rank for the jobs they want to be called about.</p>
+    <ul class="chips"><li>16 pages</li><li class="has">has blog</li><li class="miss">no service pages</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">email</span><code>office@riverbendexteriors.com</code></p>
+    <div class="flag"><span class="k">Check before you dial</span>
+      <p>The only Instagram match ends in <code>nd</code> and looks like a North Dakota business. Treat their social as unknown.</p>
+    </div>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">10</span>
+      <div><h2>4P Roofing</h2>
+      <p class="where">Burleson &middot; roofing &middot; <a href="https://4proofingllc.com" target="_blank" rel="noopener">4proofingllc.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:8177131407">(817) 713-1407</a><span class="who">ask for <b>Christian Parker</b></span></div>
+    <p class="angle"><span class="k">The angle</span>The only one here already ranking, at position three. Do not pitch visibility. Pitch depth, because nine pages is thin ground to defend a top three spot from.</p>
+    <ul class="chips"><li class="has">ranks #3</li><li>9 pages</li><li class="miss">no blog</li><li class="has">has service pages</li></ul>
+    <p class="socials"><span class="k">email</span><code>tyler@4proofingllc.com</code></p>
+    <div class="flag"><span class="k">Check before you dial</span>
+      <p>Both social matches are uncertain and may belong to other accounts. The email on file is Tyler, not Christian, so confirm who you are actually asking for.</p>
+    </div>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">11</span>
+      <div><h2>Red Phoenix Roofing</h2>
+      <p class="where">Waxahachie &middot; roofing &middot; <a href="https://rprcteam.com" target="_blank" rel="noopener">rprcteam.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:2144447772">(214) 444-7772</a><span class="who">ask for <b>Eric Cunningham</b></span></div>
+    <p class="angle"><span class="k">The angle</span>Blog, service pages, three socials, a 5.0 rating, and still not ranking. Nothing is missing here, so this is a technical conversation rather than a content pitch.</p>
+    <ul class="chips"><li>25 pages</li><li class="has">has blog</li><li class="has">has service pages</li><li>5.0&#9733;</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">social</span>Instagram <code>@redphoenixroofing_construction</code> &middot; Facebook <code>@RedPhoenixRoofingConstruction</code> &middot; LinkedIn <code>@red-phoenix-roofing-construction</code></p>
+  </article>
+
+  <article class="lead">
+    <div class="lead-top"><span class="rank">12</span>
+      <div><h2>Parish Roofing Solutions</h2>
+      <p class="where">McKinney &middot; roofing &middot; <a href="https://www.parishroofingsolutions.com" target="_blank" rel="noopener">parishroofingsolutions.com</a></p></div>
+    </div>
+    <div class="dial"><a class="tel" href="tel:2142278488">(214) 227-8488</a><span class="who">ask for <b>Randy Parish</b></span></div>
+    <p class="angle"><span class="k">The angle</span>Same shape as Red Phoenix: everything in place, no ranking. His email sits on a different domain to his website, which usually means a split or rebranded presence worth asking about.</p>
+    <ul class="chips"><li>28 pages</li><li class="has">has blog</li><li class="has">has service pages</li><li>SSL ok</li></ul>
+    <p class="socials"><span class="k">social</span>Instagram <code>@parishroofingsolutions</code> &middot; Facebook <code>@parishroofingsolutions</code><br><span class="k">email</span><code>randy@parishroofingdfw.com</code></p>
+    <div class="flag"><span class="k">Check before you dial</span>
+      <p>The LinkedIn match reads <code>parish-built</code>, which may be a separate venture rather than this company.</p>
+    </div>
+  </article>
+
+</main>
+
+<footer>
+  <p>Websites, page counts, blog and service page detection, SSL and search position were read live on 24 August 2026. Ratings and review counts come from public search results and are best effort, so quote them only where a card shows one. Social accounts marked in a check box could not be confirmed as belonging to the business, usually because a similarly named company in another state matched first. Everything unverified is labelled rather than guessed.</p>
+</footer>
+</div>

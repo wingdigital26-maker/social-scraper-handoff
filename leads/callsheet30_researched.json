@@ -11,6 +11,11 @@
       "instagram": {
         "handle": "texasroofingproject",
         "url": "https://www.instagram.com/texasroofingproject/",
+        "confidence": "confirmed"
+      },
+      "facebook": {
+        "handle": "profile.php",
+        "url": "https://www.facebook.com/profile.php/",
         "confidence": "verify"
       },
       "linkedin": {
@@ -19,7 +24,7 @@
         "confidence": "confirmed"
       }
     },
-    "social_count": 2,
+    "social_count": 3,
     "seo_rank": null,
     "has_blog": false,
     "has_service_pages": false,
@@ -27,16 +32,17 @@
     "ssl_ok": true,
     "email": "info@txroofingproject.com",
     "site_read": true,
-    "gmb_rating": null,
-    "gmb_reviews": null,
+    "gmb_rating": 5.0,
+    "gmb_reviews": 0,
     "bad_review_themes": null,
-    "need_score": 0.7,
+    "need_score": 0.75,
     "gaps": [
       "not ranking for their main keyword",
       "no blog / no content engine",
       "no service pages",
       "very thin website",
-      "CHECK: instagram profile may belong to a similarly named business"
+      "few reviews",
+      "CHECK: facebook profile may belong to a similarly named business"
     ]
   },
   {
@@ -91,7 +97,7 @@
       "linkedin": {
         "handle": "granadaroofing",
         "url": "https://www.linkedin.com/company/granadaroofing",
-        "confidence": "verify"
+        "confidence": "confirmed"
       }
     },
     "social_count": 1,
@@ -103,7 +109,7 @@
     "email": null,
     "site_read": true,
     "gmb_rating": null,
-    "gmb_reviews": null,
+    "gmb_reviews": 46,
     "bad_review_themes": null,
     "need_score": 0.7,
     "gaps": [
@@ -111,8 +117,7 @@
       "no blog / no content engine",
       "no service pages",
       "very thin website",
-      "no Instagram or Facebook presence found",
-      "CHECK: linkedin profile may belong to a similarly named business"
+      "no Instagram or Facebook presence found"
     ]
   },
   {
@@ -127,12 +132,12 @@
       "instagram": {
         "handle": "jempro_",
         "url": "https://www.instagram.com/jempro_/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       },
       "facebook": {
         "handle": "jempro.roofing",
         "url": "https://www.facebook.com/jempro.roofing/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       },
       "linkedin": {
         "handle": "jemproalturas",
@@ -158,7 +163,7 @@
       "no service pages",
       "rating 2.9",
       "only 1 reviews",
-      "CHECK: instagram, facebook, linkedin profile may belong to a similarly named business"
+      "CHECK: linkedin profile may belong to a similarly named business"
     ]
   },
   {
@@ -170,15 +175,15 @@
     "website": "https://www.inspirationroofing.com",
     "owner": "Matthew Campione",
     "socials": {
+      "instagram": {
+        "handle": "inspiration_llc",
+        "url": "https://www.instagram.com/inspiration_llc/",
+        "confidence": "confirmed"
+      },
       "facebook": {
         "handle": "inspirationroofing",
         "url": "https://www.facebook.com/inspirationroofing/",
-        "confidence": "verify"
-      },
-      "linkedin": {
-        "handle": "inspiration-roofing-and-construction-north-texas",
-        "url": "https://www.linkedin.com/company/inspiration-roofing-and-construction-north-texas",
-        "confidence": "verify"
+        "confidence": "confirmed"
       }
     },
     "social_count": 2,
@@ -197,8 +202,7 @@
       "not ranking for their main keyword",
       "no blog / no content engine",
       "no service pages",
-      "very thin website",
-      "CHECK: facebook, linkedin profile may belong to a similarly named business"
+      "very thin website"
     ]
   },
   {
@@ -239,14 +243,9 @@
     "website": "https://www.absolutemeritroofing.com",
     "owner": "Shane Kinnaird",
     "socials": {
-      "instagram": {
-        "handle": "absolutemeritroofing",
-        "url": "https://www.instagram.com/absolutemeritroofing/",
-        "confidence": "confirmed"
-      },
       "facebook": {
         "handle": "absolutemeritroofing",
-        "url": "https://www.facebook.com/absolutemeritroofing",
+        "url": "https://www.facebook.com/absolutemeritroofing/",
         "confidence": "confirmed"
       },
       "linkedin": {
@@ -255,7 +254,7 @@
         "confidence": "confirmed"
       }
     },
-    "social_count": 3,
+    "social_count": 2,
     "seo_rank": null,
     "has_blog": false,
     "has_service_pages": false,
@@ -264,7 +263,7 @@
     "email": null,
     "site_read": true,
     "gmb_rating": null,
-    "gmb_reviews": null,
+    "gmb_reviews": 29,
     "bad_review_themes": null,
     "need_score": 0.7,
     "gaps": [
@@ -286,15 +285,10 @@
       "instagram": {
         "handle": "texas_edge_roofing",
         "url": "https://www.instagram.com/texas_edge_roofing/",
-        "confidence": "verify"
-      },
-      "facebook": {
-        "handle": "bradbarree",
-        "url": "https://www.facebook.com/bradbarree/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       }
     },
-    "social_count": 2,
+    "social_count": 1,
     "seo_rank": null,
     "has_blog": false,
     "has_service_pages": false,
@@ -302,17 +296,15 @@
     "ssl_ok": true,
     "email": "info@texasedgeroofing.com",
     "site_read": true,
-    "gmb_rating": 5.0,
-    "gmb_reviews": 0,
+    "gmb_rating": null,
+    "gmb_reviews": null,
     "bad_review_themes": null,
-    "need_score": 0.65,
+    "need_score": 0.6,
     "gaps": [
       "not ranking for their main keyword",
       "no blog / no content engine",
       "no service pages",
-      "WARNING: 800 area code is outside DFW \u2014 verify this is the right company",
-      "few reviews",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
+      "WARNING: 800 area code is outside DFW \u2014 verify this is the right company"
     ]
   },
   {
@@ -323,14 +315,8 @@
     "phone": "(817) 202-5433",
     "website": "https://huntroofing.net",
     "owner": "Marty Hunt",
-    "socials": {
-      "instagram": {
-        "handle": "huntcontracting_",
-        "url": "https://www.instagram.com/huntcontracting_/",
-        "confidence": "verify"
-      }
-    },
-    "social_count": 1,
+    "socials": {},
+    "social_count": 0,
     "seo_rank": null,
     "has_blog": false,
     "has_service_pages": false,
@@ -339,14 +325,14 @@
     "email": "Huntcontracting12@gmail.com",
     "site_read": true,
     "gmb_rating": null,
-    "gmb_reviews": 27,
+    "gmb_reviews": null,
     "bad_review_themes": null,
     "need_score": 0.6,
     "gaps": [
       "not ranking for their main keyword",
       "no blog / no content engine",
       "no service pages",
-      "CHECK: instagram profile may belong to a similarly named business"
+      "no social presence found"
     ]
   },
   {
@@ -357,8 +343,24 @@
     "phone": "(214) 876-4338",
     "website": "https://griffinelectricalgroup.com",
     "owner": "Christopher Griffin",
-    "socials": {},
-    "social_count": 0,
+    "socials": {
+      "instagram": {
+        "handle": "griffinllc",
+        "url": "https://www.instagram.com/griffinllc/",
+        "confidence": "confirmed"
+      },
+      "facebook": {
+        "handle": "GriffinElectric405",
+        "url": "https://www.facebook.com/GriffinElectric405/",
+        "confidence": "verify"
+      },
+      "linkedin": {
+        "handle": "griffin-electrical-contractors",
+        "url": "https://in.linkedin.com/company/griffin-electrical-contractors",
+        "confidence": "verify"
+      }
+    },
+    "social_count": 3,
     "seo_rank": null,
     "has_blog": false,
     "has_service_pages": true,
@@ -375,7 +377,7 @@
       "no blog / no content engine",
       "very thin website",
       "only 6 reviews",
-      "no social presence found"
+      "CHECK: facebook, linkedin profile may belong to a similarly named business"
     ]
   },
   {
@@ -390,12 +392,17 @@
       "instagram": {
         "handle": "elevationroofingltd",
         "url": "https://www.instagram.com/elevationroofingltd/",
-        "confidence": "verify"
+        "confidence": "confirmed"
+      },
+      "tiktok": {
+        "handle": "elevationroofinggroup",
+        "url": "https://www.tiktok.com/@elevationroofinggroup",
+        "confidence": "confirmed"
       },
       "facebook": {
         "handle": "elevationroofingtx",
         "url": "https://www.facebook.com/elevationroofingtx/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       },
       "linkedin": {
         "handle": "elevation-roofing-llc",
@@ -403,7 +410,7 @@
         "confidence": "confirmed"
       }
     },
-    "social_count": 3,
+    "social_count": 4,
     "seo_rank": null,
     "has_blog": null,
     "has_service_pages": null,
@@ -411,14 +418,13 @@
     "ssl_ok": null,
     "email": null,
     "site_read": false,
-    "gmb_rating": 4.9,
-    "gmb_reviews": 59,
+    "gmb_rating": null,
+    "gmb_reviews": null,
     "bad_review_themes": null,
     "need_score": 0.556,
     "gaps": [
       "not ranking for their main keyword",
-      "site could not be read (blocked or down) \u2014 verify by hand",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
+      "site could not be read (blocked or down) \u2014 verify by hand"
     ]
   },
   {
@@ -438,7 +444,7 @@
       "facebook": {
         "handle": "Salinasconstrllc",
         "url": "https://www.facebook.com/Salinasconstrllc/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       },
       "linkedin": {
         "handle": "salinas-construction-inc",
@@ -454,15 +460,14 @@
     "ssl_ok": true,
     "email": "nicolas@salinasroofingflooring.com",
     "site_read": true,
-    "gmb_rating": null,
-    "gmb_reviews": 8,
+    "gmb_rating": 5.0,
+    "gmb_reviews": 23,
     "bad_review_themes": null,
     "need_score": 0.5,
     "gaps": [
       "not ranking for their main keyword",
       "no blog / no content engine",
-      "only 8 reviews",
-      "CHECK: facebook profile may belong to a similarly named business"
+      "only 23 reviews"
     ]
   },
   {
@@ -475,9 +480,14 @@
     "owner": "Fernando Silva",
     "socials": {
       "instagram": {
-        "handle": "south.industrial.electric",
-        "url": "https://www.instagram.com/south.industrial.electric/",
-        "confidence": "confirmed"
+        "handle": "southwestindustrialelectric",
+        "url": "https://www.instagram.com/southwestindustrialelectric/",
+        "confidence": "verify"
+      },
+      "facebook": {
+        "handle": "SouthernIndustrialElectric",
+        "url": "https://www.facebook.com/SouthernIndustrialElectric/",
+        "confidence": "verify"
       },
       "linkedin": {
         "handle": "south-industrial-electric",
@@ -485,7 +495,7 @@
         "confidence": "confirmed"
       }
     },
-    "social_count": 2,
+    "social_count": 3,
     "seo_rank": null,
     "has_blog": false,
     "has_service_pages": true,
@@ -499,7 +509,8 @@
     "need_score": 0.45,
     "gaps": [
       "not ranking for their main keyword",
-      "no blog / no content engine"
+      "no blog / no content engine",
+      "CHECK: instagram, facebook profile may belong to a similarly named business"
     ]
   },
   {
@@ -514,7 +525,7 @@
       "instagram": {
         "handle": "rcsaroofingandconstruction",
         "url": "https://www.instagram.com/rcsaroofingandconstruction/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       },
       "facebook": {
         "handle": "61556744791481",
@@ -537,46 +548,7 @@
     "gaps": [
       "not ranking for their main keyword",
       "no blog / no content engine",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
-    ]
-  },
-  {
-    "rank": 9,
-    "name": "Rhino Roofing Co",
-    "city": "Frisco",
-    "niche": "roofing",
-    "phone": "(469) 898-6948",
-    "website": "https://rhinoroofingco.com",
-    "owner": "Christian Cook",
-    "socials": {
-      "instagram": {
-        "handle": "rhinoroofingco",
-        "url": "https://www.instagram.com/rhinoroofingco/",
-        "confidence": "verify"
-      },
-      "facebook": {
-        "handle": "TouchstoneTexasConstructionLLC",
-        "url": "https://www.facebook.com/TouchstoneTexasConstructionLLC/",
-        "confidence": "verify"
-      }
-    },
-    "social_count": 2,
-    "seo_rank": 1,
-    "has_blog": false,
-    "has_service_pages": false,
-    "page_count": 0,
-    "ssl_ok": true,
-    "email": null,
-    "site_read": true,
-    "gmb_rating": null,
-    "gmb_reviews": null,
-    "bad_review_themes": null,
-    "need_score": 0.45,
-    "gaps": [
-      "no blog / no content engine",
-      "no service pages",
-      "very thin website",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
+      "CHECK: facebook profile may belong to a similarly named business"
     ]
   },
   {
@@ -588,15 +560,20 @@
     "website": "https://www.langelectricllc.net",
     "owner": "Donald Lang",
     "socials": {
+      "instagram": {
+        "handle": "langelectric",
+        "url": "https://www.instagram.com/langelectric/",
+        "confidence": "confirmed"
+      },
       "tiktok": {
-        "handle": "lyza.mae_ig",
-        "url": "https://www.tiktok.com/@lyza.mae_ig/video/7500183664337145106",
-        "confidence": "verify"
+        "handle": "lang_electric",
+        "url": "https://www.tiktok.com/@lang_electric",
+        "confidence": "confirmed"
       },
       "facebook": {
         "handle": "LangElectricMS",
         "url": "https://www.facebook.com/LangElectricMS/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       },
       "linkedin": {
         "handle": "hy-lang-electric-california-inc",
@@ -604,7 +581,7 @@
         "confidence": "verify"
       }
     },
-    "social_count": 3,
+    "social_count": 4,
     "seo_rank": null,
     "has_blog": false,
     "has_service_pages": true,
@@ -612,14 +589,14 @@
     "ssl_ok": true,
     "email": "Langelectricllc@outlook.com",
     "site_read": true,
-    "gmb_rating": 5.0,
-    "gmb_reviews": 152,
+    "gmb_rating": null,
+    "gmb_reviews": null,
     "bad_review_themes": null,
     "need_score": 0.45,
     "gaps": [
       "not ranking for their main keyword",
       "no blog / no content engine",
-      "CHECK: tiktok, facebook, linkedin profile may belong to a similarly named business"
+      "CHECK: linkedin profile may belong to a similarly named business"
     ]
   },
   {
@@ -640,19 +617,9 @@
         "handle": "spyderroofing",
         "url": "https://www.tiktok.com/@spyderroofing/video/7621192764830534943",
         "confidence": "confirmed"
-      },
-      "facebook": {
-        "handle": "61569554217016",
-        "url": "https://www.facebook.com/61569554217016/",
-        "confidence": "verify"
-      },
-      "linkedin": {
-        "handle": "spyder-construction",
-        "url": "https://www.linkedin.com/company/spyder-construction",
-        "confidence": "verify"
       }
     },
-    "social_count": 4,
+    "social_count": 2,
     "seo_rank": null,
     "has_blog": false,
     "has_service_pages": true,
@@ -661,13 +628,12 @@
     "email": null,
     "site_read": true,
     "gmb_rating": null,
-    "gmb_reviews": 115,
+    "gmb_reviews": null,
     "bad_review_themes": null,
     "need_score": 0.45,
     "gaps": [
       "not ranking for their main keyword",
-      "no blog / no content engine",
-      "CHECK: facebook, linkedin profile may belong to a similarly named business"
+      "no blog / no content engine"
     ]
   },
   {
@@ -683,14 +649,9 @@
         "handle": "riverbendroofingnd",
         "url": "https://www.instagram.com/riverbendroofingnd/",
         "confidence": "verify"
-      },
-      "facebook": {
-        "handle": "riverbendtx",
-        "url": "https://www.facebook.com/riverbendtx/",
-        "confidence": "verify"
       }
     },
-    "social_count": 2,
+    "social_count": 1,
     "seo_rank": null,
     "has_blog": true,
     "has_service_pages": false,
@@ -699,13 +660,13 @@
     "email": "office@riverbendexteriors.com",
     "site_read": true,
     "gmb_rating": null,
-    "gmb_reviews": 91,
+    "gmb_reviews": null,
     "bad_review_themes": null,
     "need_score": 0.4,
     "gaps": [
       "not ranking for their main keyword",
       "no service pages",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
+      "CHECK: instagram profile may belong to a similarly named business"
     ]
   },
   {
@@ -722,14 +683,14 @@
         "url": "https://www.instagram.com/4burlesonboys/",
         "confidence": "verify"
       },
-      "facebook": {
-        "handle": "profile.php",
-        "url": "https://www.facebook.com/profile.php/",
+      "linkedin": {
+        "handle": "4lp-llc",
+        "url": "https://www.linkedin.com/company/4lp-llc",
         "confidence": "verify"
       }
     },
     "social_count": 2,
-    "seo_rank": 9,
+    "seo_rank": 3,
     "has_blog": false,
     "has_service_pages": true,
     "page_count": 9,
@@ -743,7 +704,7 @@
     "gaps": [
       "no blog / no content engine",
       "very thin website",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
+      "CHECK: instagram, linkedin profile may belong to a similarly named business"
     ]
   },
   {
@@ -758,15 +719,20 @@
       "instagram": {
         "handle": "redphoenixroofing_construction",
         "url": "https://www.instagram.com/redphoenixroofing_construction/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       },
       "facebook": {
         "handle": "RedPhoenixRoofingConstruction",
         "url": "https://www.facebook.com/RedPhoenixRoofingConstruction/",
         "confidence": "confirmed"
+      },
+      "linkedin": {
+        "handle": "red-phoenix-roofing-construction",
+        "url": "https://www.linkedin.com/company/red-phoenix-roofing-construction",
+        "confidence": "confirmed"
       }
     },
-    "social_count": 2,
+    "social_count": 3,
     "seo_rank": null,
     "has_blog": true,
     "has_service_pages": true,
@@ -780,282 +746,7 @@
     "need_score": 0.3,
     "gaps": [
       "not ranking for their main keyword",
-      "few reviews",
-      "CHECK: instagram profile may belong to a similarly named business"
-    ]
-  },
-  {
-    "rank": 2,
-    "name": "Calahan Roofing",
-    "city": "Watauga",
-    "niche": "roofing",
-    "phone": "(817) 739-0692",
-    "website": "https://www.calahanroofing.com",
-    "owner": "Eddie Calahan",
-    "socials": {
-      "instagram": {
-        "handle": "calahanandsonsroofing",
-        "url": "https://www.instagram.com/calahanandsonsroofing/",
-        "confidence": "verify"
-      },
-      "tiktok": {
-        "handle": "calahanroofing",
-        "url": "https://www.tiktok.com/@calahanroofing",
-        "confidence": "confirmed"
-      }
-    },
-    "social_count": 2,
-    "seo_rank": 2,
-    "has_blog": false,
-    "has_service_pages": true,
-    "page_count": 14,
-    "ssl_ok": true,
-    "email": "eddie@calahanroofing.com",
-    "site_read": true,
-    "gmb_rating": null,
-    "gmb_reviews": 13,
-    "bad_review_themes": null,
-    "need_score": 0.25,
-    "gaps": [
-      "no blog / no content engine",
-      "only 13 reviews",
-      "CHECK: instagram profile may belong to a similarly named business"
-    ]
-  },
-  {
-    "rank": 6,
-    "name": "Tier-One Electric",
-    "city": "Flower Mound",
-    "niche": "commercial electrical",
-    "phone": "(214) 305-6295",
-    "website": "https://www.calltierone.com",
-    "owner": "Caleb Mayes",
-    "socials": {
-      "instagram": {
-        "handle": "tieroneelectrictx",
-        "url": "https://www.instagram.com/tieroneelectrictx/",
-        "confidence": "verify"
-      },
-      "tiktok": {
-        "handle": "tieroneelectrictx",
-        "url": "https://www.tiktok.com/@tieroneelectrictx",
-        "confidence": "verify"
-      },
-      "facebook": {
-        "handle": "tier.tier.9235",
-        "url": "https://www.facebook.com/tier.tier.9235/",
-        "confidence": "verify"
-      }
-    },
-    "social_count": 3,
-    "seo_rank": null,
-    "has_blog": true,
-    "has_service_pages": true,
-    "page_count": 48,
-    "ssl_ok": true,
-    "email": "office@calltierone.com",
-    "site_read": true,
-    "gmb_rating": 5.0,
-    "gmb_reviews": 328,
-    "bad_review_themes": null,
-    "need_score": 0.25,
-    "gaps": [
-      "not ranking for their main keyword",
-      "CHECK: instagram, tiktok, facebook profile may belong to a similarly named business"
-    ]
-  },
-  {
-    "rank": 17,
-    "name": "USA Roofing Inc",
-    "city": "Lancaster",
-    "niche": "roofing",
-    "phone": "(972) 263-2938",
-    "website": "https://usaroofing.com",
-    "owner": "Nick Malamura",
-    "socials": {
-      "instagram": {
-        "handle": "usaroofingma",
-        "url": "https://www.instagram.com/usaroofingma/",
-        "confidence": "verify"
-      },
-      "facebook": {
-        "handle": "USA-Roofing-Inc-256190321073522",
-        "url": "https://www.facebook.com/USA-Roofing-Inc-256190321073522/",
-        "confidence": "verify"
-      },
-      "linkedin": {
-        "handle": "usa-roofing-",
-        "url": "https://www.linkedin.com/company/usa-roofing-&-construction",
-        "confidence": "confirmed"
-      }
-    },
-    "social_count": 3,
-    "seo_rank": null,
-    "has_blog": true,
-    "has_service_pages": true,
-    "page_count": 62,
-    "ssl_ok": true,
-    "email": null,
-    "site_read": true,
-    "gmb_rating": 5.0,
-    "gmb_reviews": 27,
-    "bad_review_themes": null,
-    "need_score": 0.25,
-    "gaps": [
-      "not ranking for their main keyword",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
-    ]
-  },
-  {
-    "rank": 20,
-    "name": "New Life Restoration & Construction",
-    "city": "Colleyville",
-    "niche": "roofing",
-    "phone": "(214) 874-8887",
-    "website": "https://nlrcroofing.com",
-    "owner": "Jason Page",
-    "socials": {},
-    "social_count": 0,
-    "seo_rank": null,
-    "has_blog": true,
-    "has_service_pages": true,
-    "page_count": 47,
-    "ssl_ok": true,
-    "email": "fontawesome-free@6.7.2",
-    "site_read": true,
-    "gmb_rating": null,
-    "gmb_reviews": null,
-    "bad_review_themes": null,
-    "need_score": 0.25,
-    "gaps": [
-      "not ranking for their main keyword",
-      "no social presence found"
-    ]
-  },
-  {
-    "rank": 25,
-    "name": "Texas Legacy Roofing & Construction",
-    "city": "Denton",
-    "niche": "roofing",
-    "phone": "(817) 409-4239",
-    "website": "https://www.texaslegacygc.com",
-    "owner": "Jeremiah Pearson",
-    "socials": {
-      "instagram": {
-        "handle": "texaslegacyroofing",
-        "url": "https://www.instagram.com/texaslegacyroofing/",
-        "confidence": "verify"
-      },
-      "facebook": {
-        "handle": "TexasLegacyGC",
-        "url": "https://www.facebook.com/TexasLegacyGC/",
-        "confidence": "verify"
-      },
-      "linkedin": {
-        "handle": "texas-legacy-roofing-and-construction",
-        "url": "https://www.linkedin.com/company/texas-legacy-roofing-and-construction",
-        "confidence": "confirmed"
-      }
-    },
-    "social_count": 3,
-    "seo_rank": null,
-    "has_blog": true,
-    "has_service_pages": true,
-    "page_count": 22,
-    "ssl_ok": true,
-    "email": null,
-    "site_read": true,
-    "gmb_rating": 5.0,
-    "gmb_reviews": 79,
-    "bad_review_themes": null,
-    "need_score": 0.25,
-    "gaps": [
-      "not ranking for their main keyword",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
-    ]
-  },
-  {
-    "rank": 27,
-    "name": "Blue Angel Roofing and General Contractors",
-    "city": "Allen",
-    "niche": "roofing",
-    "phone": "(214) 389-2966",
-    "website": "https://blueangelroofinggc.com",
-    "owner": "Philip Gano",
-    "socials": {
-      "instagram": {
-        "handle": "blueangelroofing",
-        "url": "https://www.instagram.com/blueangelroofing/",
-        "confidence": "verify"
-      },
-      "facebook": {
-        "handle": "BlueAngelRoofing",
-        "url": "https://www.facebook.com/BlueAngelRoofing/",
-        "confidence": "verify"
-      }
-    },
-    "social_count": 2,
-    "seo_rank": null,
-    "has_blog": true,
-    "has_service_pages": true,
-    "page_count": 57,
-    "ssl_ok": true,
-    "email": "blueangel@blueangelroof.com",
-    "site_read": true,
-    "gmb_rating": null,
-    "gmb_reviews": null,
-    "bad_review_themes": null,
-    "need_score": 0.25,
-    "gaps": [
-      "not ranking for their main keyword",
-      "CHECK: instagram, facebook profile may belong to a similarly named business"
-    ]
-  },
-  {
-    "rank": 29,
-    "name": "Red Ladder Roofing & Construction",
-    "city": "Denton",
-    "niche": "roofing",
-    "phone": "(940) 736-8577",
-    "website": "https://www.redladderroofing.com",
-    "owner": "Richard Bell",
-    "socials": {
-      "instagram": {
-        "handle": "red_ladder_roofing",
-        "url": "https://www.instagram.com/red_ladder_roofing/",
-        "confidence": "verify"
-      },
-      "tiktok": {
-        "handle": "redladderconstruction406",
-        "url": "https://www.tiktok.com/@redladderconstruction406",
-        "confidence": "verify"
-      },
-      "facebook": {
-        "handle": "RedLadderRoofing",
-        "url": "https://www.facebook.com/RedLadderRoofing/",
-        "confidence": "verify"
-      },
-      "linkedin": {
-        "handle": "red-ladder-roofing-llc",
-        "url": "https://www.linkedin.com/company/red-ladder-roofing-llc",
-        "confidence": "verify"
-      }
-    },
-    "social_count": 4,
-    "seo_rank": null,
-    "has_blog": true,
-    "has_service_pages": true,
-    "page_count": 152,
-    "ssl_ok": true,
-    "email": "redladderroofing@gmail.com",
-    "site_read": true,
-    "gmb_rating": 5.0,
-    "gmb_reviews": 164,
-    "bad_review_themes": null,
-    "need_score": 0.25,
-    "gaps": [
-      "not ranking for their main keyword",
-      "CHECK: instagram, tiktok, facebook, linkedin profile may belong to a similarly named business"
+      "few reviews"
     ]
   },
   {
@@ -1076,9 +767,14 @@
         "handle": "parishroofingsolutions",
         "url": "https://www.facebook.com/parishroofingsolutions/",
         "confidence": "confirmed"
+      },
+      "linkedin": {
+        "handle": "parish-built",
+        "url": "https://www.linkedin.com/company/parish-built",
+        "confidence": "verify"
       }
     },
-    "social_count": 2,
+    "social_count": 3,
     "seo_rank": null,
     "has_blog": true,
     "has_service_pages": true,
@@ -1086,45 +782,350 @@
     "ssl_ok": true,
     "email": "randy@parishroofingdfw.com",
     "site_read": true,
-    "gmb_rating": 4.9,
-    "gmb_reviews": 79,
+    "gmb_rating": null,
+    "gmb_reviews": 0,
     "bad_review_themes": null,
-    "need_score": 0.25,
+    "need_score": 0.3,
     "gaps": [
-      "not ranking for their main keyword"
+      "not ranking for their main keyword",
+      "few reviews",
+      "CHECK: linkedin profile may belong to a similarly named business"
     ]
   },
   {
-    "rank": 26,
-    "name": "Pineapple Roofing Lewisville",
-    "city": "Lewisville",
-    "niche": "roofing",
-    "phone": "(469) 253-9737",
-    "website": "https://www.pineapplecontractors.com",
-    "owner": "Jr Moeakiola",
+    "rank": 6,
+    "name": "Tier-One Electric",
+    "city": "Flower Mound",
+    "niche": "commercial electrical",
+    "phone": "(214) 305-6295",
+    "website": "https://www.calltierone.com",
+    "owner": "Caleb Mayes",
     "socials": {
-      "linkedin": {
-        "handle": "pineapplecontractors",
-        "url": "https://www.linkedin.com/company/pineapplecontractors",
+      "tiktok": {
+        "handle": "tieroneelectrictx",
+        "url": "https://www.tiktok.com/@tieroneelectrictx/video/7624624382802971918",
+        "confidence": "confirmed"
+      },
+      "facebook": {
+        "handle": "61572256355318",
+        "url": "https://www.facebook.com/61572256355318/",
         "confidence": "verify"
+      },
+      "linkedin": {
+        "handle": "tier-one-electric",
+        "url": "https://www.linkedin.com/company/tier-one-electric",
+        "confidence": "confirmed"
       }
     },
-    "social_count": 1,
-    "seo_rank": 13,
+    "social_count": 3,
+    "seo_rank": null,
     "has_blog": true,
     "has_service_pages": true,
-    "page_count": 182,
+    "page_count": 48,
+    "ssl_ok": true,
+    "email": "office@calltierone.com",
+    "site_read": true,
+    "gmb_rating": 5.0,
+    "gmb_reviews": 328,
+    "bad_review_themes": null,
+    "need_score": 0.25,
+    "gaps": [
+      "not ranking for their main keyword",
+      "CHECK: facebook profile may belong to a similarly named business"
+    ]
+  },
+  {
+    "rank": 17,
+    "name": "USA Roofing Inc",
+    "city": "Lancaster",
+    "niche": "roofing",
+    "phone": "(972) 263-2938",
+    "website": "https://usaroofing.com",
+    "owner": "Nick Malamura",
+    "socials": {
+      "tiktok": {
+        "handle": "usaroofinginc",
+        "url": "https://www.tiktok.com/@usaroofinginc/video/7602816262380571935",
+        "confidence": "confirmed"
+      },
+      "facebook": {
+        "handle": "USA-Roofing-Inc-256190321073522",
+        "url": "https://www.facebook.com/USA-Roofing-Inc-256190321073522/",
+        "confidence": "verify"
+      },
+      "linkedin": {
+        "handle": "usa-roofing",
+        "url": "https://ru.linkedin.com/company/usa-roofing",
+        "confidence": "confirmed"
+      }
+    },
+    "social_count": 3,
+    "seo_rank": null,
+    "has_blog": true,
+    "has_service_pages": true,
+    "page_count": 62,
     "ssl_ok": true,
     "email": null,
     "site_read": true,
     "gmb_rating": 5.0,
-    "gmb_reviews": 0,
+    "gmb_reviews": 27,
     "bad_review_themes": null,
-    "need_score": 0.05,
+    "need_score": 0.25,
     "gaps": [
-      "few reviews",
-      "no Instagram or Facebook presence found",
-      "CHECK: linkedin profile may belong to a similarly named business"
+      "not ranking for their main keyword",
+      "CHECK: facebook profile may belong to a similarly named business"
+    ]
+  },
+  {
+    "rank": 20,
+    "name": "New Life Restoration & Construction",
+    "city": "Colleyville",
+    "niche": "roofing",
+    "phone": "(214) 874-8887",
+    "website": "https://nlrcroofing.com",
+    "owner": "Jason Page",
+    "socials": {
+      "instagram": {
+        "handle": "newliferestoration_",
+        "url": "https://www.instagram.com/newliferestoration_/",
+        "confidence": "confirmed"
+      },
+      "tiktok": {
+        "handle": "newlifercroofing",
+        "url": "https://www.tiktok.com/@newlifercroofing/video/7666116999335906573",
+        "confidence": "verify"
+      },
+      "facebook": {
+        "handle": "61559583125354",
+        "url": "https://www.facebook.com/61559583125354/",
+        "confidence": "verify"
+      }
+    },
+    "social_count": 3,
+    "seo_rank": null,
+    "has_blog": true,
+    "has_service_pages": true,
+    "page_count": 47,
+    "ssl_ok": true,
+    "email": "fontawesome-free@6.7.2",
+    "site_read": true,
+    "gmb_rating": null,
+    "gmb_reviews": null,
+    "bad_review_themes": null,
+    "need_score": 0.25,
+    "gaps": [
+      "not ranking for their main keyword",
+      "CHECK: tiktok, facebook profile may belong to a similarly named business"
+    ]
+  },
+  {
+    "rank": 25,
+    "name": "Texas Legacy Roofing & Construction",
+    "city": "Denton",
+    "niche": "roofing",
+    "phone": "(817) 409-4239",
+    "website": "https://www.texaslegacygc.com",
+    "owner": "Jeremiah Pearson",
+    "socials": {
+      "instagram": {
+        "handle": "texaslegacyroofing",
+        "url": "https://www.instagram.com/texaslegacyroofing/",
+        "confidence": "confirmed"
+      },
+      "tiktok": {
+        "handle": "thelegacyroofing",
+        "url": "https://www.tiktok.com/@thelegacyroofing",
+        "confidence": "verify"
+      },
+      "facebook": {
+        "handle": "TexasLegacyGC",
+        "url": "https://www.facebook.com/TexasLegacyGC/",
+        "confidence": "verify"
+      },
+      "linkedin": {
+        "handle": "texas-legacy-roofing-and-construction",
+        "url": "https://www.linkedin.com/company/texas-legacy-roofing-and-construction",
+        "confidence": "confirmed"
+      }
+    },
+    "social_count": 4,
+    "seo_rank": null,
+    "has_blog": true,
+    "has_service_pages": true,
+    "page_count": 22,
+    "ssl_ok": true,
+    "email": null,
+    "site_read": true,
+    "gmb_rating": null,
+    "gmb_reviews": null,
+    "bad_review_themes": null,
+    "need_score": 0.25,
+    "gaps": [
+      "not ranking for their main keyword",
+      "CHECK: tiktok, facebook profile may belong to a similarly named business"
+    ]
+  },
+  {
+    "rank": 27,
+    "name": "Blue Angel Roofing and General Contractors",
+    "city": "Allen",
+    "niche": "roofing",
+    "phone": "(214) 389-2966",
+    "website": "https://blueangelroofinggc.com",
+    "owner": "Philip Gano",
+    "socials": {
+      "instagram": {
+        "handle": "blueangelroofing",
+        "url": "https://www.instagram.com/blueangelroofing/",
+        "confidence": "confirmed"
+      },
+      "tiktok": {
+        "handle": "angelodil",
+        "url": "https://www.tiktok.com/@angelodil",
+        "confidence": "verify"
+      },
+      "facebook": {
+        "handle": "BlueAngelRoofing",
+        "url": "https://www.facebook.com/BlueAngelRoofing/",
+        "confidence": "confirmed"
+      },
+      "linkedin": {
+        "handle": "blue-angel-roofing-general-contractors",
+        "url": "https://www.linkedin.com/company/blue-angel-roofing-general-contractors/",
+        "confidence": "confirmed"
+      }
+    },
+    "social_count": 4,
+    "seo_rank": null,
+    "has_blog": true,
+    "has_service_pages": true,
+    "page_count": 57,
+    "ssl_ok": true,
+    "email": "blueangel@blueangelroof.com",
+    "site_read": true,
+    "gmb_rating": null,
+    "gmb_reviews": null,
+    "bad_review_themes": null,
+    "need_score": 0.25,
+    "gaps": [
+      "not ranking for their main keyword",
+      "CHECK: tiktok profile may belong to a similarly named business"
+    ]
+  },
+  {
+    "rank": 29,
+    "name": "Red Ladder Roofing & Construction",
+    "city": "Denton",
+    "niche": "roofing",
+    "phone": "(940) 736-8577",
+    "website": "https://www.redladderroofing.com",
+    "owner": "Richard Bell",
+    "socials": {
+      "instagram": {
+        "handle": "red_ladder_roofing",
+        "url": "https://www.instagram.com/red_ladder_roofing/",
+        "confidence": "confirmed"
+      },
+      "tiktok": {
+        "handle": "redladderconstruction406",
+        "url": "https://www.tiktok.com/@redladderconstruction406",
+        "confidence": "verify"
+      },
+      "facebook": {
+        "handle": "RedLadderRoofing",
+        "url": "https://www.facebook.com/RedLadderRoofing/",
+        "confidence": "confirmed"
+      },
+      "linkedin": {
+        "handle": "red-ladder-roofing-llc",
+        "url": "https://www.linkedin.com/company/red-ladder-roofing-llc",
+        "confidence": "confirmed"
+      }
+    },
+    "social_count": 4,
+    "seo_rank": null,
+    "has_blog": true,
+    "has_service_pages": true,
+    "page_count": 152,
+    "ssl_ok": true,
+    "email": "redladderroofing@gmail.com",
+    "site_read": true,
+    "gmb_rating": null,
+    "gmb_reviews": 568,
+    "bad_review_themes": null,
+    "need_score": 0.25,
+    "gaps": [
+      "not ranking for their main keyword",
+      "CHECK: tiktok profile may belong to a similarly named business"
+    ]
+  },
+  {
+    "rank": 2,
+    "name": "Calahan Roofing",
+    "city": "Watauga",
+    "niche": "roofing",
+    "phone": "(817) 739-0692",
+    "website": "https://www.calahanroofing.com",
+    "owner": "Eddie Calahan",
+    "socials": {
+      "instagram": {
+        "handle": "calahanandsonsroofing",
+        "url": "https://www.instagram.com/calahanandsonsroofing/",
+        "confidence": "verify"
+      }
+    },
+    "social_count": 1,
+    "seo_rank": 1,
+    "has_blog": false,
+    "has_service_pages": true,
+    "page_count": 14,
+    "ssl_ok": true,
+    "email": "eddie@calahanroofing.com",
+    "site_read": true,
+    "gmb_rating": null,
+    "gmb_reviews": null,
+    "bad_review_themes": null,
+    "need_score": 0.2,
+    "gaps": [
+      "no blog / no content engine",
+      "CHECK: instagram profile may belong to a similarly named business"
+    ]
+  },
+  {
+    "rank": 9,
+    "name": "Rhino Roofing Co",
+    "city": "Frisco",
+    "niche": "roofing",
+    "phone": "(469) 898-6948",
+    "website": "https://rhinoroofingco.com",
+    "owner": "Christian Cook",
+    "socials": {
+      "instagram": {
+        "handle": "rhinoroofingco",
+        "url": "https://www.instagram.com/rhinoroofingco/",
+        "confidence": "confirmed"
+      },
+      "facebook": {
+        "handle": "TouchstoneTexasConstructionLLC",
+        "url": "https://www.facebook.com/TouchstoneTexasConstructionLLC/",
+        "confidence": "verify"
+      }
+    },
+    "social_count": 2,
+    "seo_rank": 4,
+    "has_blog": null,
+    "has_service_pages": null,
+    "page_count": null,
+    "ssl_ok": null,
+    "email": null,
+    "site_read": false,
+    "gmb_rating": 4.9,
+    "gmb_reviews": 52,
+    "bad_review_themes": null,
+    "need_score": 0.0,
+    "gaps": [
+      "site could not be read (blocked or down) \u2014 verify by hand",
+      "CHECK: facebook profile may belong to a similarly named business"
     ]
   },
   {
@@ -1136,10 +1137,15 @@
     "website": "https://tejasroofworks.com",
     "owner": "Nathan Schnefke",
     "socials": {
+      "instagram": {
+        "handle": "tejasroofworks",
+        "url": "https://www.instagram.com/tejasroofworks/",
+        "confidence": "confirmed"
+      },
       "facebook": {
         "handle": "tejasroofworks",
         "url": "https://www.facebook.com/tejasroofworks/",
-        "confidence": "verify"
+        "confidence": "confirmed"
       },
       "linkedin": {
         "handle": "tejas-roofworks-restoration",
@@ -1147,21 +1153,49 @@
         "confidence": "confirmed"
       }
     },
-    "social_count": 2,
-    "seo_rank": 10,
+    "social_count": 3,
+    "seo_rank": 6,
     "has_blog": null,
     "has_service_pages": null,
     "page_count": null,
     "ssl_ok": null,
     "email": null,
     "site_read": false,
-    "gmb_rating": 5.0,
-    "gmb_reviews": 518,
+    "gmb_rating": null,
+    "gmb_reviews": null,
     "bad_review_themes": null,
     "need_score": 0.0,
     "gaps": [
-      "site could not be read (blocked or down) \u2014 verify by hand",
-      "CHECK: facebook profile may belong to a similarly named business"
+      "site could not be read (blocked or down) \u2014 verify by hand"
     ]
+  },
+  {
+    "rank": 26,
+    "name": "Pineapple Roofing Lewisville",
+    "city": "Lewisville",
+    "niche": "roofing",
+    "phone": "(469) 253-9737",
+    "website": "https://www.pineapplecontractors.com",
+    "owner": "Jr Moeakiola",
+    "socials": {
+      "facebook": {
+        "handle": "pineappleroofing",
+        "url": "https://www.facebook.com/pineappleroofing/",
+        "confidence": "confirmed"
+      }
+    },
+    "social_count": 1,
+    "seo_rank": 5,
+    "has_blog": true,
+    "has_service_pages": true,
+    "page_count": 182,
+    "ssl_ok": true,
+    "email": null,
+    "site_read": true,
+    "gmb_rating": 5.0,
+    "gmb_reviews": 270,
+    "bad_review_themes": null,
+    "need_score": 0.0,
+    "gaps": []
   }
 ]

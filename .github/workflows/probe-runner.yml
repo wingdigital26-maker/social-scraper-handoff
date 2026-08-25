@@ -1,0 +1,73 @@
+name: probe-runner
+# One-off probe: can a GitHub-hosted runner actually reach the search index and
+# public sites? Sonar's whole cloud plan depends on the answer, and datacenter
+# IPs are exactly what TikTok blocks, so this is measured rather than assumed.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ddgs requests
+      - name: Can the runner query the search index?
+        run: |
+          python - <<'PY'
+          import sys
+          try:
+              from ddgs import DDGS
+          except ImportError:
+              from duckduckgo_search import DDGS
+
+          ok = 0
+          for q in ['site:instagram.com roofing Dallas',
+                    'site:tiktok.com "roofing" Fort Worth',
+                    '"Texas Tallow Products" reviews']:
+              try:
+                  with DDGS() as d:
+                      rs = list(d.text(q, max_results=5))
+                  print(f"  {len(rs):2} results  {q}")
+                  if rs:
+                      ok += 1
+                      print(f"      e.g. {rs[0].get('href','')[:70]}")
+              except Exception as e:
+                  print(f"   FAIL  {q} -> {str(e)[:90]}")
+          print(f"\nSEARCH_INDEX_OK={ok}/3")
+          if ok == 0:
+              sys.exit("Search index unreachable from this runner. Cloud lane is not viable.")
+          PY
+      - name: Can the runner fetch prospect websites?
+        run: |
+          python - <<'PY'
+          import requests
+          UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120 Safari/537.36"}
+          ok = 0
+          for u in ["https://newviewroofing.com", "https://texastallowproducts.com",
+                    "https://brooklyncandlestudio.com"]:
+              try:
+                  r = requests.get(u, headers=UA, timeout=20)
+                  print(f"  {r.status_code}  {u}")
+                  ok += r.status_code < 400
+              except Exception as e:
+                  print(f"  ERR  {u} -> {str(e)[:70]}")
+          print(f"\nSITE_FETCH_OK={ok}/3")
+          PY
+      - name: Can the runner reach Supabase?
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python - <<'PY'
+          import os, requests
+          u, k = os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_KEY")
+          if not u or not k:
+              print("Supabase secrets missing"); raise SystemExit(0)
+          r = requests.get(f"{u}/rest/v1/candidates?select=id&limit=1",
+                           headers={"apikey": k, "Authorization": f"Bearer {k}"}, timeout=30)
+          print(f"  Supabase -> HTTP {r.status_code}")
+          PY

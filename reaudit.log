@@ -1,1 +1,219 @@
 reset: 201
+Auditing 97 prospects (free: Maps + search index + their own site)
+
+  auditing LUA Roofing (Dallas)
+  auditing Titan Pros Roofing (@titanprosroofing) (Dallas)
+  auditing REAL Roofing & Construction (Dallas)
+  auditing Dallas Tx Roofing Pro (Dallas)
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 832 area code is outside DFW — verify this is the right company
+  auditing Expert Roofing and Remodeling (Dallas)
+      search failed: No results found.
+      need 0.25 | rank None | 5.0 stars, None reviews | not ranking for their main keyword
+  auditing Baker Roofing & Construction, Inc (Dallas)
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+  auditing Jenkins Roofing Company (Dallas)
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine
+      need 0.45 | rank None | None stars, 312 reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 216 area code is outside DFW — verify this is the right company
+      need 0.25 | rank None | 4.9 stars, 71 reviews | not ranking for their main keyword, WARNING: 855 area code is outside DFW — verify this is the right company
+      need 0.5 | rank None | None stars, None reviews | no website found
+  auditing Planoroofing (Plano)
+  auditing Linear Roofing & General Contractors, LLC (Plano)
+  auditing Norman Roofing and Construction (Plano)
+  auditing Chandler Roofing & Construction (Plano)
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 855 area code is outside DFW — verify this is the right company
+  auditing Tile Roofing Industry Alliance (Plano)
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine
+      need 0.55 | rank None | None stars, 1630 reviews | not ranking for their main keyword, no blog / no content engine, very thin website
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 206 area code is outside DFW — verify this is the right company
+  auditing TOWN & COUNTRY ROOFING, INC (Frisco)
+      matched on Maps: Town and Country Roofing, Inc.
+  auditing Litz Roofing/Construction LLC (Frisco)
+  auditing Frisco Roofing Company (Frisco)
+  auditing Town and Country Roofing, Inc. (Frisco)
+      matched on Maps: Town and Country Roofing, Inc.
+      need 0.45 | rank None | 4.8 stars, 206 reviews | not ranking for their main keyword, no blog / no content engine
+  auditing Accent Roofing Company & Construction (Frisco)
+      need 0.45 | rank None | 4.8 stars, None reviews | not ranking for their main keyword, no blog / no content engine
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.7 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+      need 0.25 | rank None | None stars, 2025 reviews | not ranking for their main keyword
+  auditing PI•LAR ROOFING AND CONSTRUCTION LLC (Fort Worth)
+  auditing Good Contractors Roofing and Restoration (Fort Worth)
+  auditing Zenith Roofing And Waterproofing (Fort Worth)
+      need 0.5 | rank None | None stars, 7 reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 800 area code is outside DFW — verify this is the right company
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+  auditing Nailed It Roofing and Construction ... (Arlington)
+  auditing Painter Roofing & Construction ... (Arlington)
+  auditing Painter Roofing and Construction LLC (Arlington)
+  auditing Arlington Tx Roofing Pro (Arlington)
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword
+  auditing Roof.net (Arlington)
+      need 0.0 | rank 1 | None stars, 87 reviews | WARNING: 571 area code is outside DFW — verify this is the right company
+      need 0.0 | rank 1 | 4.8 stars, 87 reviews | WARNING: 571 area code is outside DFW — verify this is the right company
+      need 0.3 | rank None | None stars, 2 reviews | not ranking for their main keyword, only 2 reviews
+      need 0.5 | rank None | None stars, None reviews | no website found
+  auditing Superior One Roofing & Construction, Inc (Irving)
+  auditing AHLERS COMMERCIAL ROOFING and CONSTRUCTION (Irving)
+      need 0.45 | rank None | None stars, 258 reviews | not ranking for their main keyword, no blog / no content engine
+      need 0.55 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, very thin website
+  auditing Garland Roofing Co. (Garland)
+      matched on Maps: Garland Roofing Co
+  auditing Garland Roofing Co (Garland)
+      matched on Maps: Garland Roofing Co
+      need 0.45 | rank None | 4.4 stars, 29 reviews | not ranking for their main keyword, no blog / no content engine
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.25 | rank None | 4.4 stars, None reviews | not ranking for their main keyword
+  auditing McKinney & Sons Roofing (McKinney)
+  auditing McKinney & Sons Roofing and Construction (McKinney)
+  auditing Monroe Roofing Company (McKinney)
+  auditing CFE, Inc. (McKinney)
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.45 | rank None | 4.8 stars, 58 reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 877 area code is outside DFW — verify this is the right company
+  auditing Paradigm Roof + Shield (McKinney)
+      matched on Maps: Paradigm Roof+Shield
+      need 0.75 | rank None | 3.9 stars, 308 reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine
+      need 0.6 | rank None | None stars, 32 reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+      need 0.25 | rank None | 4.9 stars, 236 reviews | not ranking for their main keyword
+  auditing Roof Doc (Denton)
+  auditing Anytime Roofing and Construction (Denton)
+      search failed: Request timed out: ConnectTimeout('timed out')
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 601 area code is outside DFW — verify this is the right company
+      need 0.5 | rank None | None stars, None reviews | no website found
+  auditing Grand View Roofing & Exteriors (Grand Prairie)
+  auditing West Michigan Roofing & Construction (Grand Prairie)
+  auditing Grandmark Service Company (Grand Prairie)
+  auditing Grand Roofing (Grand Prairie)
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 866 area code is outside DFW — verify this is the right company
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 330 area code is outside DFW — verify this is the right company
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 616 area code is outside DFW — verify this is the right company
+  auditing Dream Home Roofing (Mesquite)
+      site unreachable: HTTPSConnectionPool(host='dreamhome-roofing.com', port=443): Max retries exceede
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.667 | rank None | None stars, 20 reviews | not ranking for their main keyword, site could not be read (blocked or down) — verify by hand, only 20 reviews
+  auditing Carrollton Tx Roofing Pro (Carrollton)
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword
+  auditing Jade-Aden Services (Richardson)
+      need 0.3 | rank None | None stars, None reviews | not ranking for their main keyword, no contact info on site, WARNING: non-US website domain — likely a different company
+  auditing ND Roofing & Framing (Lewisville)
+      need 0.7 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+  auditing Allen Roofing And Construction (Allen)
+  auditing Allen Roofing & Construction (Allen)
+  auditing Allen Roofing and Construction Inc. (Allen)
+  auditing Innovative Construction & Roofing (Allen)
+      search failed: Request timed out: ConnectTimeout('timed out')
+      need 0.3 | rank None | None stars, 20 reviews | not ranking for their main keyword, WARNING: 360 area code is outside DFW — verify this is the right company, only 20 reviews
+      need 0.5 | rank None | 4.5 stars, 2 reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 563 area code is outside DFW — verify this is the right company
+      need 0.3 | rank None | None stars, 20 reviews | not ranking for their main keyword, WARNING: 360 area code is outside DFW — verify this is the right company, only 20 reviews
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 314 area code is outside DFW — verify this is the right company
+  auditing T-Rock Construction (Flower Mound)
+      need 0.5 | rank None | 4.8 stars, 0 reviews | not ranking for their main keyword, no blog / no content engine, few reviews
+  auditing North American Roofing Company (Coppell)
+      need 0.5 | rank None | None stars, None reviews | no website found
+  auditing Grapevine Tx Roofing Pro (Grapevine)
+  auditing Lady on the Roof® (Grapevine)
+      need 0.3 | rank None | None stars, 0 reviews | not ranking for their main keyword, few reviews
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 513 area code is outside DFW — verify this is the right company
+  auditing Skyline Bedford (Bedford)
+  auditing Bedford Roofing Co (Bedford)
+  auditing The M&J Group (Bedford)
+  auditing YICN Roofing- Ohio (Bedford)
+      need 0.5 | rank None | None stars, None reviews | no website found
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 440 area code is outside DFW — verify this is the right company
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 937 area code is outside DFW — verify this is the right company
+      need 0.4 | rank None | None stars, None reviews | not ranking for their main keyword, no service pages, WARNING: non-US website domain — likely a different company
+  auditing NEAT Roofing (Hurst)
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 572 area code is outside DFW — verify this is the right company
+  auditing North Contracting & Roofing (North Richland Hills)
+  auditing AHLERS ROOFING and CONSTRUCTION (North Richland Hills)
+      need 0.25 | rank None | 4.8 stars, 309 reviews | not ranking for their main keyword
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 412 area code is outside DFW — verify this is the right company
+  auditing Mid City Roofing Services (Haltom City)
+  auditing Texas Direct Roofing & Construction (Haltom City)
+      matched on Maps: Texas Direct Roofing & Construction
+      need 0.25 | rank None | 4.9 stars, 443 reviews | not ranking for their main keyword
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 225 area code is outside DFW — verify this is the right company
+  auditing Keller Roofing Company (Keller)
+  auditing Andy Keller (Keller)
+  auditing Keller Roofing (Keller)
+  auditing Keller Roofing LLC (Keller)
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+  auditing Keller Roofing (Keller)
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine
+      need 0.25 | rank None | 4.6 stars, 371 reviews | not ranking for their main keyword, WARNING: 844 area code is outside DFW — verify this is the right company
+      need 0.45 | rank None | 4.4 stars, 80 reviews | not ranking for their main keyword, no blog / no content engine
+      need 0.0 | rank 2 | 4.6 stars, 371 reviews | WARNING: 844 area code is outside DFW — verify this is the right company
+  auditing Dean & Co. Custom Homes (Southlake)
+      need 0.25 | rank None | None stars, 28 reviews | not ranking for their main keyword
+  auditing Mansfield Roofing (Mansfield)
+  auditing Mansfield Tx Roofing Pro (Mansfield)
+  auditing Refined Roofing And Siding (Mansfield)
+  auditing Mansfield Tx Roofing Pro (Mansfield)
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword
+  auditing Ember Roofing (Mansfield)
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword
+  auditing 4X CONSTRUCTION GROUP LLC (Mansfield)
+      need 0.3 | rank None | None stars, 1 reviews | not ranking for their main keyword, WARNING: 419 area code is outside DFW — verify this is the right company, only 1 reviews
+      need 0.5 | rank None | None stars, 15 reviews | not ranking for their main keyword, no blog / no content engine, only 15 reviews
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+      need 1.0 | rank None | 4.2 stars, 21 reviews | no website found, rating 4.2, only 21 reviews
+  auditing CEDAR-ROOFING (Cedar Hill)
+  auditing Cedar Roofing (Cedar Hill)
+  auditing Thompson and Thompson 3rd Generation, Inc. (Cedar Hill)
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, very thin website
+      need 0.55 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, very thin website
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 402 area code is outside DFW — verify this is the right company
+  auditing Commonwealth Construction Co., Inc. (DeSoto)
+      need 0.45 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 774 area code is outside DFW — verify this is the right company
+  auditing Lancaster Tanner (Lancaster)
+  auditing Lancaster Roofing & Construction (Lancaster)
+  auditing Patriot Roofing Company, LLC (Lancaster)
+      need 0.75 | rank None | None stars, 24 reviews | no website found, only 24 reviews
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+      need 0.45 | rank None | None stars, 485 reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 405 area code is outside DFW — verify this is the right company
+  auditing Blackline Roofing (Rockwall)
+  auditing Riddle Brothers Roofing and Construction, LLC (Rockwall)
+  auditing Roofing Services Solutions, LLC (Rockwall)
+  auditing Trinity Construction Services (Rockwall)
+      need 0.55 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, very thin website
+      need 0.7 | rank None | 5.0 stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+      need 0.5 | rank None | None stars, None reviews | no website found
+      need 0.3 | rank None | None stars, 3 reviews | not ranking for their main keyword, only 3 reviews
+  auditing SSQ Natural Slate (Wylie)
+      need 0.25 | rank None | None stars, 32 reviews | not ranking for their main keyword
+  auditing Ajmurphy Roofing (Murphy)
+  auditing Murphy's Roofing and Construction ... (Murphy)
+  auditing MURPHY ROOFING & CONSTRUCTION (Murphy)
+      need 0.5 | rank None | 3.9 stars, 85 reviews | not ranking for their main keyword, no blog / no content engine, WARNING: 868 area code is outside DFW — verify this is the right company
+      need 0.0 | rank 1 | None stars, None reviews | WARNING: 913 area code is outside DFW — verify this is the right company
+      need 0.35 | rank 2 | None stars, None reviews | no blog / no content engine, no service pages
+  auditing Level 5 Retail Construction Inc. (Sachse)
+  auditing Next Level Roofing (Sachse)
+      need 0.3 | rank None | 5.0 stars, 0 reviews | not ranking for their main keyword, WARNING: 405 area code is outside DFW — verify this is the right company, few reviews
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+  auditing Old Colony Roofing and Construction (The Colony)
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword, WARNING: 919 area code is outside DFW — verify this is the right company
+  auditing Prosper Roofing & Construction (Prosper)
+      need 0.7 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+  auditing Celina Tx Roofing Pro (Celina)
+      need 0.25 | rank None | None stars, None reviews | not ranking for their main keyword
+  auditing Anna Roof (Anna)
+  auditing Roof Ann (Anna)
+      need 0.6 | rank None | None stars, None reviews | not ranking for their main keyword, no blog / no content engine, no service pages
+      need 0.5 | rank None | None stars, None reviews | no website found
+  auditing Norman Roofing and Construction (Waxahachie)
+      need 0.55 | rank None | 4.0 stars, 0 reviews | not ranking for their main keyword, no blog / no content engine, rating 4.0
+  auditing Longhorn Commercial Roofing (Cleburne)
+      matched on Maps: Longhorn Commercial Roofing
+      need 0.45 | rank None | 5 stars, 7 reviews | not ranking for their main keyword, no service pages, only 7 reviews
+
+Done. Queue is now ranked by need_score.
