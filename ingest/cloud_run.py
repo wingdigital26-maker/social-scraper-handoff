@@ -152,10 +152,16 @@ def main():
     # A discovery slice that attempted work, hit no explicit error, and still
     # produced nothing from every single pair is the exact signature of a soft
     # block. Reporting that as success is how four empty runs went unnoticed.
-    if attempted_pairs and discovered_pairs == 0 and not index_down and audit_rc != 0:
+    # The `and audit_rc != 0` conjunct that used to be here suppressed this
+    # entirely: with an empty backlog the audit exits 0, so a slice where every
+    # pair found nothing still reported success. Discovery finding nothing across
+    # every pair IS the signal; whether an unrelated audit step happened to pass
+    # says nothing about it.
+    if attempted_pairs and discovered_pairs == 0 and not index_down:
         problems.append(
-            f"all {attempted_pairs} pairs produced zero prospects AND the audit "
-            f"failed — this run did no work at all.")
+            f"all {attempted_pairs} pairs produced zero prospects — either the "
+            f"index is refusing this host or the slice is genuinely exhausted, "
+            f"and this run cannot tell you which.")
 
     print("\nDone. Review at queue/serve.py", flush=True)
 

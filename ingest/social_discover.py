@@ -100,10 +100,18 @@ MAX_PER_QUERY = 25
 # back empty, so a long dead streak means the host is being refused.
 # A single discovery run only issues 5-6 queries, so the streak limit is small
 # on purpose: five dead queries in a row IS the whole run.
-EMPTY_STREAK_FAIL = 5
+EMPTY_STREAK_FAIL = 4
 MIN_YIELD = 0.5          # results/query; a healthy workstation run measures ~3,
                          # a soft-blocked hosted runner measured 0.13
-YIELD_MIN_QUERIES = 6    # below this, too few samples for the ratio to mean much
+# A default run issues exactly 5 queries (tiktok 2 + instagram 2 + linkedin 2,
+# minus the person query that is no longer sent). This threshold was 6, which
+# made the yield floor below it DEAD CODE in every real invocation - including
+# the ones cloud_run and sweep issue. A partial soft block delivering 2 results
+# across 5 queries (yield 0.40) sailed through and exited 0, which is precisely
+# the condition the floor exists to catch. The two populations are three orders
+# of magnitude apart - 0.13 blocked versus 10.20 measured locally on a real run
+# - so five samples is ample to tell them apart.
+YIELD_MIN_QUERIES = 4
 
 # Per-platform search recipes. Each yields public, indexed URLs.
 # "person": this query only ever returns individual people, not companies.
