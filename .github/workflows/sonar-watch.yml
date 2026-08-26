@@ -51,6 +51,18 @@ jobs:
             python watch_social.py --all --phrases "$PHRASES" --limit 40
           fi
 
+      # Creator/competitor intel. Free YouTube RSS, no local resources, so it
+      # rides along here. Non-fatal on purpose: an intel hiccup must never mark
+      # the client watcher as failed.
+      - name: Watch AI creators for new videos
+        if: always()
+        continue-on-error: true
+        working-directory: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python intel_watch.py --limit 15 || echo "intel_watch failed — not fatal"
+
       - name: CRM queue depth
         if: always()
         env:
