@@ -215,9 +215,15 @@ def recover(row, find_sites=False):
         return False, None, {}, f"{host} owned but shows no DFW-area-code phone"
 
     reason = (f"verified by own website: {host} is provably this business "
-              f"({how} match) and publishes DFW phone {phones[0]} "
+              f"({how} match) and publishes DFW phone(s) {', '.join(phones[:3])} "
               f"[source: business website, pages {','.join(paths)}]")
-    patch = {"website": f"https://{host}", "phone": A.clean_phone(phones[0])}
+    patch = {"website": f"https://{host}"}
+    # Only FILL a missing phone, never overwrite one. A page can carry several
+    # DFW numbers (Zenith Roofing publishes three) and the first one scraped is
+    # not necessarily the main line — good enough as locality evidence, not good
+    # enough to replace a number someone may already have dialled.
+    if not (row.get("phone") or "").strip():
+        patch["phone"] = A.clean_phone(phones[0])
     return True, reason, patch, f"PROMOTE via {how}: {phones[:2]}"
 
 
