@@ -7,10 +7,18 @@ client sells, drafts a response grounded in the actual post, and files it in the
 CRM under that client. It runs on a schedule and does not need supervising.
 
 WHAT IT WATCHES
-  Nextdoor, Reddit, Facebook groups/pages, Instagram, TikTok, X — all through
-  the public search index, which is how Sonar avoids the blocks that stop
-  direct scraping. Recency is enforced by the index's own time filter plus a
-  seen-list, so the same post is never drafted twice.
+  Nextdoor and Reddit by default — the two platforms where local-service demand
+  actually lives and is publicly indexed. Nextdoor is the densest source
+  (recommendation asks are ~1/3 of neighbor conversations; /ask-neighbors/ URLs
+  are the gold surface, and its robots.txt whitelists the search crawlers).
+  Reddit is the second lane, Google-indexed since Jul 2024. Facebook groups
+  hold demand too but are walled (Groups API killed Apr 2024) — site: searches
+  only reach public pages, so it stays available as an opt-in, not a default.
+  TikTok, X, and Instagram/LinkedIn carry no local-service demand and are not
+  defaults. Everything goes through the public search index, which is how
+  Sonar avoids the blocks that stop direct scraping. Recency is enforced by
+  the index's own time filter plus a seen-list, so the same post is never
+  drafted twice.
 
 WHAT IT DOES NOT DO
   It never posts. Auto-replying from a bot account is what gets accounts banned
@@ -141,7 +149,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--client", help="one client by name or slug")
     ap.add_argument("--all", action="store_true")
-    ap.add_argument("--platforms", default="nextdoor,reddit,facebook")
+    ap.add_argument("--platforms", default="nextdoor,reddit")
     ap.add_argument("--limit", type=int, default=25, help="max drafts per run")
     ap.add_argument("--phrases", type=int, default=3,
                     help="intent phrases per city per platform (keeps a run bounded)")
@@ -176,8 +184,13 @@ def main():
                 ci = (cities.index(city) if city in cities else 0)
                 phrases = [allp[(ci * args.phrases + k) % len(allp)]
                            for k in range(args.phrases)]
-                for phrase in phrases:
-                    q = f"{op} {phrase} {trade} {city} {' '.join(extra[:2])}".strip()
+                queries = [f"{op} {phrase} {trade} {city} {' '.join(extra[:2])}".strip()
+                           for phrase in phrases]
+                if plat == "nextdoor":
+                    # /ask-neighbors/ pages are recommendation threads
+                    # specifically — the highest-yield surface on the platform.
+                    queries.insert(0, f"site:nextdoor.com/ask-neighbors {trade} {city}".strip())
+                for q in queries:
                     stats["queries"] += 1
                     res = search(q, 6)
                     if res is None:
