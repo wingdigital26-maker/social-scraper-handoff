@@ -117,6 +117,12 @@ def search(q, limit=8, recent=True, tries=3):
                 # dead lead and replying to one looks like a bot.
                 out = list(d.text(q, max_results=limit, timelimit="m" if recent else None))
             time.sleep(SLEEP)
+            # A bare empty list is NOT proof of nothing. The same proven query
+            # returned 7, 7, then 0 on consecutive runs, so an empty first
+            # answer gets one more chance before being believed.
+            if not out and attempt == 0:
+                time.sleep(delay)
+                continue
             return out
         except Exception as e:
             msg = str(e)
@@ -194,9 +200,12 @@ def main():
                           for k in range(min(args.phrases, len(allp)))]
                 queries = [f"{op} {phrase}".strip() for phrase in picked]
                 if plat == "nextdoor":
-                    # /ask-neighbors/ pages are recommendation threads
-                    # specifically — the highest-yield surface on the platform.
-                    queries.insert(0, f"site:nextdoor.com/ask-neighbors {trade} {city}".strip())
+                    # /ask-neighbors/ threads ARE the recommendation surface, but
+                    # only when paired with a real ask phrase. Measured at 7/7
+                    # genuine demand posts that way, versus 0 for the trade name
+                    # alone, which just returns category and business pages.
+                    for phrase in picked:
+                        queries.insert(0, f"site:nextdoor.com/ask-neighbors {phrase}".strip())
                 for q in queries:
                     stats["queries"] += 1
                     res = search(q, 6)
@@ -216,7 +225,20 @@ def main():
                         # trade's first word somewhere in the text, which let
                         # through roofing companies' own business pages — the
                         # single most common false positive on Nextdoor.
-                        rel = relevance.score_hit(title, body, u, trade, city,
+                        # Reddit hits arrive as "Link to reddit.com" with the
+                        # description hidden, so title+body is empty and every
+                        # gate rejected them — the platform was structurally
+                        # unreachable. The post title is in the URL slug.
+                        if not trade_vocab.is_relevant(title, body, u, trade):
+                            stats["no_intent"] += 1
+                            continue
+                        slug_text = ""
+                        if "reddit.com" in u and "/comments/" in u:
+                            parts = [x for x in u.split("/comments/")[-1].split("/") if x]
+                            if len(parts) > 1:
+                                slug_text = parts[1].replace("_", " ")
+                        rel = relevance.score_hit(title or slug_text, body or slug_text,
+                                                  u, trade, city,
                                                   trade_vocab.relevance_terms(trade))
                         if rel["reject"]:
                             stats["rejected"] = stats.get("rejected", 0) + 1
