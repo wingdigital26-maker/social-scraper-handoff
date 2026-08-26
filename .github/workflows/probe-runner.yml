@@ -72,6 +72,58 @@ jobs:
               time.sleep(4)
           PY2
 
+      - name: Does yield collapse under volume? (the 60-query question)
+        run: |
+          python - <<'PY3'
+          # The original probe above fires 3 queries and passes. The real watcher
+          # fires 60 and came back with 8 results total, while the SAME queries
+          # return 6-10 each from Jack's machine. So the question was never
+          # "can the runner reach the index" - it is "for how many queries".
+          # This walks 24 queries and prints the yield per query, so a collapse
+          # partway through is visible as a curve rather than a single number.
+          try:
+              from ddgs import DDGS
+          except ImportError:
+              from duckduckgo_search import DDGS
+          import time
+          CITIES = ["Plano","Frisco","McKinney","Allen","Richardson","Dallas",
+                    "Fort Worth","Arlington"]
+          SHAPES = ['site:nextdoor.com "roof leak" {c} TX',
+                    'site:reddit.com roofing {c} TX',
+                    '"anyone recommend" roofer {c} TX']
+          qs = [s.format(c=c) for c in CITIES for s in SHAPES]
+          tot = nonzero = errs = 0
+          first_dry = None
+          for i, q in enumerate(qs, 1):
+              try:
+                  with DDGS() as d:
+                      n = len(list(d.text(q, max_results=10, timelimit="m")))
+                  tag = ""
+                  if n:
+                      nonzero += 1
+                  else:
+                      tag = "  <- EMPTY"
+                      if first_dry is None:
+                          first_dry = i
+                  tot += n
+                  print(f"  [{i:2}/{len(qs)}] {n:2} results{tag}   {q[:52]}")
+              except Exception as e:
+                  m = str(e)[:60]
+                  if "No results" in m:
+                      if first_dry is None:
+                          first_dry = i
+                      print(f"  [{i:2}/{len(qs)})  0 results  <- EMPTY   {q[:52]}")
+                  else:
+                      errs += 1
+                      print(f"  [{i:2}/{len(qs)}] ERROR  {m}")
+              time.sleep(2)
+          print(f"\n  queries {len(qs)}  results {tot}  productive {nonzero}  errors {errs}")
+          print(f"  first empty query: #{first_dry}")
+          print("  LOCAL BASELINE for the same shapes: 6-10 results per query.")
+          if tot < len(qs):
+              print("  VERDICT: yield is collapsing on the runner, not in the query shapes.")
+          PY3
+
       - name: Can the runner fetch prospect websites?
         run: |
           python - <<'PY'

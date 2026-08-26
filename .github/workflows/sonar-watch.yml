@@ -35,7 +35,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ddgs requests
+      # youtube-transcript-api and yt-dlp are what the intel leg fetches
+      # transcripts with. They were never installed here, so both backends
+      # ImportError'd silently and every video resolved to "failed via none"
+      # in 3.8 seconds — too fast to have been a network problem.
+      - run: pip install ddgs requests youtube-transcript-api yt-dlp
 
       - name: Watch social for every active client
         working-directory: ingest
