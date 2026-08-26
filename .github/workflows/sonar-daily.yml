@@ -6,6 +6,7 @@ on:
   schedule:
     - cron: "0 8 * * *"    # 3am Central, discovery slice + audit
     - cron: "0 20 * * *"   # 3pm Central, audit-only catch-up
+    - cron: "0 2 * * *"    # 9pm Central — closes the 5pm-3am discovery dead zone
   workflow_dispatch:
     inputs:
       pairs:
@@ -38,6 +39,8 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           # The 3pm schedule and the audit_only input both mean "no discovery".
+          # Only the 3pm slot is audit-only. 3am and 9pm both discover, so the
+          # evening is no longer a ten-hour hole.
           if [ "${{ github.event.inputs.audit_only }}" = "true" ] || [ "${{ github.event.schedule }}" = "0 20 * * *" ]; then
             python cloud_run.py --audit-only
           else

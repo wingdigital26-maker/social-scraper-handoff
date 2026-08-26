@@ -64,7 +64,10 @@ ROUTER = pathlib.Path(os.environ.get("LLM_ROUTER_PATH",
 # what silently killed Wing's content pipeline for 8 days. Verified live
 # 2026-08-25. No paid API is reachable from this file by design.
 DIRECT_CHAINS = {
-    "research": [("gemini", "gemini-flash-latest"), ("groq", "openai/gpt-oss-120b")],
+    # groq first: gemini's OpenAI-compatible endpoint was returning intermittent
+    # 404s on 2026-08-25, and groq's 120b is both the stronger reasoner here and
+    # the one with headroom for a full transcript.
+    "research": [("groq", "openai/gpt-oss-120b"), ("gemini", "gemini-flash-latest")],
     "seo":      [("groq", "openai/gpt-oss-120b"), ("gemini", "gemini-flash-latest")],
     "voice":    [("groq", "openai/gpt-oss-120b"), ("gemini", "gemini-flash-latest")],
     "json":     [("groq", "openai/gpt-oss-20b"), ("groq", "openai/gpt-oss-120b")],
@@ -276,7 +279,7 @@ def call_direct(env, model, prompt, system, max_tokens):
     return None, f"all free providers failed: {last}"
 
 
-def call_router(model, prompt, system, max_tokens=1600, env=None):
+def call_router(model, prompt, system, max_tokens=6000, env=None):
     """Jack's FREE model router as a subprocess, or free-provider REST in the
     cloud where the router file does not exist. Never a paid API, never Claude."""
     if not ROUTER.exists():
@@ -295,36 +298,69 @@ def call_router(model, prompt, system, max_tokens=1600, env=None):
 
 
 def parse_proposals(raw):
-    """Pull the JSON object out of router stdout (fences / prose tolerated)."""
-    if not raw:
-        return []
+    """Pull the proposals list out of router stdout.
+
+    Returns (list, error). error is not None when NO parseable JSON object was
+    found — which must NOT be reported as "zero proposals". gpt-oss-120b emits a
+    long <think> block before its answer; with too small a max_tokens the reply
+    got cut off mid-reasoning and the old code read that as a confident zero.
+    Silent zeros are indistinguishable from a broken pipeline, which is exactly
+    how Wing's content lane died quietly for 8 days. Never again: no JSON is an
+    ERROR, an explicit empty list is a real answer.
+    """
+    if not raw or not raw.strip():
+        return [], "empty model response"
     text = raw
+    # drop reasoning blocks (and an unterminated one from a truncated reply)
+    text = re.sub(r"<think>.*?</think>", " ", text, flags=re.S | re.I)
+    if re.search(r"<think>", text, re.I):
+        text = re.sub(r"<think>.*$", " ", text, flags=re.S | re.I)
     fence = re.search(r"```(?:json)?\s*(.*?)```", text, re.S)
     if fence:
         text = fence.group(1)
-    start = text.find("{")
-    if start < 0:
-        return []
-    depth, end = 0, None
-    for i in range(start, len(text)):
-        if text[i] == "{":
-            depth += 1
-        elif text[i] == "}":
-            depth -= 1
-            if depth == 0:
-                end = i + 1
-                break
-    if end is None:
-        return []
-    try:
-        obj = json.loads(text[start:end])
-    except Exception:
-        return []
+    # last balanced {...} in the text — the answer, not a brace inside prose
+    obj = None
+    for start in [m.start() for m in re.finditer(r"\{", text)][::-1]:
+        depth = 0
+        for i in range(start, len(text)):
+            if text[i] == "{":
+                depth += 1
+            elif text[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        cand = json.loads(text[start:i + 1])
+                    except Exception:
+                        cand = None
+                    if isinstance(cand, dict) and "proposals" in cand:
+                        obj = cand
+                    break
+        if obj is not None:
+            break
+    if obj is None:
+        return [], f"no parseable JSON in model reply ({len(raw)} chars)"
     props = obj.get("proposals")
-    return props if isinstance(props, list) else []
+    if not isinstance(props, list):
+        return [], "'proposals' was not a list"
+    return props, None
 
 
 # ------------------------------------------------------------------ analysis --
+REQUOTE_NUDGE = """
+Your previous answer was REJECTED. Every evidence_quote you gave was a
+paraphrase — it does not appear in the transcript character for character, so
+the proposal could not be verified and was thrown away. Quotes that were
+rejected:
+{bad}
+
+Answer again. For each proposal you still believe in, scroll the transcript,
+find the sentence that actually says it, and COPY THAT SENTENCE EXACTLY —
+same words, same order, same wording, including any transcription errors or
+awkward phrasing. Do not clean it up. If no literal sentence in the transcript
+supports the proposal, drop that proposal and return fewer (or zero).
+"""
+
+
 def analyse(item, model, verbose=True, env=None):
     """Return (kept_proposals, dropped_reasons) for one intel_items row."""
     transcript = (item.get("transcript") or "").strip()
@@ -341,8 +377,42 @@ def analyse(item, model, verbose=True, env=None):
     if err:
         return None, [f"router error: {err}"]
 
+    props, perr = parse_proposals(raw)
+    if perr:
+        # Do NOT let an unparseable reply masquerade as "nothing applicable".
+        return None, [f"unusable model reply: {perr}"]
+
+    kept, dropped = _score(props, item, transcript)
+
+    # If the ONLY reason we kept nothing is that every quote was a paraphrase,
+    # give the model exactly one chance to go back and copy the real sentence.
+    # The idea may well be sound while the quoting was lazy. The re-ask changes
+    # nothing about verification — the second answer is checked just as hard,
+    # and if it paraphrases again the proposals stay dropped.
+    if not kept and dropped and all("not found verbatim" in d for d in dropped):
+        bad = "\n".join(f"  - {d.split('model said: ', 1)[-1]}" for d in dropped)
+        raw2, err2 = call_router(model, prompt + REQUOTE_NUDGE.format(bad=bad),
+                                 SYSTEM_PROMPT, env=env)
+        if not err2:
+            props2, perr2 = parse_proposals(raw2)
+            if not perr2:
+                kept2, dropped2 = _score(props2, item, transcript)
+                if verbose:
+                    print(f"    [re-asked for verbatim quotes] "
+                          f"{len(kept2)} verified, {len(dropped2)} still ungrounded")
+                kept = kept2
+                dropped = dropped + dropped2
+
+    if verbose and dropped:
+        for d in dropped:
+            print(f"    [dropped] {d}")
+    return kept, dropped
+
+
+def _score(props, item, transcript):
+    """Validate + ground each raw model proposal. Returns (kept, dropped)."""
     kept, dropped = [], []
-    for p in parse_proposals(raw)[:3]:
+    for p in (props or [])[:3]:
         if not isinstance(p, dict):
             continue
         title = (p.get("title") or "").strip()
@@ -390,9 +460,6 @@ def analyse(item, model, verbose=True, env=None):
             "risk": risk,
             "status": "proposed",
         })
-    if verbose and dropped:
-        for d in dropped:
-            print(f"    [dropped] {d}")
     return kept, dropped
 
 
@@ -481,8 +548,12 @@ def main():
     ap.add_argument("--limit", type=int, default=5, help="max items to analyse")
     ap.add_argument("--item", type=int, help="one intel_items.id")
     ap.add_argument("--dry-run", action="store_true", help="print, write nothing")
-    ap.add_argument("--model", default="research",
-                    help="llm_router alias: research|json|seo|fast|voice")
+    # 'seo' maps to groq openai/gpt-oss-120b — the strongest free model with a
+    # context big enough for a transcript, and the one that stayed up while
+    # gemini (the 'research' primary) was 404ing. Judgement task, not SEO; the
+    # alias name is just the router's routing key.
+    ap.add_argument("--model", default="seo",
+                    help="llm_router alias: seo|research|json|fast|voice")
     ap.add_argument("--self-test", action="store_true",
                     help="run quote-verification unit tests and exit")
     a = ap.parse_args()

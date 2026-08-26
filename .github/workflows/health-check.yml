@@ -28,5 +28,9 @@ jobs:
           if age > datetime.timedelta(hours=48):
               raise SystemExit(f"STALE: last ingest run was {age} ago")
           if (rows[0]["found"] or 0) == 0:
-              print("::warning::last run found 0 candidates — check sources")
+              raise SystemExit(
+                  "ZERO YIELD: the most recent run found nothing. A warning here "
+                  "was useless — a source can produce nothing indefinitely while "
+                  "this check stays green, because any other source writing a row "
+                  "keeps the overall log fresh. Failing loudly instead.")
           EOF

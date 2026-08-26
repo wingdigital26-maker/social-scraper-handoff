@@ -1,7 +1,15 @@
 name: nightly-ingest
+# SCHEDULE DISABLED 2026-08-25. This lane needs REDDIT_CLIENT_ID /
+# REDDIT_CLIENT_SECRET (and optionally YOUTUBE_API_KEY) which have never been
+# created, so it failed at step one every single morning — 08-21 through 08-25,
+# zero rows ever written. A red X arriving daily for a cause that cannot fix
+# itself just teaches you to ignore red Xs, which is worse than no alert.
+#
+# TO RE-ENABLE: create the two Reddit secrets (about 10 minutes, see
+# REDDIT-KEY-GUIDE.md), add them with `gh secret set`, then uncomment the cron.
 on:
-  schedule:
-    - cron: "0 8 * * *" # 3am Central
+  # schedule:
+  #   - cron: "0 8 * * *" # 3am Central
   workflow_dispatch: {}
 
 jobs:
