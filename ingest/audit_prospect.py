@@ -56,9 +56,14 @@ SEARCH_SLEEP = 2.0
 FETCH_TIMEOUT = 20
 
 # Platform/aggregator domains that are never the business's own website.
+# Matched against a WHOLE domain label, not as a substring. The old pattern
+# listed a bare "x" (for x.com) and was unanchored, so the fragment "x." threw
+# away every business whose domain label merely ENDS in x — apex.com,
+# vertexroofingtx.com, essex.net, onyx.build were all discarded as "platforms".
+# A real roofer with a real site was being recorded as having no website.
 NOT_A_WEBSITE = re.compile(
-    r"(facebook|instagram|tiktok|linkedin|twitter|x|youtube|yelp|bbb|angi|"
-    r"thumbtack|houzz|nextdoor|mapquest|yellowpages|google|birdeye|porch|"
+    r"(?:^|\.)(facebook|instagram|tiktok|linkedin|twitter|x|youtube|yelp|bbb|"
+    r"angi|thumbtack|houzz|nextdoor|mapquest|yellowpages|google|birdeye|porch|"
     r"homeadvisor|indeed|glassdoor)\.", re.I)
 
 PHONE_RE = re.compile(r"\(?\b\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b")
@@ -90,11 +95,98 @@ def clean_phone(raw):
 # "Litz Roofing" (405) and an India-hosted "Sunaura Solar" (.in) surfacing in a
 # Plano search. Flagged, not deleted: the human decides.
 DFW_AREA_CODES = {"214", "469", "972", "817", "682", "945", "940", "430", "903"}
+
+
+def area_code(raw):
+    """The NPA of a US number, or None if it cannot be read confidently.
+
+    Callers used to slice digits[-10:-7], which silently reads the WRONG THREE
+    DIGITS whenever the number carries an extension: "(214) 555-9876 ext 100"
+    -> "555", and 555 is not a DFW area code, so a local business would be
+    rejected as out_of_region on a formatting artefact. Anchor to the FRONT of
+    the national number instead, and refuse rather than guess when the digit
+    count does not describe a plain US number.
+    """
+    d = re.sub(r"\D", "", raw or "")
+    if len(d) == 11 and d.startswith("1"):
+        d = d[1:]
+    if len(d) > 10:                 # extension present — take the leading NANP part
+        if d.startswith("1"):
+            d = d[1:]
+        d = d[:10]
+    if len(d) != 10:
+        return None
+    return d[:3]
 FOREIGN_TLD = re.compile(r"\.(in|uk|au|ca|pk|ph|ng|de|fr|ru|cn|br|za)$", re.I)
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 # A numeric TLD is not a domain. The old pattern ended in [\w.]{2,}, which
 # happily matched npm "package@1.8.1" strings out of JavaScript bundles and
 # stored them as contact addresses.
+#
+# That fix was not enough. The pattern still matched "core@7.24.0-beta.ts" out
+# of a bundled "@babel/core@7.24.0-beta" string, because the version numbers
+# are legal domain labels and ".ts" is a legal-looking TLD. Live data still
+# carries the older generation of the same junk ("wght@9..144",
+# "intl-segmenter@11.7.10"). A regex alone cannot separate a package spec from
+# an address, so every candidate address now goes through _clean_email().
+
+# Source-file suffixes that a build artefact ends in but an email never does.
+_CODE_TLD = {
+    "ts", "tsx", "js", "jsx", "mjs", "cjs", "py", "rb", "go", "rs", "sh",
+    "php", "java", "swift", "kt", "css", "scss", "sass", "less", "json",
+    "yml", "yaml", "xml", "html", "htm", "md", "txt", "map", "min",
+    "png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "woff", "woff2",
+    "ttf", "eot", "otf", "mp4", "webm", "pdf", "zip", "gz",
+}
+# Addresses that are documentation, not a person. Storing one as a contact
+# would send outreach into the void and look careless to the prospect.
+_PLACEHOLDER_EMAIL = re.compile(
+    r"(sentry|example|domain\.com|yourdomain|yoursite|youremail|email\.com|"
+    r"test\.com|localhost|wixpress|sentry\.io|\.png|\.jpg|@2x)", re.I)
+
+
+def _clean_email(raw):
+    """Return a plausible real address, or None. Rejects code and placeholders.
+
+    Positive evidence required, same principle as _owns_site: an address we
+    cannot vouch for is worse than no address, because it gets emailed.
+    """
+    if not raw:
+        return None
+    e = raw.strip().strip(".,;:<>()[]\"'").lower()
+    if e.count("@") != 1:
+        return None
+    local, _, domain = e.partition("@")
+    if not local or not domain or ".." in domain:
+        return None
+    labels = domain.split(".")
+    if len(labels) < 2 or any(not l for l in labels):
+        return None
+    tld = labels[-1]
+    if tld in _CODE_TLD or not tld.isalpha() or not (2 <= len(tld) <= 24):
+        return None
+    # A version spec ("7.24.0-beta") is all-numeric labels; a real domain has
+    # at least one letter in the label immediately left of the TLD.
+    if not any(ch.isalpha() for ch in labels[-2]):
+        return None
+    if any(l.isdigit() for l in labels[:-1]):
+        return None
+    if _PLACEHOLDER_EMAIL.search(e):
+        return None
+    return raw.strip().strip(".,;:<>()[]\"'")
+
+
+def _emails_from(html):
+    """All believable addresses in a page, best-first, junk removed."""
+    out, seen = [], set()
+    for raw in EMAIL_RE.findall(html or ""):
+        e = _clean_email(raw)
+        if e and e.lower() not in seen:
+            seen.add(e.lower())
+            out.append(e)
+    return out
+
+
 RATING_RE = re.compile(r"([0-5][.,]\d)\s*(?:out of 5|stars?|★|/\s*5)", re.I)
 REVIEWS_RE = re.compile(r"([\d,]{1,7})\s*(?:google\s*)?reviews?", re.I)
 
@@ -110,7 +202,21 @@ COMPLAINT_THEMES = {
 }
 
 
-def search(query, limit=6):
+class SearchUnavailable(RuntimeError):
+    """The search index could not be reached. NOT the same as 'no results'."""
+
+
+def search(query, limit=6, *, strict=False):
+    """Public search results.
+
+    `strict=True` raises SearchUnavailable instead of returning [] when the
+    index errors out. That distinction is load-bearing: seo_rank() reads an
+    empty result list as "this business does not rank", which need_score turns
+    into the claim "not ranking for their main keyword" — the single biggest
+    weight in the model. A rate-limited scraper would therefore manufacture a
+    sales claim about every prospect it failed to look up. An outage must read
+    as UNKNOWN, never as a finding.
+    """
     try:
         with DDGS() as d:
             out = list(d.text(query, max_results=limit))
@@ -118,6 +224,8 @@ def search(query, limit=6):
         return out
     except Exception as e:
         print(f"      search failed: {str(e)[:70]}")
+        if strict:
+            raise SearchUnavailable(str(e)[:120])
         return []
 
 
@@ -138,6 +246,36 @@ def sb_request(method, url, *, retries=4, **kw):
             delay *= 2
     print(f"      DB call failed after {retries} tries: {last}")
     return None
+
+
+PAGE = 1000
+
+
+def sb_select_all(url, headers, params, *, limit=0):
+    """Read EVERY matching row, or None on failure.
+
+    PostgREST caps an unbounded select at 1000 rows and says nothing about it.
+    Both callers here used a plain select and then printed a confident tally,
+    so with 1036 candidates in the table 36 rows were silently never
+    classified and the run still exited 0. Silent truncation reported as
+    success is the same class of failure as a scraper that yields nothing and
+    calls it a clean run.
+    """
+    if limit:
+        p = dict(params, limit=str(limit))
+        r = sb_request("GET", url, headers=headers, params=p)
+        return None if (r is None or not r.ok) else r.json()
+    out, offset = [], 0
+    while True:
+        p = dict(params, limit=str(PAGE), offset=str(offset))
+        r = sb_request("GET", url, headers=headers, params=p)
+        if r is None or not r.ok:
+            return None
+        batch = r.json()
+        out += batch
+        if len(batch) < PAGE:
+            return out
+        offset += PAGE
 
 
 # ------------------------------------------------------------ who are they ---
@@ -287,9 +425,7 @@ def crawl_site(url):
 
     phones = PHONE_RE.findall(html)
     sig["phone"] = next((c for c in (clean_phone(x) for x in phones) if c), None)
-    emails = [e for e in EMAIL_RE.findall(html)
-              if not re.search(r"\.(png|jpg|jpeg|gif|svg|webp|css|js)$", e, re.I)
-              and "sentry" not in e.lower() and "example" not in e.lower()]
+    emails = _emails_from(html)
     sig["email"] = emails[0] if emails else None
 
     # A contact page often holds the email when the homepage doesn't.
@@ -298,15 +434,20 @@ def crawl_site(url):
         if contact:
             try:
                 c = requests.get(contact, headers=UA, timeout=FETCH_TIMEOUT)
-                more = [e for e in EMAIL_RE.findall(c.text)
-                        if not re.search(r"\.(png|jpg|jpeg|gif|svg|webp|css|js)$", e, re.I)]
+                # Same validator as the homepage. The contact page used to run
+                # a WEAKER filter (no placeholder check at all), so the page
+                # most likely to carry "user@domain.com" was the one least
+                # protected against storing it.
+                more = _emails_from(c.text)
                 if more:
                     sig["email"] = more[0]
                 if not sig["phone"]:
                     p = PHONE_RE.findall(c.text)
-                    sig["phone"] = next((c for c in (clean_phone(x) for x in p) if c), None)
-            except Exception:
-                pass
+                    sig["phone"] = next((x for x in (clean_phone(y) for y in p) if x), None)
+            except Exception as e:
+                # Unknown, not absent — say so rather than let a fetch failure
+                # read downstream as "this business publishes no email".
+                sig["contact_page_error"] = str(e)[:80]
     return sig
 
 
@@ -486,12 +627,31 @@ def google_reputation(name, city):
 
 # ------------------------------------------------------------- do they rank --
 def seo_rank(name, niche, city, website):
-    """Position for '{niche} {city}'. None = not in the first page of results."""
+    """Position for '{niche} {city}'.
+
+    Returns an int position, None for "searched and genuinely absent", or the
+    string "unknown" when the search index could not be reached. Callers MUST
+    treat "unknown" as unmeasured — see search()'s docstring.
+    """
     if not website:
         return None
     host = urlparse(website).netloc.replace("www.", "")
-    for i, r in enumerate(search(f"{niche} {city}", 15), start=1):
-        if host and host in (r.get("href") or ""):
+    if not host:
+        return None
+    try:
+        results = search(f"{niche} {city}", 15, strict=True)
+    except SearchUnavailable:
+        return "unknown"
+    if not results:
+        # Zero results for a broad commercial query like "roofing Plano" is not
+        # a fact about the prospect, it is a fact about the scrape.
+        return "unknown"
+    for i, r in enumerate(results, start=1):
+        # Match the host as a host, not as a substring anywhere in the URL: a
+        # directory page carrying "?ref=theirsite.com" is not them ranking.
+        # Compared on the registrable domain so a subdomain still counts.
+        href = r.get("href") or ""
+        if _registrable(urlparse(href).netloc) == _registrable(host):
             return i
     return None
 
@@ -527,8 +687,15 @@ def need_score(a, is_person=False):
     # Only judge ranking when we actually have a site to look for. "No website
     # found" is its own gap below — counting it as "not ranking" too would
     # double-penalize and would be a guess, not a finding.
-    if a.get("website"):
-        add(0.25, a.get("seo_rank") is None, "not ranking for their main keyword")
+    # "unknown" means the search index was unreachable, not that they are
+    # absent from it. Scoring that as a gap would put an unverified claim in
+    # Jack's mouth on a call, which is the exact failure this file exists to
+    # prevent.
+    rank = a.get("seo_rank")
+    if a.get("website") and rank != "unknown":
+        add(0.25, rank is None, "not ranking for their main keyword")
+    elif a.get("website"):
+        gaps.append("search rank could not be checked (index unreachable) — unknown, not a gap")
     add(0.10, a.get("website") is None, "no website found")
 
     # Only judge site content when we actually READ the site. A 403/timeout
@@ -547,17 +714,14 @@ def need_score(a, is_person=False):
     host = urlparse(a.get("website") or "").netloc
     if host and FOREIGN_TLD.search(host.split(":")[0]):
         gaps.append("WARNING: non-US website domain — likely a different company")
-    ph = a.get("phone") or ""
-    digits = re.sub(r"\D", "", ph)
-    if len(digits) >= 10:
-        code = digits[-10:-7]
-        if code not in DFW_AREA_CODES:
-            gaps.append(f"WARNING: {code} area code is outside DFW — verify this is the right company")
+    code = area_code(a.get("phone"))
+    if code and code not in DFW_AREA_CODES:
+        gaps.append(f"WARNING: {code} area code is outside DFW — verify this is the right company")
 
     rating = a.get("gmb_rating")
-    add(0.05, rating is not None and rating < 4.3, f"rating {rating}" if rating else "low rating")
+    add(0.05, rating is not None and rating < 4.3, f"rating {rating}")
     reviews = a.get("gmb_reviews")
-    add(0.05, reviews is not None and reviews < 25, f"only {reviews} reviews" if reviews else "few reviews")
+    add(0.05, reviews is not None and reviews < 25, f"only {reviews} reviews")
     if a.get("bad_review_themes"):
         gaps.append(f"complaints: {a['bad_review_themes']}")
 
@@ -603,12 +767,19 @@ def audit(c, maps_recs=None):
             a[k] = maps_out[k]
     a.pop("address", None)
     a.pop("reachable", None); a.pop("title", None); a.pop("error", None)
+    a.pop("contact_page_error", None)   # diagnostic, not a DB column
     if not a.get("site_read"):        # do not report unverified content signals
         for k in ("has_blog", "has_service_pages", "page_count", "ssl_ok"):
             a[k] = None
     a["need_score"], gaps = need_score(a, is_person=is_person)
     a["audit_gaps"] = gaps
     a.pop("site_read", None)          # scoring input, not a DB column
+    # seo_rank is a numeric column. "unknown" is a scoring signal, not a rank —
+    # it is already recorded in audit_gaps in words. Storing it as NULL keeps
+    # "we could not check" and "we checked and they are absent" distinguishable
+    # only via the gap text, so the gap text is the record of record.
+    if a.get("seo_rank") == "unknown":
+        a["seo_rank"] = None
     a["audited_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     print(f"      need {a['need_score']} | rank {rank} | "
           f"{a.get('gmb_rating')} stars, {a.get('gmb_reviews')} reviews | "
@@ -643,12 +814,9 @@ def main():
     params = {"audited_at": "is.null", "status": "eq.new",
               "select": "id,title,place_name,category,website,url",
               "order": "id.asc"}
-    if args.limit:
-        params["limit"] = str(args.limit)
-    r = sb_request("GET", f"{url}/rest/v1/candidates", headers=h, params=params)
-    if r is None or not r.ok:
+    rows = sb_select_all(f"{url}/rest/v1/candidates", h, params, limit=args.limit)
+    if rows is None:
         sys.exit("Could not read the queue from Supabase.")
-    rows = r.json()
     if not rows:
         print("Nothing to audit."); return
 
@@ -658,12 +826,23 @@ def main():
     for c in rows:
         groups.setdefault((c.get("category") or "", c.get("place_name") or ""), []).append(c)
 
+    done, failed = [], []
+
     def do_one(c, recs):
         a = audit(c, recs)
         if args.dry_run:
+            done.append(c["id"])
             return
-        sb_request("PATCH", f"{url}/rest/v1/candidates", headers=h,
-                   params={"id": f"eq.{c['id']}"}, json=a)
+        r = sb_request("PATCH", f"{url}/rest/v1/candidates", headers=h,
+                       params={"id": f"eq.{c['id']}"}, json=a)
+        if r is None or not r.ok:
+            # A rejected PATCH used to be invisible: sb_request returns None,
+            # nobody looked, and the run still printed "Done."
+            body = "" if r is None else str(r.text)[:120]
+            print(f"      WRITE FAILED for {c['id']}: {body}")
+            failed.append(c["id"])
+        else:
+            done.append(c["id"])
 
     for (niche, city), group in groups.items():
         recs = maps_cache(niche, city) if niche and city else []
@@ -678,10 +857,19 @@ def main():
                         f.result()
                     except Exception as e:
                         print(f"      audit error: {str(e)[:90]}")
+                        failed.append("exception")
         else:
             for c in group:
                 do_one(c, recs)
-    print("\nDone. Queue is now ranked by need_score.")
+
+    print(f"\nAttempted {len(rows)}  |  succeeded {len(done)}  |  failed {len(failed)}")
+    # House rule: zero yield against non-zero attempts is a hard failure. A run
+    # that audits nothing and exits 0 hides its own breakage from the cron.
+    if rows and not done:
+        sys.exit(f"FAILED: {len(rows)} prospects attempted, 0 audited.")
+    if failed:
+        sys.exit(f"FAILED: {len(failed)} of {len(rows)} prospects could not be written.")
+    print("Done. Queue is now ranked by need_score.")
 
 
 if __name__ == "__main__":

@@ -32,7 +32,42 @@ except Exception:
 
 VAULT = pathlib.Path(r"C:\Users\wjack\OneDrive\Documentos\Obsidian 2.0\Jacks Ai Brain 2.0")
 CLIENTS_DIR = VAULT / "wiki" / "clients"
+RAW_DIR = VAULT / "raw"          # HARD CONSTRAINT: never written to, no exceptions
+INDEX_MD = VAULT / "wiki" / "index.md"
+LOG_MD = VAULT / "wiki" / "log.md"
 MAX_PROSPECTS = 300  # a 988-row table would make an unreadable note
+
+# A client slug becomes a directory name. It arrives from the Supabase
+# crm_clients table, so it is untrusted input as far as this script is
+# concerned: a slug of "../../raw/leaked" resolved straight into the vault's
+# raw/ directory, which is the one place that must never be written.
+SAFE_SLUG = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$", re.I)
+
+
+def safe_client_dir(slug):
+    """Resolve a client folder, or refuse. Two independent checks: the slug must
+    look like a slug, and the resolved path must still sit inside CLIENTS_DIR."""
+    if not isinstance(slug, str) or not SAFE_SLUG.match(slug) or slug in (".", ".."):
+        sys.exit(f"REFUSING unsafe client slug {slug!r} - it would not stay inside {CLIENTS_DIR}")
+    d = (CLIENTS_DIR / slug).resolve()
+    root = CLIENTS_DIR.resolve()
+    if d != root and root not in d.parents:
+        sys.exit(f"REFUSING client slug {slug!r} - resolves outside the clients folder: {d}")
+    if d == RAW_DIR.resolve() or RAW_DIR.resolve() in d.parents:
+        sys.exit(f"REFUSING client slug {slug!r} - resolves under the vault raw/ folder: {d}")
+    return d
+
+
+def assert_no_secrets(text, env, where):
+    """Last line of defence before anything is written to a OneDrive-synced
+    folder. A vault page may name an env var, never hold its value."""
+    for var in ("SUPABASE_SERVICE_KEY", "SUPABASE_URL", "SUPABASE_ANON_KEY"):
+        val = env.get(var)
+        if val and len(str(val)) > 8 and str(val) in text:
+            sys.exit(f"REFUSING to write {where}: it contains the value of {var}. "
+                     f"The vault syncs to OneDrive - pages may name an env var, never hold it.")
+    if re.search(r"eyJ[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}\.", text):
+        sys.exit(f"REFUSING to write {where}: it contains a JWT-shaped string.")
 
 
 def fetch(env, table, query):
@@ -222,13 +257,64 @@ def match_prospects(client, candidates):
     return rows, True
 
 
-def write(path, text, dry):
+def write(path, text, dry, env=None):
+    # Belt-and-braces: even a caller that skipped safe_client_dir cannot land a
+    # write under raw/.
+    resolved = pathlib.Path(path).resolve()
+    raw = RAW_DIR.resolve()
+    if resolved == raw or raw in resolved.parents:
+        sys.exit(f"REFUSING to write under the vault raw/ folder: {resolved}")
+    if env is not None:
+        assert_no_secrets(text, env, resolved)
     if dry:
         print(f"    would write {path}  ({len(text)} chars)")
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8", newline="\n")  # full overwrite = idempotent
     print(f"    wrote {path}")
+
+
+def append_log(entry, dry):
+    """Vault rule: wiki/log.md is updated on every operation. Append only."""
+    line = f"## [{datetime.date.today().isoformat()}] build | {entry}"
+    if dry:
+        print(f"    would append to {LOG_MD}: {line}")
+        return
+    if not LOG_MD.exists():
+        print(f"    WARNING: {LOG_MD} missing - not creating it, log entry not recorded")
+        return
+    prev = LOG_MD.read_text(encoding="utf-8")
+    LOG_MD.write_text(prev.rstrip("\n") + "\n" + line + "\n", encoding="utf-8")
+    print(f"    appended 1 entry to {LOG_MD}")
+
+
+def update_index(n_clients, dry):
+    """Vault rule: wiki/index.md is updated on every operation.
+
+    Narrowly refreshes the client count on the existing per-client-vault-sync
+    row. If the anchor is not found this says so rather than guessing where the
+    row belongs — index.md is hand-curated and must not be rewritten blindly.
+    """
+    if not INDEX_MD.exists():
+        print(f"    WARNING: {INDEX_MD} missing - index not updated")
+        return
+    text = INDEX_MD.read_text(encoding="utf-8")
+    rx = re.compile(r"(per-client-vault-sync.*?)(\d+) clients? synced")
+    print(f"    index regex: {rx.pattern!r}")
+    m = rx.search(text)
+    if not m:
+        print(f"    WARNING: no 'N clients synced' anchor on the per-client-vault-sync row "
+              f"in {INDEX_MD}. Not guessing - index row left as-is.")
+        return
+    if int(m.group(2)) == n_clients:
+        print(f"    {INDEX_MD.name} already reads {n_clients} clients synced - no change")
+        return
+    new = rx.sub(lambda mm: f"{mm.group(1)}{n_clients} clients synced", text, count=1)
+    if dry:
+        print(f"    would update {INDEX_MD}: {m.group(2)} -> {n_clients} clients synced")
+        return
+    INDEX_MD.write_text(new, encoding="utf-8")
+    print(f"    updated {INDEX_MD}: {m.group(2)} -> {n_clients} clients synced")
 
 
 def main():
@@ -278,10 +364,10 @@ def main():
               f"(draft {counts['draft']} / approved {counts['approved']} / sent {counts['sent']}), "
               f"{len(prospects)} prospects [{'candidates' if matched else 'outbound fallback'}]")
 
-        d = CLIENTS_DIR / slug
-        write(d / "README.md", render_readme(client, msgs, prospects, basis, stamp), args.dry_run)
-        write(d / "outbound.md", render_outbound(client, msgs, stamp), args.dry_run)
-        write(d / "prospects.md", render_prospects(client, prospects, basis, matched, stamp), args.dry_run)
+        d = safe_client_dir(slug)
+        write(d / "README.md", render_readme(client, msgs, prospects, basis, stamp), args.dry_run, env)
+        write(d / "outbound.md", render_outbound(client, msgs, stamp), args.dry_run, env)
+        write(d / "prospects.md", render_prospects(client, prospects, basis, matched, stamp), args.dry_run, env)
 
         entries.append({"slug": slug, "name": name, "niche": client.get("scrape_niche"),
                         "channels": client.get("channels"), "prospects": len(prospects), **counts})
@@ -289,7 +375,19 @@ def main():
     if args.client:
         print("  (single-client run: leaving _sonar-index.md alone)")
     else:
-        write(CLIENTS_DIR / "_sonar-index.md", render_index(entries, stamp), args.dry_run)
+        write(CLIENTS_DIR / "_sonar-index.md", render_index(entries, stamp), args.dry_run, env)
+
+    # Vault rule: index.md and log.md are updated on every operation.
+    total_msgs = sum(e["draft"] + e["approved"] + e["sent"] for e in entries)
+    total_pros = sum(e["prospects"] for e in entries)
+    if not args.client:
+        update_index(len(entries), args.dry_run)
+    else:
+        print("  (single-client run: index.md client count left alone)")
+    append_log(f"vault_sync: mirrored {len(entries)} Sonar client(s) into wiki/clients "
+               f"({total_msgs} outbound messages, {total_pros} prospects listed). "
+               f"Slug path guard + secret scan active; nothing written under raw/.",
+               args.dry_run)
     print("done" + (" (nothing written)" if args.dry_run else ""))
 
 

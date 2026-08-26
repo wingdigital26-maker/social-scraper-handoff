@@ -94,12 +94,15 @@ def classify(row, maps_recs):
 
     # 3. Positive evidence of being somewhere else. Checked BEFORE Maps,
     #    because a confident wrong match is worse than no match.
-    if phone:
-        digits = re.sub(r"\D", "", phone)
-        if len(digits) >= 10:
-            ac = digits[-10:-7]
-            if ac not in A.DFW_AREA_CODES and ac not in TOLL_FREE:
-                return "out_of_region", f"area code {ac} is not DFW or toll-free", None
+    # area_code() anchors to the front of the national number. The old
+    # digits[-10:-7] slice read the wrong three digits whenever an extension
+    # was present ("(214) 555-9876 ext 100" -> "555"), which would reject a
+    # local business as out_of_region on a formatting artefact. It returns None
+    # rather than guess when the digits do not describe a plain US number, and
+    # an unreadable phone is no evidence either way.
+    ac = A.area_code(phone)
+    if ac and ac not in A.DFW_AREA_CODES and ac not in TOLL_FREE:
+        return "out_of_region", f"area code {ac} is not DFW or toll-free", None
     if website and A.FOREIGN_TLD.search(website.split("//")[-1].split("/")[0]):
         return "out_of_region", "non-US domain", None
 
@@ -140,13 +143,12 @@ def main():
         params["place_name"] = f"eq.{args.city}"
     if args.niche:
         params["category"] = f"eq.{args.niche}"
-    if args.limit:
-        params["limit"] = str(args.limit)
-
-    r = A.sb_request("GET", f"{url}/rest/v1/candidates", headers=h, params=params)
-    if r is None or not r.ok:
+    # Paginated: an unbounded PostgREST select stops at 1000 rows without
+    # saying so, and this gate then printed a confident tally over a silently
+    # truncated set (1036 candidates in the table, 36 never classified).
+    rows = A.sb_select_all(f"{url}/rest/v1/candidates", h, params, limit=args.limit)
+    if rows is None:
         sys.exit("could not read candidates")
-    rows = r.json()
     if not rows:
         print("Nothing to classify.")
         return
@@ -158,13 +160,25 @@ def main():
     # agree; on length alone, three different companies collided with "Texas
     # Roofing & Construction Inc".
     import glob, json as _json
-    metro = []
+    metro, cache_files, bad_cache = [], 0, []
     for f in glob.glob(str(pathlib.Path(__file__).resolve().parent / ".maps_cache" / "*.json")):
+        cache_files += 1
         try:
             metro += _json.loads(pathlib.Path(f).read_text(encoding="utf-8"))
-        except Exception:
-            pass
-    print(f"metro-wide Maps listings available: {len(metro)}")
+        except Exception as e:
+            # A corrupt cache file used to vanish into `except: pass`, quietly
+            # shrinking the evidence base. Fewer listings means more rows fall
+            # through to "unresolved", which LOOKS like a clean conservative
+            # result — a degraded gate that reports as a healthy one.
+            bad_cache.append(f"{pathlib.Path(f).name}: {str(e)[:60]}")
+    print(f"metro-wide Maps listings available: {len(metro)} "
+          f"(from {cache_files - len(bad_cache)}/{cache_files} cache files)")
+    for b in bad_cache:
+        print(f"  UNREADABLE MAPS CACHE: {b}")
+    if cache_files and not metro:
+        sys.exit("FAILED: Maps cache files exist but yielded 0 listings — the "
+                 "authoritative check is dead and every row would fall to "
+                 "'unresolved'. Refusing to report that as a clean run.")
 
 
     # One Maps scrape per niche+city, shared by every row in that group.
@@ -173,6 +187,7 @@ def main():
         groups.setdefault((row.get("category") or "", row.get("place_name") or ""), []).append(row)
 
     tally = {}
+    write_failures = []
     print(f"Classifying {len(rows)} candidates across {len(groups)} niche+city groups"
           f"{' (DRY RUN)' if args.dry_run else ''}\n")
 
@@ -190,15 +205,41 @@ def main():
             if place:
                 patch["place_name_matched"] = place.get("title")
                 # The place record outranks anything scraped from a snippet.
+                # NOTE ON CORROBORATION: phone, website and rating below all
+                # come from ONE record. After this patch the row's three
+                # contact fields agree with each other, but that agreement is
+                # one source seen three times, not three confirmations. Any
+                # prior scraped value that DISAGREED is recorded in the reason
+                # rather than thrown away silently, so the conflict stays
+                # visible to a human.
+                conflicts = []
                 if place.get("phone"):
-                    patch["phone"] = A.clean_phone(place["phone"])
+                    newp = A.clean_phone(place["phone"])
+                    if newp:
+                        old = row.get("phone")
+                        if old and A.area_code(old) != A.area_code(newp):
+                            conflicts.append(f"phone was {old}")
+                        patch["phone"] = newp
                 if place.get("website"):
-                    patch["website"] = place["website"].split("?")[0]
+                    neww = place["website"].split("?")[0]
+                    oldw = row.get("website")
+                    if oldw and A._registrable(oldw.split("//")[-1].split("/")[0]) \
+                            != A._registrable(neww.split("//")[-1].split("/")[0]):
+                        conflicts.append(f"website was {oldw}")
+                    patch["website"] = neww
                 if place.get("review_rating"):
                     patch["gmb_rating"] = place["review_rating"]
+                if conflicts:
+                    patch["identity_reason"] += (
+                        " | place record overrode scraped values (" +
+                        "; ".join(conflicts) + ") — single source, verify before quoting")
             if not args.dry_run:
-                A.sb_request("PATCH", f"{url}/rest/v1/candidates",
-                             headers=h, params={"id": f"eq.{row['id']}"}, json=patch)
+                r = A.sb_request("PATCH", f"{url}/rest/v1/candidates",
+                                 headers=h, params={"id": f"eq.{row['id']}"}, json=patch)
+                if r is None or not r.ok:
+                    body = "" if r is None else str(r.text)[:100]
+                    print(f"    WRITE FAILED for {row['id']}: {body}")
+                    write_failures.append(row["id"])
         shown = {k: v for k, v in sorted(tally.items())}
         print(f"    running tally: {shown}")
 
@@ -207,6 +248,24 @@ def main():
         print(f"  {k:16} {tally.get(k, 0)}")
     print("\nOnly 'verified' rows should reach a call list. 'unresolved' means "
           "unproven, not wrong — nothing was deleted.")
+
+    classified = sum(tally.values())
+    if len(rows) and classified != len(rows):
+        sys.exit(f"FAILED: {len(rows)} rows read but only {classified} classified.")
+    if write_failures:
+        sys.exit(f"FAILED: {len(write_failures)} of {len(rows)} rows could not be written.")
+    # A dead matcher has a specific signature: listings were loaded, yet every
+    # row that was NOT confidently rejected fell through to "unresolved". A
+    # slice that is legitimately almost all not_a_business / out_of_region is a
+    # healthy run and must not trip this, so the test is on the unresolved
+    # pile, not on the row count.
+    #
+    # NOT an error in the cloud, where the Windows-only gosom binary cannot run
+    # and there is legitimately no cache to read at all — hence `metro and`.
+    if metro and tally.get("unresolved", 0) >= 20 and not tally.get("verified"):
+        sys.exit(f"FAILED: {len(metro)} Maps listings were loaded and "
+                 f"{tally['unresolved']} rows fell to 'unresolved', but nothing "
+                 f"verified — the matcher is not working.")
 
 
 if __name__ == "__main__":

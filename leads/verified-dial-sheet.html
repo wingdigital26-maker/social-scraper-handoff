@@ -1,0 +1,297 @@
+<title>Verified DFW Roofers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F5F2; --surface:#FFFFFF; --sunk:#EAECE6;
+  --ink:#15181A; --ink-2:#525C56; --ink-3:#7C857F;
+  --rule:#DCE0D8; --accent:#1F6B4A; --accent-soft:#E3EFE7; --accent-deep:#164F37;
+  --warn:#8A5116; --warn-soft:#F6EEE2;
+  --shadow:0 1px 2px rgba(21,24,26,.05),0 3px 12px rgba(21,24,26,.045);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#101311; --surface:#181C19; --sunk:#1F2521;
+    --ink:#E8ECE7; --ink-2:#A3AEA6; --ink-3:#7E8A82;
+    --rule:#2A322C; --accent:#5FBE8E; --accent-soft:#14301F; --accent-deep:#8AD4AC;
+    --warn:#D89A54; --warn-soft:#2C2116;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 3px 14px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#101311; --surface:#181C19; --sunk:#1F2521;
+  --ink:#E8ECE7; --ink-2:#A3AEA6; --ink-3:#7E8A82;
+  --rule:#2A322C; --accent:#5FBE8E; --accent-soft:#14301F; --accent-deep:#8AD4AC;
+  --warn:#D89A54; --warn-soft:#2C2116;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 3px 14px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;padding:0 1.15rem 5rem;background:var(--paper);color:var(--ink);
+ font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+ font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:64rem;margin:0 auto}
+header.top{padding:3rem 0 1.4rem}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.16em;
+ text-transform:uppercase;color:var(--accent);font-weight:600;margin:0 0 .8rem}
+h1{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;
+ font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.02;letter-spacing:-.02em;
+ margin:0 0 .6rem;text-wrap:balance}
+.lede{margin:0;color:var(--ink-2);max-width:58ch;font-size:1.02rem}
+.lede b{color:var(--ink);font-weight:600}
+.stats{display:grid;gap:.85rem;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));
+ margin:1.9rem 0 0;padding:0;list-style:none}
+.stat{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);
+ border-radius:8px;padding:.85rem 1rem;box-shadow:var(--shadow)}
+.stat .num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+ font-size:1.5rem;font-weight:600;color:var(--accent);line-height:1.1;display:block}
+.stat p{margin:.15rem 0 0;color:var(--ink-2);font-size:.85rem}
+.note{margin:1.5rem 0 0;padding:.9rem 1.1rem;background:var(--sunk);
+ border:1px solid var(--rule);border-radius:8px;color:var(--ink-2);font-size:.9rem}
+.note b{color:var(--ink)}
+section{margin-top:3rem}
+.sec-h{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;
+ border-bottom:1px solid var(--rule);padding-bottom:.6rem;margin-bottom:1.2rem}
+.sec-h h2{font-family:"Bricolage Grotesque",sans-serif;font-size:1.2rem;margin:0;
+ letter-spacing:-.012em}
+.sec-h p{margin:0;color:var(--ink-3);font-size:.88rem;flex:1 1 18rem}
+.sec-h .n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+ color:var(--accent);font-weight:600}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr))}
+.lead{background:var(--surface);border:1px solid var(--rule);border-radius:9px;
+ padding:1.05rem 1.15rem 1.2rem;box-shadow:var(--shadow);
+ display:flex;flex-direction:column;gap:.65rem}
+.lead h3{font-family:"Bricolage Grotesque",sans-serif;font-size:1.02rem;margin:0;
+ line-height:1.25;letter-spacing:-.01em;text-wrap:balance}
+.loc{margin:.15rem 0 0;font-size:.8rem;color:var(--ink-3)}
+.site,.src{color:var(--accent);text-decoration:none;border-bottom:1px solid currentColor}
+.site:hover,.src:hover,.site:focus,.src:focus{opacity:.72}
+.tel{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+ font-size:1.4rem;font-weight:600;letter-spacing:-.01em;color:var(--ink);
+ text-decoration:none;border-bottom:2px solid var(--accent);align-self:flex-start}
+.tel:hover,.tel:focus{color:var(--accent)}
+.who{margin:0;font-size:.92rem;color:var(--ink-2)}
+.who b{color:var(--ink);font-weight:600}
+.fact{margin:0;padding:.75rem .9rem;background:var(--accent-soft);border-radius:6px;
+ font-size:.92rem;line-height:1.5;color:var(--ink)}
+.fact .k{display:block;font-family:"IBM Plex Mono",monospace;font-size:.61rem;
+ letter-spacing:.15em;text-transform:uppercase;color:var(--accent-deep);
+ font-weight:600;margin-bottom:.3rem}
+.fact .src{font-size:.82rem;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem;margin:0;padding:0;list-style:none}
+.chips li{font-family:"IBM Plex Mono",monospace;font-size:.69rem;
+ font-variant-numeric:tabular-nums;color:var(--ink-2);background:var(--sunk);
+ border:1px solid var(--rule);border-radius:20px;padding:.16rem .55rem}
+.chips li.gap{color:var(--warn);border-color:var(--warn);background:var(--warn-soft)}
+.proof{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.04em;
+ margin:.3rem 0 0;display:inline-block}
+.proof.maps{color:var(--accent)}
+.proof.website{color:var(--warn)}
+.mail{font-family:"IBM Plex Mono",monospace;font-size:.75rem;color:var(--ink-3);
+ word-break:break-all}
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:9px;
+ background:var(--surface);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;min-width:34rem}
+th{text-align:left;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+ color:var(--ink-3);font-weight:600;padding:.7rem .9rem;border-bottom:1px solid var(--rule)}
+td{padding:.6rem .9rem;border-bottom:1px solid var(--rule);font-size:.88rem}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--sunk)}
+td.num a{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+ color:var(--accent);text-decoration:none;font-weight:500}
+td a{color:var(--accent)}
+footer{margin-top:3.5rem;padding-top:1.2rem;border-top:1px solid var(--rule);
+ color:var(--ink-3);font-size:.85rem;max-width:64ch}
+a:focus-visible,.tel:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
+ border-radius:3px}
+@media (max-width:36rem){.grid{grid-template-columns:1fr}header.top{padding-top:2rem}}
+</style>
+
+<div class="wrap">
+<header class="top">
+<p class="eyebrow">Wing Digital &middot; Verified dial sheet &middot; 26 Aug 2026</p>
+<h1>86 roofers who actually exist</h1>
+<p class="lede">Every business below carries a DFW or toll&#8209;free number and
+was proven to exist two different ways &mdash; <b>54 matched a real Google Maps
+listing</b>, and <b>32 were proven only by a website that demonstrably belongs
+to them.</b> Started as 988 scraped names; <b>902 did not survive.</b></p>
+
+<ul class="stats">
+<li class="stat"><span class="num">86</span><p>verified and callable</p></li>
+<li class="stat"><span class="num">8</span><p>where you know the owner's name</p></li>
+<li class="stat"><span class="num">23</span><p>with a specific, checkable opening</p></li>
+</ul>
+
+<p class="note"><b>Why so few.</b> Of the original 988, 477 were not businesses
+at all (LinkedIn profiles, trade associations, lead&#8209;gen shells), 147 were
+real companies in the wrong state, and 271 could not be proven either way and
+are being held rather than guessed at. What is left is small on purpose.</p>
+</header>
+
+<section>
+<div class="sec-h"><h2>Owner and an opening</h2>
+<p>You know who to ask for and you have something real to say. Start here.</p>
+<span class="n">8</span></div>
+<div class="grid"><article class="lead">
+  <header><h3>Town and Country Roofing, Inc.</h3>
+    <p class="loc">Frisco · <a class="site" href="https://townandcountryroofingdfw.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9723778188">(972) 377-8188</a>
+  <p class="who">Ask for <b>Ralph Harris</b>, President</p><p class="fact"><span class="k">Open with</span>Your site says &quot;Since 2004&quot;, which puts you 22 years in. <a class="src" href="https://townandcountryroofingdfw.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.8 stars · 206 reviews</li><li class="gap">not ranking for their main keyword</li><li class="gap">no blog / no content engine</li></ul><span class="mail">ralph@townandcountryroofingdfw.com</span>
+</article><article class="lead">
+  <header><h3>Elevated Roofing</h3>
+    <p class="loc">Carrollton · <a class="site" href="https://elevatedroofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:4693050010">(469) 305-0010</a>
+  <p class="who">Ask for <b>Jenna Pires</b></p><p class="fact"><span class="k">Open with</span>Your site says &quot;Since 1995&quot;, which puts you 31 years in. <a class="src" href="https://elevatedroofing.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars · 1145 reviews</li><li class="gap">not ranking for their main keyword</li></ul>
+</article><article class="lead">
+  <header><h3>CLC Roofing Inc.</h3>
+    <p class="loc">Coppell · <a class="site" href="https://www.clcroofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9723044431">(972) 304-4431</a>
+  <p class="who">Ask for <b>Chad Cross</b>, Owner</p><p class="fact"><span class="k">Open with</span>Your site lists &quot;Owens Corning Platinum&quot; among your certifications. <a class="src" href="https://www.clcroofing.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars</li><li class="gap">not ranking for their main keyword</li></ul><span class="mail">info@clcroofing.com</span>
+</article><article class="lead">
+  <header><h3>Roofing Ranger</h3>
+    <p class="loc">Carrollton · <a class="site" href="https://roofingranger.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:4698100444">(469) 810-0444</a>
+  <p class="who">Ask for <b>Vadim Vostrikov</b>, Owner</p><p class="fact"><span class="k">Open with</span>You list Mesquite as a service area on your homepage, but there is no Mesquite page anywhere on the site — nothing for someone in Mesquite to find. <a class="src" href="https://roofingranger.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars</li><li class="gap">not ranking for their main keyword</li></ul>
+</article><article class="lead">
+  <header><h3>Blue Angel Roofing &amp; General Contractors</h3>
+    <p class="loc">Allen · <a class="site" href="https://blueangelroofinggc.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:2143892966">(214) 389-2966</a>
+  <p class="who">Ask for <b>Philip Gano</b>, Founder</p><p class="fact"><span class="k">Open with</span>The newest dated post on your blog is August 7, 2023 — the page has been sitting untouched for 3+ years. <a class="src" href="https://blueangelroofinggc.com/blog/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.7 stars · 59 reviews</li><li class="gap">not ranking for their main keyword</li></ul>
+</article><article class="lead">
+  <header><h3>Paradigm Roof + Shield</h3>
+    <p class="loc">McKinney · <a class="site" href="https://paradigmroofs.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9725427774">(972) 542-7774</a>
+  <p class="who">Ask for <b>Tony Hall</b>, Founder</p><p class="fact"><span class="k">Open with</span>Your homepage mentions &quot;storm damage&quot; 2 times, but none of the 118 links on it goes to a page about it. <a class="src" href="https://paradigmroofs.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars</li><li class="gap">not ranking for their main keyword</li></ul>
+</article><article class="lead">
+  <header><h3>Roofing Solutions</h3>
+    <p class="loc">Carrollton · <a class="site" href="https://roofingsolutions.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:8177261369">(817) 726-1369</a>
+  <p class="who">Ask for <b>David Hebert</b>, Principal</p><p class="fact"><span class="k">Open with</span>Your site says &quot;since 2004&quot;, which puts you 22 years in. <a class="src" href="https://roofingsolutions.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.7 stars · 97 reviews</li><li class="gap">not ranking for their main keyword</li></ul>
+</article><article class="lead">
+  <header><h3>Nailed It Roofing and Construction ...</h3>
+    <p class="loc">Arlington · <a class="site" href="https://naileditroofer.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:6829465656">(682) 946-5656</a>
+  <p class="who">Ask for <b>Rachel Einck</b>, Operations Manager</p><p class="fact"><span class="k">Open with</span>Your homepage mentions &quot;metal roof&quot; 2 times, but none of the 25 links on it goes to a page about it. <a class="src" href="https://naileditroofer.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars · 257 reviews</li><li>ranks #10</li></ul>
+</article></div></section><section>
+<div class="sec-h"><h2>Something to open with</h2>
+<p>No name on file, but a specific, checkable observation about their business.</p>
+<span class="n">15</span></div>
+<div class="grid"><article class="lead">
+  <header><h3>Royal Roofing</h3>
+    <p class="loc">Carrollton · <a class="site" href="https://royal-roofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9722356029">(972) 235-6029</a>
+  <p class="fact"><span class="k">Open with</span>Your site says &quot;since 1951&quot;, which puts you 75 years in. <a class="src" href="https://royal-roofing.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.6 stars</li><li class="gap">not ranking for their main keyword</li><li class="gap">no blog / no content engine</li><li class="gap">no service pages</li></ul><span class="mail">info@royal-roofing.com</span>
+</article><article class="lead">
+  <header><h3>Pioneer Roofing</h3>
+    <p class="loc">Plano · <a class="site" href="https://mypioneerroofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:4699091423">(469) 909-1423</a>
+  <p class="fact"><span class="k">Open with</span>Your homepage mentions &quot;storm damage&quot; 3 times, but none of the 36 links on it goes to a page about it. <a class="src" href="https://mypioneerroofing.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars · 12 reviews</li><li class="gap">not ranking for their main keyword</li><li class="gap">no service pages</li><li class="gap">very thin website</li></ul><span class="mail">help@mypioneerroofing.com</span>
+</article><article class="lead">
+  <header><h3>Dwell Roofing &amp; Exteriors</h3>
+    <p class="loc">Plano · <a class="site" href="https://dwellroofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9729946386">(972) 994-6386</a>
+  <p class="fact"><span class="k">Open with</span>You list Allen as a service area on your homepage, but there is no Allen page anywhere on the site (16 of the cities you list have no page at all) — nothing for someone in Allen to find. <a class="src" href="https://dwellroofing.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars · 188 reviews</li><li class="gap">not ranking for their main keyword</li><li class="gap">no blog / no content engine</li></ul>
+</article><article class="lead">
+  <header><h3>Longhorn Commercial Roofing</h3>
+    <p class="loc">Cleburne · <a class="site" href="https://www.longhorncr.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:8176455700">(817) 645-5700</a>
+  <p class="fact"><span class="k">Open with</span>Your site says &quot;over 15 years of experience&quot;. <a class="src" href="https://www.longhorncr.com/blog" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>5 stars · 7 reviews</li><li class="gap">not ranking for their main keyword</li><li class="gap">no service pages</li><li class="gap">only 7 reviews</li></ul><span class="mail">info@longhorncr.com</span>
+</article><article class="lead">
+  <header><h3>Superior One Roofing &amp; Construction, Inc</h3>
+    <p class="loc">Irving · <a class="site" href="https://www.superioroneroofing.net" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9728933374">(972) 893-3374</a>
+  <p class="fact"><span class="k">Open with</span>Your site says &quot;since 1981&quot;, which puts you 45 years in. <a class="src" href="https://www.superioroneroofing.net/page/about" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>5 stars</li><li class="gap">not ranking for their main keyword</li><li class="gap">no blog / no content engine</li></ul>
+</article><article class="lead">
+  <header><h3>Garland Roofing Co</h3>
+    <p class="loc">Garland · <a class="site" href="https://garlandroofingco.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9722781711">(972) 278-1711</a>
+  <p class="fact"><span class="k">Open with</span>You list Mesquite as a service area on your homepage, but there is no Mesquite page anywhere on the site (7 of the cities you list have no page at all) — nothing for someone in Mesquite to find. <a class="src" href="https://garlandroofingco.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.4 stars</li><li class="gap">not ranking for their main keyword</li><li class="gap">no blog / no content engine</li></ul><span class="mail">info@garlandroofingco.com</span>
+</article><article class="lead">
+  <header><h3>Triumph Roofing</h3>
+    <p class="loc">Dallas · <a class="site" href="https://www.triumphroofing.net" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9723321766">(972) 332-1766</a>
+  <p class="fact"><span class="k">Open with</span>You list Allen as a service area on your homepage, but there is no Allen page anywhere on the site (11 of the cities you list have no page at all) — nothing for someone in Allen to find. <a class="src" href="https://www.triumphroofing.net/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars · 2 reviews</li><li class="gap">not ranking for their main keyword</li><li class="gap">only 2 reviews</li></ul><span class="mail">info@triumphroofing.net</span>
+</article><article class="lead">
+  <header><h3>Hamlin Roofing and Repairs</h3>
+    <p class="loc">Midlothian · <a class="site" href="https://hamlinroofingrepairs.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:4698074040">(469) 807-4040</a>
+  <p class="fact"><span class="k">Open with</span>You list Cleburne as a service area on your homepage, but there is no Cleburne page anywhere on the site (2 of the cities you list have no page at all) — nothing for someone in Cleburne to find. <a class="src" href="https://hamlinroofingrepairs.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>5 stars · 4 reviews</li><li class="gap">not ranking for their main keyword</li><li class="gap">only 4 reviews</li></ul><span class="mail">info@hamlinroofingrepairs.com</span>
+</article><article class="lead">
+  <header><h3>Elite Roofing LLC</h3>
+    <p class="loc">McKinney · <a class="site" href="https://eliteroofingwv.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:2142257663">(214) 225-7663</a>
+  <p class="fact"><span class="k">Open with</span>Your site lists &quot;Owens Corning Platinum&quot; among your certifications. <a class="src" href="https://eliteroofingwv.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars · 173 reviews</li><li class="gap">not ranking for their main keyword</li></ul><span class="mail">info@eliteroofingwv.com</span>
+</article><article class="lead">
+  <header><h3>Lowry Roofing</h3>
+    <p class="loc">Dallas · <a class="site" href="https://www.lowryroofingco.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9728004574">(972) 800-4574</a>
+  <p class="fact"><span class="k">Open with</span>The newest dated post on your blog is September 2019 — the page has been sitting untouched for 7+ years. <a class="src" href="https://www.lowryroofingco.com/blog/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars · 46 reviews</li><li class="gap">not ranking for their main keyword</li></ul>
+</article><article class="lead">
+  <header><h3>AHLERS ROOFING and CONSTRUCTION</h3>
+    <p class="loc">North Richland Hills · <a class="site" href="https://www.ahlersroofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:8177932424">(817) 793-2424</a>
+  <p class="fact"><span class="k">Open with</span>Your homepage mentions &quot;storm damage&quot; 5 times, but none of the 78 links on it goes to a page about it. <a class="src" href="https://www.ahlersroofing.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.5 stars · 309 reviews</li><li class="gap">not ranking for their main keyword</li></ul><span class="mail">info@ahlersroofing.com</span>
+</article><article class="lead">
+  <header><h3>City Roofing Company</h3>
+    <p class="loc">Plano · <a class="site" href="https://www.cityroofing.net" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:8177381756">(817) 738-1756</a>
+  <p class="fact"><span class="k">Open with</span>You list Arlington as a service area on your homepage, but there is no Arlington page anywhere on the site — nothing for someone in Arlington to find. <a class="src" href="https://www.cityroofing.net/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.7 stars</li><li class="gap">not ranking for their main keyword</li></ul><span class="mail">info@cityroofing.net</span>
+</article><article class="lead">
+  <header><h3>Firewheel Roofing</h3>
+    <p class="loc">Garland · <a class="site" href="https://firewheelroofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:4693873848">(469) 387-3848</a>
+  <p class="fact"><span class="k">Open with</span>Your homepage mentions &quot;standing seam&quot; 2 times, but none of the 153 links on it goes to a page about it. <a class="src" href="https://firewheelroofing.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>4.9 stars · 145 reviews</li><li class="gap">not ranking for their main keyword</li></ul><span class="mail">info@firewheelroofing.com</span>
+</article><article class="lead">
+  <header><h3>Accent Roofing Company &amp; Construction</h3>
+    <p class="loc">Frisco · <a class="site" href="https://accentroofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:8179037663">(817) 903-7663</a>
+  <p class="fact"><span class="k">Open with</span>The newest dated post on your blog is March 29, 2024 — the page has been sitting untouched for 2+ years. <a class="src" href="https://accentroofing.com/blog/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>5 stars · 2025 reviews</li><li class="gap">not ranking for their main keyword</li></ul>
+</article><article class="lead">
+  <header><h3>Helsley Roofing Company</h3>
+    <p class="loc">Plano · <a class="site" href="https://helsleyroofing.com" target="_blank" rel="noopener">their site</a></p>
+    <p class="proof maps">Google Maps listing</p></header>
+  <a class="tel" href="tel:9725788982">(972) 578-8982</a>
+  <p class="fact"><span class="k">Open with</span>Your site lists &quot;GAF Master Elite&quot; among your certifications. <a class="src" href="https://helsleyroofing.com/" target="_blank" rel="noopener">check it</a></p><ul class="chips"><li>5 stars · 17 reviews</li><li>ranks #8</li><li class="gap">only 17 reviews</li></ul><span class="mail">info@helsleyroofing.com</span>
+</article></div></section><section>
+<div class="sec-h"><h2>Verified, nothing to open on</h2>
+<p>Real businesses with real DFW numbers. Cold dials, or research one before you
+call. The Proof column says how each was confirmed.</p>
+<span class="n">63</span></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Business</th><th>City</th><th>Phone</th><th>Proof</th></tr></thead>
+<tbody><tr><td>Lancaster Roofing &amp; Construction</td><td>Lancaster</td><td class="num"><a href="tel:2142476388">(214) 247-6388</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Lsdgroofing</td><td>Dallas</td><td class="num"><a href="tel:4694506351">(469) 450-6351</a></td><td><span class="proof website">site only</span> <a href="https://www.lsdgroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Apple Roofing</td><td>North Richland Hills</td><td class="num"><a href="tel:4699084323">(469) 908-4323</a></td><td><span class="proof maps">Maps</span> <a href="https://appleroofing.net" target="_blank" rel="noopener">site</a></td></tr><tr><td>Results Roofing</td><td>Flower Mound</td><td class="num"><a href="tel:4692708037">(469) 270-8037</a></td><td><span class="proof maps">Maps</span> <a href="https://resultsroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Recommended Roofing</td><td>McKinney</td><td class="num"><a href="tel:9728933444">(972) 893-3444</a></td><td><span class="proof website">site only</span> <a href="https://www.recommendedroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Red Phoenix Roofing &amp; Construction</td><td>Waxahachie</td><td class="num"><a href="tel:2144447772">(214) 444-7772</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Centennial Contracting and Roofing</td><td>Midlothian</td><td class="num"><a href="tel:9722231765">(972) 223-1765</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Titan Contractors</td><td>Midlothian</td><td class="num"><a href="tel:8174737663">(817) 473-7663</a></td><td><span class="proof maps">Maps</span> <a href="https://www.titan-contractors.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Alpha &amp; Omega Roofing</td><td>Irving</td><td class="num"><a href="tel:4698540025">(469) 854-0025</a></td><td><span class="proof website">site only</span> <a href="https://alpha-omega-roofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>RJW Construction</td><td>Plano</td><td class="num"><a href="tel:2144940351">(214) 494-0351</a></td><td><span class="proof website">site only</span> <a href="https://rjw-construction.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>IFC Roofing</td><td>Carrollton</td><td class="num"><a href="tel:8176729899">(817) 672-9899</a></td><td><span class="proof maps">Maps</span> <a href="https://www.ifcroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Simplicity Roofing</td><td>North Richland Hills</td><td class="num"><a href="tel:8175419800">(817) 541-9800</a></td><td><span class="proof maps">Maps</span> <a href="https://www.simplicitymfg.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>LonePoint Roofing DFW</td><td>Prosper</td><td class="num"><a href="tel:4697341949">(469) 734-1949</a></td><td><span class="proof website">site only</span> <a href="https://lonepointroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Ember Roofing</td><td>Mansfield</td><td class="num"><a href="tel:6824301261">(682) 430-1261</a></td><td><span class="proof website">site only</span> <a href="https://www.emberroof.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Dynamisroofing</td><td>Denton</td><td class="num"><a href="tel:4699290145">(469) 929-0145</a></td><td><span class="proof website">site only</span> <a href="https://dynamisroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Cornerstone Roofing, LTD</td><td>Rockwall</td><td class="num"><a href="tel:9725963488">(972) 596-3488</a></td><td><span class="proof website">site only</span> <a href="https://www.cornerstoneroofing.biz" target="_blank" rel="noopener">site</a></td></tr><tr><td>Norman Roofing and Construction</td><td>Waxahachie</td><td class="num"><a href="tel:9727457273">(972) 745-7273</a></td><td><span class="proof website">site only</span> <a href="https://norman.construction" target="_blank" rel="noopener">site</a></td></tr><tr><td>Rhino Roofing and General Contracting, LLC</td><td>Wylie</td><td class="num"><a href="tel:8443874466">(844) 387-4466</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Roofing and Restoration Services of America</td><td>Waxahachie</td><td class="num"><a href="tel:8559376527">(855) 937-6527</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Valentine Premier Construction. LLC</td><td>Coppell</td><td class="num"><a href="tel:9725384400">(972) 538-4400</a></td><td><span class="proof website">site only</span> <a href="https://valentinepremierconstruction.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Pitts Roofing</td><td>Fort Worth</td><td class="num"><a href="tel:8178382299">(817) 838-2299</a></td><td><span class="proof website">site only</span> <a href="https://pittsroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Graves Roofing &amp; Restoration</td><td>Rockwall</td><td class="num"><a href="tel:9726387789">(972) 638-7789</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Roof Time General Contractors</td><td>Waxahachie</td><td class="num"><a href="tel:9727238463">(972) 723-8463</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Vera Roofing &amp; Construction</td><td>Waxahachie</td><td class="num"><a href="tel:9724600210">(972) 460-0210</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Monroe Roofing Company</td><td>McKinney</td><td class="num"><a href="tel:8777446644">(877) 744-6644</a></td><td><span class="proof website">site only</span> <a href="https://monroeroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Huertero Roofing</td><td>Arlington</td><td class="num"><a href="tel:6828088889">(682) 808-8889</a></td><td><span class="proof website">site only</span> <a href="https://huerteroroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Proficient Roofing, LLC</td><td>Frisco</td><td class="num"><a href="tel:2148421064">(214) 842-1064</a></td><td><span class="proof website">site only</span> <a href="https://proficientroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Planoroofing</td><td>Plano</td><td class="num"><a href="tel:9726801010">(972) 680-1010</a></td><td><span class="proof website">site only</span> <a href="https://planoroofingcompany.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Salter Exteriors</td><td>Fort Worth</td><td class="num"><a href="tel:9722467448">(972) 246-7448</a></td><td><span class="proof website">site only</span> <a href="https://www.salterexteriors.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Tarrant Roofing</td><td>Fort Worth</td><td class="num"><a href="tel:8175717809">(817) 571-7809</a></td><td><span class="proof website">site only</span> <a href="https://tarrantroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>JL Contractors DFW</td><td>Allen</td><td class="num"><a href="tel:4692973045">(469) 297-3045</a></td><td><span class="proof website">site only</span> <a href="https://www.jlcontractorsdfw.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>T-Rock Construction</td><td>Flower Mound</td><td class="num"><a href="tel:2145484733">(214) 548-4733</a></td><td><span class="proof website">site only</span> <a href="https://trockgc.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Pearson Roofing</td><td>Flower Mound</td><td class="num"><a href="tel:9724712700">(972) 471-2700</a></td><td><span class="proof maps">Maps</span> <a href="https://www.pearsonroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Mansfield Roofing</td><td>Mansfield</td><td class="num"><a href="tel:8177042787">(817) 704-2787</a></td><td><span class="proof website">site only</span> <a href="https://mansfieldconst.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Boyd Bone Dry</td><td>Mansfield</td><td class="num"><a href="tel:8174773436">(817) 477-3436</a></td><td><span class="proof website">site only</span> <a href="https://www.boydbonedry.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Dobson Contractors</td><td>Garland</td><td class="num"><a href="tel:9729925019">(972) 992-5019</a></td><td><span class="proof website">site only</span> <a href="https://www.dobsoncontractors.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>PentaVia Custom Homes</td><td>Southlake</td><td class="num"><a href="tel:8177683884">(817) 768-3884</a></td><td><span class="proof website">site only</span> <a href="https://www.pentaviacustomhomes.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Frisco Roofing LLC</td><td>Frisco</td><td class="num"><a href="tel:9725673362">(972) 567-3362</a></td><td><span class="proof website">site only</span> <a href="https://friscoroofingllc.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Firefighter Roofing</td><td>North Richland Hills</td><td class="num"><a href="tel:8177500911">(817) 750-0911</a></td><td><span class="proof maps">Maps</span> <a href="https://firefighterroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Jabes Constructors</td><td>Little Elm</td><td class="num"><a href="tel:4692090536">(469) 209-0536</a></td><td><span class="proof website">site only</span> <a href="https://www.jabesconstructors.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Thedallasroofer</td><td>Dallas</td><td class="num"><a href="tel:2149039290">(214) 903-9290</a></td><td><span class="proof website">site only</span> <a href="https://thedallasroofer.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Texas Direct Roofing &amp; Construction</td><td>Haltom City</td><td class="num"><a href="tel:8177753540">(817) 775-3540</a></td><td><span class="proof maps">Maps</span> <a href="https://www.roofingdirect.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Ramon Roofing Inc</td><td>Fort Worth</td><td class="num"><a href="tel:8179241645">(817) 924-1645</a></td><td><span class="proof website">site only</span> <a href="https://www.ramonroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Superior Attic</td><td>Southlake</td><td class="num"><a href="tel:8172218090">(817) 221-8090</a></td><td><span class="proof website">site only</span> <a href="https://www.superiorattic.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Riddle Brothers Roofing</td><td>Garland</td><td class="num"><a href="tel:2148848346">(214) 884-8346</a></td><td><span class="proof website">site only</span> <a href="https://riddlebrothersroofing.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>McKinney Roofing</td><td>McKinney</td><td class="num"><a href="tel:9723691011">(972) 369-1011</a></td><td><span class="proof maps">Maps</span> <a href="https://mckinneyroofing.net" target="_blank" rel="noopener">site</a></td></tr><tr><td>Dalworth Restoration</td><td>Euless</td><td class="num"><a href="tel:8172032944">(817) 203-2944</a></td><td><span class="proof website">site only</span> <a href="https://www.dalworthrestoration.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Rockwall Roofing</td><td>Rockwall</td><td class="num"><a href="tel:4692173916">(469) 217-3916</a></td><td><span class="proof website">site only</span> <a href="https://www.rockwallroofingco.com" target="_blank" rel="noopener">site</a></td></tr><tr><td>Banner Roofing &amp; Construction LLC</td><td>Frisco</td><td class="num"><a href="tel:6822071586">(682) 207-1586</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Concord Roofing &amp; Construction</td><td>Plano</td><td class="num"><a href="tel:2142996110">(214) 299-6110</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Renown Roofing &amp; Construction</td><td>Flower Mound</td><td class="num"><a href="tel:9727825489">(972) 782-5489</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Mesquite Roofing Supplies</td><td>Mesquite</td><td class="num"><a href="tel:4695067644">(469) 506-7644</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>3:16 Roofing and Construction</td><td>Keller</td><td class="num"><a href="tel:8174027663">(817) 402-7663</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>PRIORITY ROOFING</td><td>Dallas</td><td class="num"><a href="tel:4696158193">(469) 615-8193</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>AM Roofing Company</td><td>Dallas</td><td class="num"><a href="tel:2149804366">(214) 980-4366</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>worthambrothersroofing</td><td>McKinney</td><td class="num"><a href="tel:2149718838">(214) 971-8838</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>T-Rock Roofing and Contracting</td><td>Flower Mound</td><td class="num"><a href="tel:9454253643">(945) 425-3643</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Peaked Roofing of Flower Mound</td><td>Flower Mound</td><td class="num"><a href="tel:8172310809">(817) 231-0809</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Firemanroofingbedford</td><td>Bedford</td><td class="num"><a href="tel:8174559342">(817) 455-9342</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Precision Construction &amp; Roofing</td><td>North Richland Hills</td><td class="num"><a href="tel:8175198985">(817) 519-8985</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Storm Guard Roofing of Mansfield</td><td>Mansfield</td><td class="num"><a href="tel:6823379100">(682) 337-9100</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Veritas Roofing TX</td><td>Carrollton</td><td class="num"><a href="tel:8174550117">(817) 455-0117</a></td><td><span class="proof maps">Maps</span> </td></tr><tr><td>Outback Roofing, LLC</td><td>Dallas</td><td class="num"><a href="tel:9729309990">(972) 930-9990</a></td><td><span class="proof website">site only</span> <a href="https://www.outbackroofing.com" target="_blank" rel="noopener">site</a></td></tr></tbody></table></div></section>
+
+<footer>
+<p>Two levels of proof, marked on every entry. <b>Google Maps listing</b> means the
+company was matched to a real Maps record, and its phone and rating come from that
+record rather than a search snippet. <b>Website only</b> means the company is real
+&mdash; a website demonstrably belongs to it &mdash; but no Maps record was matched,
+so its city is less certain. Every phone on this sheet is a DFW or toll&#8209;free
+number either way. Every "open with" line was read off that
+company's own website and links back to the page it came from, so you can check
+it in one click before you dial. Where nothing specific could be found, the card
+says so rather than offering a generic line.</p>
+</footer>
+</div>

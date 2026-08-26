@@ -120,6 +120,11 @@ def find_socials(name, city):
 
 
 def research(lead):
+    # Name what is missing instead of raising a bare KeyError that the caller
+    # then flattens into an opaque error row.
+    missing = [k for k in ("name", "city", "niche") if not lead.get(k)]
+    if missing:
+        raise ValueError(f"lead is missing required field(s): {', '.join(missing)}")
     name, city, niche = lead["name"], lead["city"], lead["niche"]
     print(f"  researching {name} ({city})")
 
@@ -174,7 +179,14 @@ def main():
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
 
-    leads = json.loads(pathlib.Path(args.inp).read_text(encoding="utf-8"))
+    in_path = pathlib.Path(args.inp)
+    if not in_path.exists():
+        sys.exit(f"FAIL: input not found: {in_path}")
+    leads = json.loads(in_path.read_text(encoding="utf-8"))
+    if not isinstance(leads, list):
+        sys.exit(f"FAIL: {in_path} must contain a JSON list of leads, got {type(leads).__name__}")
+    if not leads:
+        sys.exit(f"FAIL: {in_path} contains no leads. Nothing to research.")
     if args.limit:
         leads = leads[:args.limit]
     out_path = pathlib.Path(args.out or (pathlib.Path(args.inp).with_name(
@@ -189,17 +201,35 @@ def main():
                 results.append(f.result())
             except Exception as e:
                 l = futures[f]
-                print(f"      ERROR on {l['name']}: {str(e)[:100]}")
+                print(f"      ERROR on {l.get('name') or '<unnamed lead>'}: {str(e)[:100]}")
                 results.append({**l, "error": str(e)[:200]})
+
+    ok = [r for r in results if not r.get("error")]
+    failed = len(results) - len(ok)
+
+    # --- zero-yield gate ----------------------------------------------------
+    # House rule: zero yield with non-zero attempts is a hard failure. Every
+    # lead erroring out and still exiting 0 is exactly the failure this guards.
+    if not ok:
+        sys.exit(f"\nFAIL: attempted {len(leads)} lead(s), researched 0 "
+                 f"({failed} errored). Nothing written to {out_path}.")
 
     results.sort(key=lambda r: (r.get("need_score") or 0), reverse=True)
     out_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
-    print(f"\nWrote {len(results)} researched leads -> {out_path}")
+    print(f"\nWrote {len(results)} rows -> {out_path}")
+    print(f"  {len(ok)} researched, {failed} errored"
+          + (" (error rows kept with an `error` field - nothing is dropped)" if failed else ""))
 
-    withsoc = sum(1 for r in results if r.get("social_count"))
-    noblog = sum(1 for r in results if r.get("has_blog") is False)
-    print(f"  {withsoc}/{len(results)} have a findable social profile")
-    print(f"  {noblog}/{len(results)} have no blog")
+    withsoc = sum(1 for r in ok if r.get("social_count"))
+    noblog = sum(1 for r in ok if r.get("has_blog") is False)
+    print(f"  {withsoc}/{len(ok)} researched leads have a findable social profile")
+    print(f"  {noblog}/{len(ok)} researched leads have no blog")
+    # A stray failure is normal (a dead site, a timeout). More than half of the
+    # batch failing is systemic — the search index is blocking us, or the input
+    # shape is wrong — and must not be reported to a cron caller as success.
+    if failed > len(results) / 2:
+        sys.exit(f"FAIL: {failed}/{len(results)} leads errored - this is a systemic failure, "
+                 f"not stray noise. Output was still written to {out_path} for inspection.")
 
 
 if __name__ == "__main__":

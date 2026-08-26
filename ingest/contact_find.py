@@ -300,6 +300,40 @@ NOT_A_PERSON_PART = {
 }
 
 
+def person_for_email(email: str, people: list):
+    """The named human this address actually belongs to, or None.
+
+    Same matching as classify_email's "personal" test, factored out because
+    mine() used a WEAKER test (bare token intersection) and therefore failed to
+    tie markj@norman.construction to "Mark Jackson" -- then fell through to the
+    most senior person on the page and paired that address with "Mike Basler".
+    Jack would have opened the call with the wrong man's name.
+
+    Returns None when the address is AMBIGUOUS as well as when nothing matches.
+    Norman Roofing's staff page names both a Mark Jackson and a Mark Junge, and
+    "markj@" is exactly as good a fit for one as the other. Choosing between
+    them would be a coin-flip dressed up as research, so two matches means we
+    do not know -- the same answer as none.
+    """
+    local = email.split("@", 1)[0].lower()
+    parts = [p for p in re.split(r"[._\-+0-9]+", local) if p]
+    squashed = re.sub(r"[^a-z]", "", local)
+    hits = []
+    for p in people:
+        toks = [t for t in re.split(r"[^A-Za-z]+", p[0].lower()) if t]
+        if not toks:
+            continue
+        matched = any(t in parts for t in toks if len(t) > 2)
+        if not matched and len(toks) >= 2:
+            first, last = toks[0], toks[-1]
+            matched = squashed in (first + last, last + first,
+                                   first[0] + last, first + last[0],
+                                   last + first[0], first[0] + last[0] + last)
+        if matched and p[0].lower() not in [x[0].lower() for x in hits]:
+            hits.append(p)
+    return hits[0] if len(hits) == 1 else None
+
+
 def classify_email(email: str, names: list) -> str:
     """personal | role | unknown -- classified HONESTLY.
 
@@ -359,8 +393,24 @@ TITLES = (r"Owner|Co-?Owner|Founder|Co-?Founder|President|CEO|COO|"
           r"Vice President(?: of [A-Z][a-z]+)?|General Manager|Managing Partner|"
           r"Principal|Operations Manager|Office Director|Director of Operations|"
           r"Director of [A-Z][a-z]+|Project Manager|Sales Manager")
+# Team pages very often print a DEPARTMENT or BRANCH label between the person
+# and their title: "Mike Basler Leadership President", "Ryan Martinez Dallas
+# Project Manager". Without allowing for that label, the regex grabs the last
+# two capitalised words before the title and produces "Basler Leadership" --
+# the real first name silently dropped and a department promoted to surname.
+# Every one of the five humans on Norman Roofing's staff page was captured that
+# way. A wrong name is the worst possible field to get wrong: it is the first
+# word out of Jack's mouth on the call.
+DEPT_LABEL = (r"Leadership|Staff|Team|Management|Executive|Administration|"
+              r"Office|Operations|Production|Estimating|Accounting|Sales|"
+              r"Marketing|Field|Corporate|Construction|Service|Services|"
+              r"Division|Department|Roofing|Residential|Commercial|"
+              r"Dallas|Fort Worth|Houston|Austin|Plano|Frisco|McKinney|"
+              r"Arlington|Denton|Irving|Garland")
 NAME_THEN_TITLE = re.compile(
     r"\b((?:[A-Z][a-z]+|[A-Z]{2,})(?:\s+[A-Z]\.?)?\s+(?:[A-Z][a-z]+|[A-Z]{2,}))"
+    r"\s*(?:[,\-\u2013|]\s*)?"
+    r"(?:\s*(?:" + DEPT_LABEL + r")\b)?"
     r"\s*(?:[,\-\u2013|]\s*)?(" + TITLES + r")\b")
 SCHEMA_PERSON = re.compile(
     r'"(?:founder|owner|employee|author)"\s*:\s*(?:\[\s*)?\{[^}]*?"name"\s*:\s*"([^"]{3,60})"', re.I)
@@ -373,6 +423,15 @@ BAD_NAME_WORDS = {
     "terms", "service", "services", "united", "states", "texas", "north",
     "south", "east", "west", "google", "facebook", "all", "rights", "reserved",
     "customer", "reviews", "review", "roof", "storm", "insurance", "new",
+    # Department / section headings that a team page prints right next to a
+    # human's name. Belt-and-braces behind DEPT_LABEL above: if the label ever
+    # slips past the regex, "Basler Leadership" must still be refused as a
+    # person rather than written into contact_name.
+    "leadership", "staff", "employees", "employee", "management", "executive",
+    "administration", "operations", "production", "estimating", "accounting",
+    "corporate", "division", "department", "office", "team", "marketing",
+    "sales", "commercial", "residential", "project", "manager", "director",
+    "president", "owner", "founder", "ceo", "principal", "partner",
 }
 
 
@@ -452,12 +511,27 @@ def mine(cand: dict) -> dict:
         print("      robots.txt disallows the homepage -- skipping this site")
         return out
 
+    # A parked domain or a bot wall must never be mined for an address. A
+    # parking lander commonly prints admin@<domain> or owner@<domain>, and
+    # because the domain matches, belongs_to_business() would happily accept it
+    # and we would store a fabricated-looking contact for a business whose site
+    # does not exist. Detection lives in recover_unresolved (same lane).
+    from recover_unresolved import readable as _readable   # noqa: E402
+
     html, final = fetch(site)
     if html is None:
         # A fetch failure is a fetch failure. It is NOT "no email found", so we
         # leave contact_checked_at unset and let the next run try again.
         print(f"      site unreachable ({final}) -- leaving unchecked for a retry")
         return None
+
+    ok_page, why = _readable(html)
+    if not ok_page:
+        # Recorded as checked-with-nothing rather than retried forever: a parked
+        # domain will still be parked tomorrow. No address is mined from it.
+        print(f"      {why} -- no address mined from this page")
+        return out
+
     pages = [(final, html)]
 
     links = set(re.findall(r'href=["\']([^"\']+)["\']', html))
@@ -515,13 +589,24 @@ def mine(cand: dict) -> dict:
     out["email_source"] = source
 
     # Attach the human, preferring the one the address itself points at.
-    person = None
-    if kind == "personal":
-        local_parts = set(p for p in re.split(r"[._\-+0-9]+", email.split("@")[0]) if len(p) > 2)
-        person = next((p for p in people
-                       if local_parts & set(t.lower() for t in p[0].split())), None)
-    # Otherwise take the most senior person named, not merely the first one on
-    # the page -- a team page lists ten project managers before the owner.
+    person = person_for_email(email, people) if kind == "personal" else None
+
+    # A PERSONAL address whose owner we cannot identify gets NO name attached.
+    # Falling through to "the most senior person on the site" would pair one
+    # human's private mailbox with a different human's name -- an invented
+    # pairing built from two unrelated signals, and the single most embarrassing
+    # thing this file could produce. No name is the correct answer.
+    if kind == "personal" and person is None:
+        print("      personal address but no named owner on the site -- "
+              "leaving contact_name empty rather than guessing")
+        out["email_mx"] = mx_status(email)
+        print(f"      {kind.upper():8} {email}  <- {source}")
+        return out
+
+    # For a ROLE or UNKNOWN address the name is a separate object -- "who runs
+    # this company", not "who owns this inbox" -- so the most senior person
+    # named is the right answer, not merely the first one on the page (a team
+    # page lists ten project managers before the owner).
     def seniority(p):
         t = (p[1] or "").lower()
         for i, w in enumerate(("owner", "founder", "president", "ceo", "principal",
@@ -614,6 +699,19 @@ def main():
     print(f"  unknown kind    : {tally['unknown']}")
     print(f"  no address found: {tally['none']}")
     print(f"  site unreachable: {tally['unreachable']} (left unchecked, will retry)")
+
+    # Zero yield with non-zero attempts is a hard failure. If EVERY site was
+    # unreachable, the problem is this machine's network, not 20 businesses
+    # simultaneously going offline -- and exiting 0 would let a cron job report
+    # success while enriching nothing, night after night.
+    if rows and tally["unreachable"] == len(rows):
+        print("\nFAIL: every single site was unreachable. That is a local network "
+              "or DNS failure, not a property of these leads.")
+        sys.exit(1)
+    if rows and (tally["personal"] + tally["role"] + tally["unknown"]) == 0:
+        print("\nFAIL: mined {} site(s) and found 0 addresses of any kind. "
+              "Check fetching before trusting this result.".format(len(rows)))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

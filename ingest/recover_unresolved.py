@@ -101,6 +101,46 @@ DOORWAY = re.compile(r"(roofingpro|roofing-pro|prosroofing|roofers?near|"
 PHONE_RE = re.compile(r"\(?(\d{3})\)?[\s.‑–-]?(\d{3})[\s.‑–-]?(\d{4})")
 TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.S | re.I)
 
+# A 200 response is not the same as a readable page. Three shapes turned up on
+# real rows and every one of them was being reported as "owned but shows no
+# DFW-area-code phone" -- a sentence that claims we READ the business's site and
+# it lacked a phone. We had read nothing:
+#   * banner-roofing.com returned a 521-byte sgcaptcha challenge (WE were blocked)
+#   * lumenroofing.com and ironsummitroofing.com returned a 342-byte JS redirect
+#     to "/lander" -- parked domains, not the business's site at all
+# Calling any of those "no phone on their site" is exactly the unknown-reported-
+# as-a-finding failure this project keeps having. They are UNREADABLE, and that
+# is a different answer that a human can act on.
+CAPTCHA_RE = re.compile(r"sgcaptcha|captcha|cf-browser-verification|"
+                        r"just a moment|attention required|access denied|"
+                        r"enable javascript and cookies", re.I)
+PARKED_RE = re.compile(r'location\.href\s*=\s*["\']/?lander|'
+                       r"(domain (is )?(for sale|parked))|parkingcrew|sedoparking|"
+                       r"afternic|bodis\.com", re.I)
+MIN_READABLE_TEXT = 200      # characters of visible text
+
+
+def readable(html):
+    """(ok, reason). Is this actually the business's page, or a wall/stub?
+
+    ORDER MATTERS. An earlier version tested the captcha signature first and
+    rejected nemaroofing.com -- a 433KB page full of real content that simply
+    embeds reCAPTCHA on its contact form. Matching the bare word "captcha"
+    anywhere in a document is the same too-loose-substring mistake as the email
+    regex that once matched "slick-carousel@1.8.1". So: if we actually got a
+    page's worth of text, we READ it, whatever widgets it happens to load. Only
+    a page with no text to speak of gets diagnosed as parked or walled.
+    """
+    if not html:
+        return False, "unreachable"
+    if len(strip_html(html).strip()) >= MIN_READABLE_TEXT:
+        return True, None
+    if PARKED_RE.search(html):
+        return False, "parked domain / for-sale lander, not their site"
+    if CAPTCHA_RE.search(html):
+        return False, "blocked by a bot wall (WE were blocked -- not a finding)"
+    return False, "returned almost no readable text (stub/JS-only page)"
+
 
 def strip_html(html):
     html = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", html)
@@ -206,6 +246,11 @@ def recover(row, find_sites=False):
     if not html:
         return False, None, {}, f"{host} unreachable"
 
+    # Do not derive any finding about the business from a page we did not read.
+    ok, why = readable(html)
+    if not ok:
+        return False, None, {}, f"{host} {why}"
+
     owned, how = proves_ownership(name, host, html)
     if not owned:
         return False, None, {}, f"{host} not provably owned by '{name}'"
@@ -262,9 +307,11 @@ def main():
     print(f"Checking {len(rows)} unresolved rows against their own websites"
           f"{' (DRY RUN)' if args.dry_run else ''}\n")
 
-    promoted, held = 0, 0
+    promoted, held, unreachable = 0, 0, 0
     for row in rows:
         ok, reason, patch, note = recover(row, find_sites=args.find_sites)
+        if note.endswith("unreachable"):
+            unreachable += 1
         tag = "PROMOTE" if ok else "hold   "
         print(f"[{tag}] {row['id']:>5}  {row['title'][:44]:<44} {note}")
         if not ok:
@@ -283,6 +330,16 @@ def main():
     print("\nPromotion needs BOTH proven domain ownership AND a DFW-area-code "
           "phone on the page. Unproven rows stay unresolved — nothing deleted, "
           "nothing demoted.")
+
+    # Promoting nothing is a NORMAL, correct outcome here -- most unresolved rows
+    # genuinely cannot be proven, and holding them is the point of the file. So
+    # zero promotions is not a failure. Every site being unreachable IS: that is
+    # this machine's network, and it would otherwise look like 50 businesses all
+    # failing the evidence test.
+    if rows and unreachable == len(rows):
+        print(f"\nFAIL: all {len(rows)} sites were unreachable — that is a local "
+              f"network/DNS failure, not evidence about these businesses.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -106,6 +106,76 @@ SERVICE_AREA_RE = re.compile(
     r"proudly\s+serv|serving\s+|communities\s+we|surrounding\s+"
     r"(area|communit|town|cit))", re.I)
 
+# --- guards on the service-area reader -------------------------------------
+# Being NEAR the words "service areas" is not the same as BEING in the list.
+# Each of these three was a wrong fact sitting in the database, found by
+# re-reading the stored source pages, and each would have been said out loud
+# to the business it was wrong about.
+
+# 1. The city is the business's OWN postal address. Ahlers Roofing prints
+#    "Address: 2333 Minnis Drive Haltom City, Texas 76117" in a footer that
+#    also carries a SERVICE AREAS nav — Haltom City is NOT in that nav. The
+#    stored fact told a company headquartered in Haltom City that it had no
+#    Haltom City page. A city followed by a state and a ZIP is an address.
+ADDRESS_TAIL_RE = re.compile(r"^\s*,?\s*(tx|texas)\b\.?,?\s*\d{5}", re.I)
+#    The street-number branch is deliberately anchored on a real street SUFFIX.
+#    An earlier draft of it was just `\d{2,6}\s+[\w.]+{0,4}$`, which happily
+#    matched the tail of "...972-332-1766 Service Areas " and would have thrown
+#    away a CORRECT fact -- the same too-loose-regex mistake that once let
+#    "slick-carousel@1.8.1" into this database as an email address.
+ADDRESS_LEAD_RE = re.compile(
+    r"(address|located at|visit us|headquarters|mailing)\s*:?\s*$"
+    r"|\b\d{2,6}\s+[A-Za-z][\w.]*(\s+[A-Za-z][\w.]*){0,3}\s+"
+    r"(st|street|ave|avenue|rd|road|dr|drive|blvd|boulevard|ln|lane|way|"
+    r"pkwy|parkway|ct|court|hwy|highway|ste|suite|cir|circle|trl|trail)"
+    r"\.?,?\s*$", re.I)
+
+# 2. The city is only half of a METRO name. "Dallas-Fort Worth", "Dallas / Ft
+#    Worth Metroplex" — naming the metroplex is not listing Fort Worth (or
+#    Dallas) as a served city. Two stored facts came from this alone.
+METRO_RE = re.compile(
+    r"(dallas|dfw)\s*[-/–]?\s*(fort|ft\.?)\s*worth|"
+    r"(fort|ft\.?)\s*worth\s*[-/–]\s*dallas|"
+    r"d\.?f\.?w\.?\s*metroplex|the\s+metroplex", re.I)
+
+# 3. The city is a LANDMARK, not a service area: "if you are in the DFW area
+#    east of Dallas, chances are we can help" — the cities they actually cover
+#    are listed immediately after, and Dallas is not among them.
+LANDMARK_LEAD_RE = re.compile(
+    r"\b(east|west|north|south|northeast|northwest|southeast|southwest|"
+    r"outside|near|nearby|around|beyond|toward|towards|just)\s+(of\s+)?$", re.I)
+
+
+def _is_real_service_area_mention(text, low, m):
+    """True only if this occurrence of a city is genuinely a listed service area.
+
+    `m` is a match of the city inside `text`. Returns False for the three
+    confirmed false-positive shapes above. A False here means "not proven",
+    which correctly costs us a fact rather than shipping a wrong one.
+    """
+    before = text[max(0, m.start() - 40): m.start()]
+    after = text[m.end(): m.end() + 20]
+
+    # own postal address
+    if ADDRESS_TAIL_RE.match(after):
+        return False
+    if ADDRESS_LEAD_RE.search(before):
+        return False
+
+    # half of a metro name
+    for mm in METRO_RE.finditer(text):
+        if mm.start() <= m.start() and m.end() <= mm.end():
+            return False
+
+    # a landmark to navigate by
+    if LANDMARK_LEAD_RE.search(before):
+        return False
+
+    # the phrase that makes it a service area must be CLOSE, not merely on the
+    # page. 200 characters reached across a whole footer into an unrelated nav.
+    window = low[max(0, m.start() - 120): m.end() + 120]
+    return bool(SERVICE_AREA_RE.search(window))
+
 
 # --------------------------------------------------------------- fetching ---
 def fetch(url):
@@ -220,9 +290,13 @@ def find_service_area_gap(pages, row, links):
         # "serv" test matched "Customer Service" in a testimonial byline and
         # turned a reviewer's home town into an invented service-area claim —
         # exactly the fabricated personalization this file exists to prevent.
-        for m in re.finditer(re.escape(city), text, re.I):
-            window = low[max(0, m.start() - 200): m.end() + 200]
-            if SERVICE_AREA_RE.search(window):
+        # _is_real_service_area_mention adds the three guards that a re-audit
+        # of the stored facts proved were still missing: the business's own
+        # postal address, a metro compound name, and a landmark reference.
+        # \b on BOTH sides: without the leading one "Allen" matches inside
+        # "McAllen", a different Texas city 500 miles away.
+        for m in re.finditer(r"\b" + re.escape(city) + r"\b", text, re.I):
+            if _is_real_service_area_mention(text, low, m):
                 named.append((city, text[max(0, m.start() - 60): m.end() + 60].strip()))
                 break
 
@@ -496,6 +570,14 @@ def main():
     print(f"\n{found} of {len(rows)} got a real, sourced fact. {nulls} are NULL.")
     if nulls > found:
         print("More than half need manual research before they are worth emailing.")
+
+    # A run that read N sites and grounded nothing is a broken run, not a quiet
+    # one. Exiting 0 there lets a dead network or a changed page shape look like
+    # "these leads just have nothing to say about them" forever.
+    if rows and found == 0:
+        print(f"\nFAIL: read {len(rows)} site(s) and grounded 0 facts. "
+              f"That is a failure, not a result — check network and page fetching.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
