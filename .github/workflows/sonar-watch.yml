@@ -63,6 +63,40 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python intel_watch.py --limit 15 || echo "intel_watch failed — not fatal"
 
+      # Pull captions for anything new. A video with no captions yields no
+      # proposal, which is the correct outcome — never a guessed one.
+      - name: Fetch transcripts for new videos
+        if: always()
+        continue-on-error: true
+        working-directory: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -f intel_transcript.py ]; then
+            python intel_transcript.py --backfill 8 || echo "transcript step failed — not fatal"
+          else
+            echo "intel_transcript.py not present yet — skipping"
+          fi
+
+      # Turn transcripts into concrete proposals for Jack to approve. Writes
+      # rows with status 'proposed' ONLY. Nothing is ever applied here.
+      - name: Propose system improvements from what the videos said
+        if: always()
+        continue-on-error: true
+        working-directory: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -f intel_propose.py ]; then
+            python intel_propose.py --limit 5 || echo "propose step failed — not fatal"
+          else
+            echo "intel_propose.py not present yet — skipping"
+          fi
+
       - name: CRM queue depth
         if: always()
         env:
