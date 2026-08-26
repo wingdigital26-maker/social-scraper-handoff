@@ -196,6 +196,13 @@ _JUNK_URL = [
     # at all. Both were reaching the junk-removal queue.
     (re.compile(r"nextdoor\.com/(for_sale_and_free|forsale|marketplace)", re.I),
      "Nextdoor For Sale & Free marketplace"),
+    # The platform's own marketing and editorial keeps surviving every other
+    # gate — "Small Moments, Big Ripples: Neighbor Stories From Nextdoor" was
+    # the sole survivor of a 39-result run.
+    (re.compile(r"(blog|about|business|help)\.nextdoor\.com", re.I),
+     "Nextdoor corporate/editorial page"),
+    (re.compile(r"nextdoor\.com/(blog|press|newsroom|stories)", re.I),
+     "Nextdoor editorial content"),
     (re.compile(r"/(marketplace|classifieds|for-sale|forsale)(/|$)", re.I),
      "classifieds/marketplace surface"),
     (re.compile(r"facebook\.com/marketplace", re.I), "Facebook Marketplace"),
@@ -205,6 +212,11 @@ _JUNK_URL = [
 # Titles that mark a listing rather than a request. "$200" plus "for sale"
 # is someone selling; a category page has no specific ask at all.
 _MARKETPLACE_TITLE = [
+    # Platform editorial dressed as a neighbour post.
+    (re.compile(r"(stories|moments)\s+from\s+nextdoor", re.I),
+     "Nextdoor editorial, not a neighbour"),
+    (re.compile(r"nextdoor\s+(100|blog|newsroom|guide)", re.I),
+     "Nextdoor corporate content"),
     (re.compile(r"^\s*for sale\s*(&|and)\s*free", re.I),
      "marketplace category page, not a post"),
     (re.compile(r"for sale.{0,30}nextdoor", re.I), "marketplace listing"),
