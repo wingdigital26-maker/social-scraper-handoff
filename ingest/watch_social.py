@@ -44,6 +44,9 @@ import requests
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from db import load_env
 from audit_prospect import sb_request   # retrying Supabase call, shared
+import trade_vocab                        # per-trade search phrasing + on-topic terms
+import relevance                          # scores/rejects a hit before it becomes a draft
+import client_voice                       # per-client reply voice, gated
 
 try:
     from ddgs import DDGS
@@ -65,6 +68,11 @@ SEEN = HERE / "seen_watch_urls.txt"
 # starts refusing across all its backends. This is a background job, not an
 # interactive one, so it goes deliberately slow.
 SLEEP = 6.0
+
+# Below this, a hit is noise rather than a lead. Tuned against real Nextdoor
+# and Reddit results: a genuine "anyone recommend a roofer in Plano" scores
+# ~0.8, while chrome and off-topic chatter land far lower.
+MIN_RELEVANCE = 0.35
 
 PLATFORMS = {
     "nextdoor":  "site:nextdoor.com",
@@ -122,15 +130,12 @@ def search(q, limit=8, recent=True, tries=3):
     return None
 
 
-def draft_reply(client_name, trade, city, post_title, urgent):
-    """Templated, specific, non-salesy. A human edits and posts it."""
-    opener = ("Saw this and it sounds time sensitive." if urgent
-              else "Saw your post.")
-    return (
-        f"{opener} We do {trade} around {city} and could take a look. "
-        f"Happy to give you a straight answer on what it needs and what it should cost, "
-        f"no pressure either way. I can send over some recent work in the area if that helps."
-    )
+def draft_reply(client_slug, client_name, trade, city, post_title, snippet, urgent):
+    """Per-client voice. Every client used to share one template, so a roofer,
+    a junk hauler and a 3PL all sounded identical — which reads as a bot.
+    client_voice guarantees the returned text passes its own voice gate."""
+    return client_voice.draft_reply(client_slug, client_name, trade, city,
+                                    post_title, snippet, urgent)
 
 
 def load_clients(env, only=None):
@@ -167,7 +172,8 @@ def main():
 
     plats = [p.strip() for p in args.platforms.split(",") if p.strip() in PLATFORMS]
     seen = set(SEEN.read_text(encoding="utf-8").split("\n")) if SEEN.exists() else set()
-    drafts, stats = [], dict(queries=0, results=0, kept=0, dup=0, no_intent=0, throttled=0)
+    drafts, stats = [], dict(queries=0, results=0, kept=0, dup=0, no_intent=0,
+                             throttled=0, rejected=0, low_score=0)
 
     for c in clients:
         trade = c.get("scrape_niche") or "work"
@@ -178,14 +184,15 @@ def main():
         for city in cities or [""]:
             for plat in plats:
                 op = PLATFORMS[plat]
-                # Rotate phrases by city index so one run stays short while
-                # successive runs still work through the whole phrase list.
-                allp = INTENT + SWITCH
+                # Trade-specific phrasing. The old generic list searched for
+                # words customers do not use — junk-removal demand reads "need
+                # to get rid of" / "haul away", almost never "junk removal",
+                # which is why that client had produced zero drafts ever.
+                allp = trade_vocab.intent_queries(trade, city, extra)
                 ci = (cities.index(city) if city in cities else 0)
-                phrases = [allp[(ci * args.phrases + k) % len(allp)]
-                           for k in range(args.phrases)]
-                queries = [f"{op} {phrase} {trade} {city} {' '.join(extra[:2])}".strip()
-                           for phrase in phrases]
+                picked = [allp[(ci * args.phrases + k) % len(allp)]
+                          for k in range(min(args.phrases, len(allp)))]
+                queries = [f"{op} {phrase}".strip() for phrase in picked]
                 if plat == "nextdoor":
                     # /ask-neighbors/ pages are recommendation threads
                     # specifically — the highest-yield surface on the platform.
@@ -205,13 +212,23 @@ def main():
                         title = r.get("title") or ""
                         body = r.get("body") or ""
                         blob = f"{title} {body}"
-                        # Require the trade word to actually appear, or this is
-                        # someone asking about something else entirely.
-                        if trade.split()[0].lower() not in blob.lower():
-                            stats["no_intent"] += 1
+                        # Score before drafting. The old check just required the
+                        # trade's first word somewhere in the text, which let
+                        # through roofing companies' own business pages — the
+                        # single most common false positive on Nextdoor.
+                        rel = relevance.score_hit(title, body, u, trade, city,
+                                                  trade_vocab.relevance_terms(trade))
+                        if rel["reject"]:
+                            stats["rejected"] = stats.get("rejected", 0) + 1
+                            continue
+                        if rel["score"] < MIN_RELEVANCE:
+                            stats["low_score"] = stats.get("low_score", 0) + 1
                             continue
                         seen.add(u)
                         urgent = bool(URGENT.search(blob))
+                        _body, _voice = draft_reply(
+                            c.get("slug") or "", c["name"], trade,
+                            city or "your area", u or title, body, urgent)
                         drafts.append({
                             "client": c["name"],
                             "channel": plat,
@@ -220,10 +237,10 @@ def main():
                             "recipient_url": u,
                             "evidence_url": u,
                             "subject": None,
-                            "body": draft_reply(c["name"], trade, city or "your area",
-                                                title, urgent),
+                            "body": _body,
                             "personalization": (("URGENT. " if urgent else "")
-                                                + f"Public post: {title[:150]}"),
+                                                + f"[relevance {rel['score']:.2f}] "
+                                                + f"Public post: {title[:130]}"),
                             "status": "draft",
                             "tier": "reply",
                         })

@@ -191,6 +191,26 @@ _JUNK_URL = [
     (re.compile(r"[?&](q|query|search)=", re.I), "search-results page"),
     (re.compile(r"(angi|angieslist|homeadvisor|thumbtack|houzz|porch|"
                 r"buildzoom|networx|bbb)\.(com|org)", re.I), "lead-aggregator site"),
+    # Marketplace surfaces. Someone selling a sofa is the opposite of someone
+    # who needs one hauled away, and the category landing pages are not posts
+    # at all. Both were reaching the junk-removal queue.
+    (re.compile(r"nextdoor\.com/(for_sale_and_free|forsale|marketplace)", re.I),
+     "Nextdoor For Sale & Free marketplace"),
+    (re.compile(r"/(marketplace|classifieds|for-sale|forsale)(/|$)", re.I),
+     "classifieds/marketplace surface"),
+    (re.compile(r"facebook\.com/marketplace", re.I), "Facebook Marketplace"),
+    (re.compile(r"(craigslist|offerup|letgo|mercari)\.", re.I), "resale marketplace"),
+]
+
+# Titles that mark a listing rather than a request. "$200" plus "for sale"
+# is someone selling; a category page has no specific ask at all.
+_MARKETPLACE_TITLE = [
+    (re.compile(r"^\s*for sale\s*(&|and)\s*free", re.I),
+     "marketplace category page, not a post"),
+    (re.compile(r"for sale.{0,30}nextdoor", re.I), "marketplace listing"),
+    (re.compile(r"for\s+\$\s?\d", re.I), "item listed for a price, a seller not a asker"),
+    (re.compile(r"(free|curb ?alert).{0,20}(pick ?up|porch|curb)", re.I),
+     "giveaway listing, not a service request"),
 ]
 _LISTICLE = [
     (re.compile(r"\b(top|best)\s+\d{1,2}\b", re.I), '"top N / best N" listicle'),
@@ -331,6 +351,10 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
         if rx.search(url_low):
             reasons.append(f"junk surface: {why}")
             return out(0.0, True, f"Junk surface: {why}")
+    for rx, why in _MARKETPLACE_TITLE:
+        if rx.search(title or ""):
+            reasons.append(f"marketplace surface: {why}")
+            return out(0.0, True, f"Marketplace listing, not a service request: {why}")
     for rx, why in _LISTICLE:
         if rx.search(text) or rx.search(url_low):
             reasons.append(f"listicle/content page: {why}")
