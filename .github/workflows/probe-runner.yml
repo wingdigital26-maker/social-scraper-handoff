@@ -41,6 +41,37 @@ jobs:
           if ok == 0:
               sys.exit("Search index unreachable from this runner. Cloud lane is not viable.")
           PY
+      - name: Which social platforms are actually reachable?
+        run: |
+          python - <<'PY2'
+          # Research says Reddit blocked every engine except Google in Jul 2024,
+          # and Nextdoor's robots.txt whitelists Googlebot against a default
+          # Disallow. ddgs routes through DuckDuckGo/Yandex/Brave, NOT Google,
+          # so this measures what Sonar can really see rather than assuming.
+          try:
+              from ddgs import DDGS
+          except ImportError:
+              from duckduckgo_search import DDGS
+          import time
+          checks = [
+            ("nextdoor",  'site:nextdoor.com "anyone recommend"'),
+            ("nextdoor-ask", 'site:nextdoor.com/ask-neighbors roofing'),
+            ("reddit",    'site:reddit.com "anyone recommend" roofer'),
+            ("facebook",  'site:facebook.com "anyone recommend" roofer'),
+            ("instagram", 'site:instagram.com roofing Dallas'),
+          ]
+          for name, q in checks:
+              try:
+                  with DDGS() as d:
+                      r = list(d.text(q, max_results=5))
+                  print(f"  {name:14} {len(r)} results")
+                  for x in r[:2]:
+                      print(f"       {(x.get('title') or '')[:70]}")
+              except Exception as e:
+                  print(f"  {name:14} FAIL {str(e)[:70]}")
+              time.sleep(4)
+          PY2
+
       - name: Can the runner fetch prospect websites?
         run: |
           python - <<'PY'
