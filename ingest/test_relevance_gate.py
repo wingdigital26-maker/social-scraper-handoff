@@ -173,6 +173,40 @@ CASES = [
         "unresolved_location",
     ),
 
+    # ------------------------------------ REAL: supply-side (contractor ads)
+    # Both observed in the 2026-08-26 live sweep and both KEPT by the gate as
+    # it stood — parked as unresolved_location at 0.300, which is the only
+    # reason a reply was never drafted under a competitor's advert. Titles and
+    # URLs are exactly as captured. Wing's client is a roofer; these authors
+    # are roofers. Expected verdict is now "supply_side" (reject=True).
+    (
+        "REAL — roofer's own advert, title is a concatenated service list",
+        dict(title="Roofing repair leak missing shingles patch tarp remodeling ...",
+             snippet="",
+             url="https://www.facebook.com/amir.hernandez.5895/videos/"
+                 "roofing-repair-leak-missing-shingles-patch-tarp-remodeling/",
+             trade="roofing", city="Plano", relevance_terms=TERMS_ROOF),
+        "reject",
+    ),
+    (
+        "REAL — roofer's advert shaped exactly like demand (question + urgency)",
+        dict(title="Missing shingles? Don't wait for the next storm to turn a ...",
+             snippet="",
+             url="https://www.facebook.com/ivan.ramirez.568/videos/"
+                 "missing-shingles-dont-wait-for-the-next-storm-to-turn-a/",
+             trade="roofing", city="Plano", relevance_terms=TERMS_ROOF),
+        "reject",
+    ),
+    (
+        "synthetic — vendor ad that is fresh, in-market and on-topic",
+        dict(title="Roof repair in Plano - Nextdoor",
+             snippet="We do roof repair and shingle replacement across the DFW "
+                     "area. Free estimates, call us today. Posted 1 day ago.",
+             url="https://nextdoor.com/p/vendor1",
+             trade="roofing", city="Plano", relevance_terms=TERMS_ROOF),
+        "reject",  # every other signal is perfect; only the SPEAKER is wrong
+    ),
+
     # ------------------------------------------------------------------ PASS
     (
         "synthetic — the canonical live lead (must never be blocked)",
@@ -226,6 +260,36 @@ CASES = [
              url="https://nextdoor.com/p/dtc01",
              trade="health & beauty DTC", city="Dallas",
              relevance_terms=TERMS_DTC),
+        "pass",
+    ),
+    # The shape most at risk from the supply-side detector: a homeowner who
+    # names the trade AND carries urgency, which is what a contractor's advert
+    # also does. It survives because of the demand anchors, not the vocabulary.
+    (
+        "synthetic — homeowner, names the trade, screams urgency (must pass)",
+        dict(title="My roof is leaking and I need someone fast - Plano, TX | Nextdoor",
+             snippet="Water is coming in through the ceiling after the storm "
+                     "last night. Posted 1 day ago.",
+             url="https://nextdoor.com/p/leakfast1",
+             trade="roofing", city="Plano", relevance_terms=TERMS_ROOF),
+        "pass",
+    ),
+    (
+        "synthetic — homeowner who uses vendor vocabulary ('free estimate')",
+        dict(title="Need a roofer in Plano - Nextdoor",
+             snippet="My roof lost shingles in the storm and I need a free "
+                     "estimate. Anyone recommend someone? Posted 1 day ago.",
+             url="https://nextdoor.com/p/est55",
+             trade="roofing", city="Plano", relevance_terms=TERMS_ROOF),
+        "pass",  # a demand anchor outranks a vendor phrase, always
+    ),
+    (
+        "synthetic — homeowner asking about their own situation, no stock ask",
+        dict(title="Do I need a new roof after this hail? - Arlington, TX | Nextdoor",
+             snippet="Our shingles look chewed up after yesterday's storm. "
+                     "Posted 1 day ago.",
+             url="https://nextdoor.com/p/doineed3",
+             trade="roofing", city="Arlington", relevance_terms=TERMS_ROOF),
         "pass",
     ),
 ]

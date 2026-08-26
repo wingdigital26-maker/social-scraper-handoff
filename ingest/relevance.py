@@ -29,8 +29,13 @@ HARD RULES
 
   score_hit(...) -> {"score": float 0-1, "reasons": [str],
                      "reject": bool, "reject_reason": str|None,
-                     "verdict": "ok"|"unresolved_location"|"reject",
+                     "verdict": "ok"|"unresolved_location"|"reject"|"supply_side",
                      "components": {...}}
+
+FOUR VERDICTS. `supply_side` is a reject (reject=True, score 0.0) that names WHY:
+the author is a contractor advertising, not a homeowner asking. It carries
+reject=True on purpose so any caller that only checks `reject` — watch_social.py
+does — drops it without needing to be changed first. See "Kill switch 1b".
 
 THREE VERDICTS, NOT TWO. `reject` answers "is this wrong". It cannot answer
 "is this unproven", and conflating the two is how r/Roofing item 1vb2zkg
@@ -287,6 +292,217 @@ _BIZ_PHRASES = [
                 r"no\s+obligation|workmanship\s+warranty)", re.I), "sales-pitch boilerplate"),
     (re.compile(r"\b(llc|inc\.?|co\.)\s*[-|·]", re.I), "company-name-and-tagline title shape"),
 ]
+
+# ---------------------------------------------------------------------------
+# Kill switch 1b: SUPPLY, not demand. The author IS a contractor.
+#
+# WHY. Two REAL items from the 2026-08-26 sweep, both kept by the gate (they
+# were parked as unresolved_location, which is the only reason nothing was
+# sent):
+#
+#   "Roofing repair leak missing shingles patch tarp remodeling ..."
+#     facebook.com/amir.hernandez.5895/videos/roofing-repair-leak-missing-...
+#   "Missing shingles? Don't wait for the next storm to turn a ..."
+#     facebook.com/ivan.ramirez.568/videos/missing-shingles-dont-wait-for-...
+#
+# Both are ROOFERS ADVERTISING. Wing's client is a roofer. Replying "we do
+# roofing around Plano and could take a look" under a competitor's ad is worse
+# than a wasted send — it is embarrassing in public and it costs the client.
+#
+# _BIZ_PHRASES above already looks for ad copy, but it needs TWO hits and it is
+# tuned for Nextdoor business-page furniture (review counts, star ratings,
+# "Verified by Nextdoor"). Neither real item carries any of that. Item 2 carries
+# no vendor vocabulary at all: it is a rhetorical question plus urgency, which
+# is the exact SHAPE of genuine demand. So the test cannot be "which marketing
+# words appear". It has to be WHO IS SPEAKING and WHAT THEY WANT.
+#
+# The structure below is therefore two-sided and demand always wins:
+#
+#   1. DEMAND ANCHOR — does the author express a need of their OWN?
+#      ("my roof is leaking", "I need", "anyone recommend", "do I need a...",
+#       a complaint about the roofer they already hired)
+#   2. SUPPLY SIGNAL — is the author offering, addressing a customer, or
+#      keyword-stuffing a service list?
+#
+# A hit is only rejected as supply_side when a supply signal fires AND no
+# demand anchor is present. That ordering is what protects the yield: the last
+# clean run kept 4 of 260, and "My roof is leaking and I need someone fast"
+# names the trade and screams urgency exactly like an ad does. It survives here
+# because of what its author WANTS, not because of the words it avoids.
+#
+# NOT platform-specific on purpose. Facebook is already off for both roofing
+# clients for unrelated reasons; contractors self-promote on Nextdoor and
+# Reddit too, and none of these rules reads the domain.
+# ---------------------------------------------------------------------------
+
+# --- side 1: the author has a need of their own ----------------------------
+# "I need someone", "we noticed", "I'm looking at". Verb list is explicit so
+# "we do roofing" and "we offer" cannot be mistaken for a need.
+_OWN_NEED = re.compile(
+    r"\b(i|we)\s+(need|needed|want|wanted|have\s+a|had\s+a|noticed|"
+    r"just\s+noticed|am\s+looking|'?m\s+looking|are\s+looking|"
+    r"'?re\s+looking|think\s+(i|we))\b", re.I)
+
+# "my roof is leaking", "our ceiling started dripping". The lookahead is load
+# bearing: "our team is licensed" and "our customers are happy" are a VENDOR
+# talking, not a homeowner, and they must not buy a demand anchor.
+_OWN_ASSET = re.compile(
+    r"\b(my|our)\s+(?!team|crew|company|business|shop|guys|staff|office|"
+    r"customers?|clients?|services?|prices?|work\b)"
+    # The same exclusion has to apply to the intervening words, not just the
+    # first one, or "my roofing company is licensed" buys a demand anchor.
+    r"(?:(?!team|crew|company|business|shop|guys|staff|customers?|clients?)"
+    r"[a-z]{3,15}\s+){0,2}"
+    r"(is|are|was|were|has|have|keeps|started|needs?|got|leaked|leaking|"
+    r"broke|broken|damaged)\b", re.I)
+
+# "Do I need a new roof?" — the REAL r/Roofing hail post's only anchor, and a
+# very common homeowner shape that carries no "I need" and no "my roof".
+_SELF_Q = re.compile(
+    r"\b(should\s+i|how\s+(do|can|should)\s+i|do\s+i\s+(need|have\s+to)|"
+    r"what\s+(do|should)\s+i|where\s+(can|do|should)\s+i|"
+    r"is\s+it\s+worth|am\s+i\s+being|is\s+this\s+(normal|a\s+ripoff))\b", re.I)
+
+# --- side 2: the author is selling ------------------------------------------
+# Any ONE of these is enough, because they are only consulted after the demand
+# side has already come up empty.
+_SUPPLY_OFFER = [
+    (re.compile(r"\b(we|i)\s+(do|offer|provide|install|replace|repair|"
+                r"specialize|handle|service|serve)\b", re.I),
+     'first-person offering ("we do / we offer")'),
+    (re.compile(r"\b(call|text|dm|message|contact)\s+(us|me|today|now)\b", re.I),
+     '"call us / DM me" CTA'),
+    (re.compile(r"\bdm\s+(me\s+)?for\s+(a\s+)?(quote|estimate|price|info)", re.I),
+     '"DM for a quote"'),
+    (re.compile(r"\bfree\s+(estimate|quote|inspection|consultation)", re.I),
+     "free-estimate offer"),
+    (re.compile(r"\blicensed\s+(and|&)\s+insured\b", re.I), '"licensed and insured"'),
+    (re.compile(r"\bfinancing\s+available\b", re.I), '"financing available"'),
+    (re.compile(r"\bbook\s+(now|today|online|your)\b", re.I), '"book now" CTA'),
+    (re.compile(r"\b(no\s+obligation|satisfaction\s+guaranteed|"
+                r"workmanship\s+warranty|competitive\s+(pricing|rates))\b", re.I),
+     "sales boilerplate"),
+    (re.compile(r"\bserving\s+(the\s+)?[a-z .]{2,25}?"
+                r"(area|metroplex|county|metro|and\s+surrounding)\b", re.I),
+     '"serving the X area"'),
+    (re.compile(r"\bfamily\s+owned\b", re.I), '"family owned"'),
+    # Allows an adjective in between so "my roofing company" is caught too —
+    # otherwise it slips past here AND buys a false demand anchor from
+    # _OWN_ASSET, which matches any "my <noun> is".
+    (re.compile(r"\b(my|our)\s+(?:[a-z]{3,15}\s+){0,2}"
+                r"(team|crew|company|business|shop|guys|staff)\b", re.I),
+     '"our team / our crew" — a vendor speaking'),
+    (re.compile(r"\bwe\s+work\s+with\s+(all\s+)?insurance", re.I),
+     "insurance-claim sales pitch"),
+]
+
+# Second-person marketing: the author is addressing a CUSTOMER about the
+# customer's property. This is what catches the ivan.ramirez item, whose only
+# tell is "Don't wait for the next storm" — an imperative aimed at a reader.
+# A homeowner describing their own leak never issues an imperative to the
+# reader, and never says "your roof" about their own roof.
+_SUPPLY_PITCH = [
+    (re.compile(r"\bdon'?t\s+wait\b", re.I), '"don\'t wait" — urgency aimed at a customer'),
+    (re.compile(r"\b(act\s+(now|fast)|call\s+today|before\s+it'?s\s+too\s+late|"
+                r"schedule\s+(your|a)\s+free)\b", re.I), "call-to-action imperative"),
+    (re.compile(r"\byour\s+(roof|home|house|property|ceiling|gutters?|shingles?|"
+                r"hvac|ac\b|plumbing|yard|driveway)", re.I),
+     '"your <property>" — addressing a customer, not describing your own'),
+    (re.compile(r"\b(protect|upgrade|transform|restore)\s+your\b", re.I),
+     '"protect/upgrade your ..." pitch'),
+    (re.compile(r"\bwe'?ll\s+(come\s+out|take\s+care|handle|be\s+there)\b", re.I),
+     '"we\'ll come out" — vendor promising service'),
+    (re.compile(r"\b(let\s+us|trust\s+the|we'?ve\s+got\s+you\s+covered)\b", re.I),
+     "vendor reassurance copy"),
+]
+
+# --- side 2c: keyword-stuffed service list ---------------------------------
+# "Roofing repair leak missing shingles patch tarp remodeling" is six services
+# concatenated. No homeowner writes that; it is SEO/caption stuffing. Counted
+# on STEMS so roof/roofing and shingle/shingles are not double counted.
+_SERVICE_NOUNS = {
+    "repair", "replacement", "replace", "installation", "install", "remodel",
+    "remodeling", "restoration", "restore", "maintenance", "cleaning", "clean",
+    "inspection", "inspect", "patch", "tarp", "emergency", "service",
+    "construction", "renovation", "siding", "waterproofing", "sealing",
+    "removal", "haul", "hauling", "junk", "cleanout", "estimate", "financing",
+}
+_STUFF_MIN_TERMS = 4
+
+# The stuffing rule is the fuzziest of the three, so it is the most heavily
+# guarded: any word that hints the author is asking rather than listing
+# disqualifies it outright. "Need roof repair and gutter cleaning quotes"
+# reaches 4 stems but contains "need", so it is never touched by this rule.
+_STUFF_ASK_GUARD = re.compile(
+    r"\b(i|i'?m|my|we|we'?re|our|need|needed|needs|looking|want|wanted|help|"
+    r"recommend|recommendation|advice|anyone|who|how|should|why|when|"
+    r"quote|quotes|estimate|estimates|please|any)\b", re.I)
+
+
+def _stem(word):
+    """Crude stemmer, only ever used to de-duplicate a stuffed service list."""
+    w = word.lower()
+    if len(w) > 5 and w.endswith("ing"):
+        w = w[:-3]
+    if len(w) > 3 and w.endswith("s"):
+        w = w[:-1]
+    return w
+
+
+def _keyword_stuffed(title, specific_terms):
+    """Return the matched stems when `title` reads as a concatenated service list.
+
+    specific_terms are the caller's trade-vocabulary hits with the generic
+    hiring words already removed, so this stays trade-agnostic: for a junk
+    hauler the same shape is "Junk removal hauling cleanout demolition ...".
+    """
+    t = title or ""
+    if "?" in t or _STUFF_ASK_GUARD.search(t):
+        return []
+    tokens = [w for w in re.split(r"\W+", t.lower()) if len(w) > 2]
+    if len(tokens) < _STUFF_MIN_TERMS:
+        return []
+    vocab_stems = {_stem(w) for term in specific_terms
+                   for w in re.split(r"\W+", term) if len(w) > 2}
+    hits = set()
+    for tok in tokens:
+        s = _stem(tok)
+        if s in _SERVICE_NOUNS or s in vocab_stems:
+            hits.add(s)
+    return sorted(hits) if len(hits) >= _STUFF_MIN_TERMS else []
+
+
+def _demand_anchors(text):
+    """Every reason to believe the author speaks as someone who NEEDS the trade."""
+    found = []
+    if _ASK_STRONG.search(text):
+        found.append("explicit ask for a provider")
+    if _SWITCH.search(text):
+        found.append("complaint about a provider already hired")
+    if _OWN_NEED.search(text):
+        found.append('first-person need ("I need" / "we are looking")')
+    if _OWN_ASSET.search(text):
+        found.append('own property has a problem ("my roof is ...")')
+    if _SELF_Q.search(text):
+        found.append('asking about their own situation ("do I need ...")')
+    return found
+
+
+def _supply_signals(text, title, specific_terms):
+    """Every reason to believe the author is OFFERING the trade."""
+    found = []
+    for rx, why in _SUPPLY_OFFER:
+        if rx.search(text):
+            found.append(why)
+    for rx, why in _SUPPLY_PITCH:
+        if rx.search(text):
+            found.append(why)
+    stems = _keyword_stuffed(title, specific_terms)
+    if stems:
+        found.append("title is a concatenated service list ("
+                     + ", ".join(stems[:6]) + ")")
+    return found
+
 
 # ---------------------------------------------------------------------------
 # Kill switch 2: junk surfaces.
@@ -751,7 +967,30 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
         bits.append(f"vocab hits: {', '.join(matched[:4])}")
     reasons.append("trade match — " + "; ".join(bits))
 
-    # -- demand shape --------------------------------------------------------
+    # -- kill switch: supply, not demand -------------------------------------
+    # Deliberately placed AFTER trade match, so `specific` (the trade-vocabulary
+    # hits with generic hiring words removed) is available to the stuffing rule,
+    # and so we only ever ask "which side of the trade is this author on" about
+    # posts already known to be about the trade.
+    #
+    # Deliberately placed BEFORE the demand-shape block, because a contractor ad
+    # DOES have demand shape — ivan.ramirez's "Missing shingles? Don't wait for
+    # the next storm" is a question plus urgency and sails through the intent
+    # floor. Getting the accurate verdict out matters more than getting a
+    # generic one out first.
+    anchors = _demand_anchors(text)
+    supply = _supply_signals(text, title, specific)
+    if supply and not anchors:
+        reasons.append("supply side: " + "; ".join(supply))
+        return out(0.0, True,
+                   "Supply, not demand — the author is OFFERING this trade, not "
+                   "asking for it: " + "; ".join(supply[:3]),
+                   {"supply_signals": supply, "demand_anchors": []},
+                   verdict="supply_side")
+    if supply:
+        reasons.append(
+            "vendor-ish language present (" + supply[0] + ") but the author "
+            "states a need of their own (" + anchors[0] + ") — kept as demand")
     # INTENT FLOOR. Runs before scoring, because no amount of trade/geo/recency
     # should be able to manufacture demand that the post does not express.
     core_title = _LOC_TAIL.sub("", _PLATFORM_TAIL.sub("", title)).strip()

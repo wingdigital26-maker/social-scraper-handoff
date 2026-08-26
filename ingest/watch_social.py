@@ -341,7 +341,7 @@ def main():
     drafts, parked_location = [], []
     stats = dict(queries=0, results=0, kept=0, dup=0, no_intent=0, throttled=0,
                  rejected=0, low_score=0, unresolved_location=0, empty_queries=0,
-                 errors=0, off_by_choice=0, misconfigured=0)
+                 errors=0, off_by_choice=0, misconfigured=0, supply_side=0)
     # Per-client counters are summed at the end and checked against these
     # totals. A telemetry number that disagrees with the run summary is worse
     # than no number, because the OS renders it to Jack as a health signal.
@@ -375,7 +375,7 @@ def main():
         for c in clients:
             per = dict(queries=0, results=0, kept=0, rejected=0,
                        throttled=0, empty_queries=0, errors=0,
-                       unresolved_location=0)
+                       unresolved_location=0, supply_side=0)
 
             # The deliberate off-switch is checked FIRST and wins outright.
             # Northcomm has channels='none' AND null niche/cities; reporting it
@@ -488,6 +488,16 @@ def main():
                             if rel["reject"] or rel.get("verdict") == "reject":
                                 stats["rejected"] += 1
                                 per["rejected"] += 1
+                                # A competitor's ad and a post from the wrong
+                                # state are both rejections, but they mean very
+                                # different things about a channel's health. A
+                                # channel full of supply_side is one where our
+                                # own trade advertises, not one where customers
+                                # ask. Counted as a SUBSET of rejected, never
+                                # in addition to it.
+                                if rel.get("verdict") == "supply_side":
+                                    stats["supply_side"] += 1
+                                    per["supply_side"] += 1
                                 continue
                             # Strong demand we cannot PLACE. relevance.py caps
                             # these at 0.30, which sits under MIN_RELEVANCE, so
@@ -586,7 +596,8 @@ def main():
     # rendering these per-client numbers to Jack as a health signal.
     mismatch = []
     for field in ("queries", "results", "kept", "rejected", "throttled",
-                  "empty_queries", "errors", "unresolved_location"):
+                  "empty_queries", "errors", "unresolved_location",
+                  "supply_side"):
         summed = sum(p.get(field, 0) for p in ledger)
         if summed != stats.get(field, 0):
             mismatch.append(f"{field}: per-client sum {summed} != run total "
