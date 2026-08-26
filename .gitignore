@@ -6,3 +6,4 @@ seen_ids.txt
 seen_tiktok_ids.txt
 seen_youtube_ids.txt
 candidates.enriched.jsonl
+ingest/vault_sync.log
