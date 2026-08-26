@@ -59,9 +59,37 @@ NS = {"atom": "http://www.w3.org/2005/Atom",
 # channel itself. A bare "channelId" regex silently matches the first
 # recommended video's owner instead — @jackroberts resolved to Android Central
 # that way. externalId (in channelMetadataRenderer) is the safe backup.
+class TransientFetchError(Exception):
+    """Network could not be reached — distinct from "not found"."""
+
+
 CANONICAL_RE = re.compile(r'<link rel="canonical" href="https://www\.youtube\.com/channel/(UC[\w-]{20,})"')
 CHANNEL_ID_RE = re.compile(r'"externalId"\s*:\s*"(UC[\w-]{20,})"')
 UC_IN_URL_RE = re.compile(r"(UC[\w-]{20,})")
+
+
+
+def http_get(url, tries=3):
+    """GET with backoff, distinguishing a transient failure from a real 404.
+
+    Returns (response, transient_failure). transient_failure=True means we
+    could not reach YouTube at all, so the caller must NOT treat it as
+    "nothing there" and must NOT fall back to unverified search results.
+    """
+    delay = 3
+    last_transient = False
+    for attempt in range(tries):
+        try:
+            r = requests.get(url, headers=UA, timeout=TIMEOUT)
+            return r, False
+        except Exception as e:
+            # DNS/connect/read failures are transient; this machine has
+            # intermittent DNS dropouts that previously polluted the table.
+            last_transient = True
+            if attempt < tries - 1:
+                time.sleep(delay)
+                delay *= 2
+    return None, last_transient
 
 
 # ------------------------------------------------------------- resolution ---
@@ -78,9 +106,13 @@ def resolve_channel_id(handle: str, cached: str | None) -> str | None:
                 f"https://www.youtube.com/@{handle}/videos",
                 f"https://www.youtube.com/c/{handle}",
                 f"https://www.youtube.com/user/{handle}"):
-        try:
-            r = requests.get(url, headers=UA, timeout=TIMEOUT)
-        except Exception:
+        r, transient = http_get(url)
+        if r is None:
+            if transient:
+                # Could not reach YouTube. Say so rather than reporting the
+                # channel as missing, so the caller can skip instead of
+                # falling back to unverified search hits.
+                raise TransientFetchError(f"could not reach {url}")
             continue
         if r.status_code != 200:
             continue
@@ -98,9 +130,10 @@ def feed_for(channel_id: str | None, handle: str):
             if channel_id else
             [f"https://www.youtube.com/feeds/videos.xml?user={handle.lstrip('@')}"])
     for u in urls:
-        try:
-            r = requests.get(u, headers=UA, timeout=TIMEOUT)
-        except Exception:
+        r, transient = http_get(u)
+        if r is None:
+            if transient:
+                raise TransientFetchError(f"could not reach {u}")
             continue
         if r.status_code != 200 or "<entry" not in r.text:
             continue
@@ -220,19 +253,31 @@ def main():
     if not sources:
         sys.exit("No active intel_sources to watch.")
 
-    total_found = total_new = 0
+    total_found = total_new = stats_skipped = 0
     for s in sources:
         handle = s["handle"]
         print(f"\n{s.get('name') or handle}  (@{handle})")
 
-        cid = resolve_channel_id(handle, s.get("channel_url"))
+        try:
+            cid = resolve_channel_id(handle, s.get("channel_url"))
+        except TransientFetchError as e:
+            print(f"   SKIPPED — network unreachable ({e}). Not falling back to "
+                  f"search: unverified hits attributed to a real creator are worse "
+                  f"than no row.")
+            stats_skipped += 1
+            continue
         if cid:
             was_cached = bool(s.get("channel_url") and UC_IN_URL_RE.search(s["channel_url"]))
             print(f"   channel_id {cid}" + ("  (cached)" if was_cached else "  (resolved from page)"))
         else:
             print("   channel_id unresolved")
 
-        entries, feed_title = feed_for(cid, handle)
+        try:
+            entries, feed_title = feed_for(cid, handle)
+        except TransientFetchError as e:
+            print(f"   SKIPPED — feed unreachable ({e}). Not falling back to search.")
+            stats_skipped += 1
+            continue
         if entries:
             rows = [x for x in (entry_to_row(handle, e) for e in entries[:args.limit]) if x]
             print(f"   RSS ok{f' — {feed_title}' if feed_title else ''}: {len(rows)} videos")
@@ -249,6 +294,20 @@ def main():
             print(f"      ... and {len(rows) - 5} more")
 
         if args.dry_run:
+            # The old dry run printed "would file 0 new" unconditionally because
+            # total_new only counted insert responses — so it proved nothing.
+            # Ask the DB which of these URLs it already has.
+            known = set()
+            if rows:
+                urls_q = ",".join(f'"{r["url"]}"' for r in rows)
+                chk = sb_request("GET", f"{url}/rest/v1/intel_items",
+                                 headers=auth,
+                                 params={"select": "url", "url": f"in.({urls_q})"})
+                if chk is not None and chk.ok:
+                    known = {x["url"] for x in chk.json()}
+            fresh = [r for r in rows if r["url"] not in known]
+            total_new += len(fresh)
+            print(f"   would file {len(fresh)} new ({len(rows) - len(fresh)} already known)")
             continue
 
         # Cache the resolved id so the public page is never fetched again.
