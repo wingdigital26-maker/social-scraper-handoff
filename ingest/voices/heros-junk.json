@@ -1,0 +1,30 @@
+{
+  "slug": "heros-junk",
+  "display_name": "Hero's Junk Removal",
+  "trade": "junk removal",
+  "default_city": "Dallas",
+  "service_area": ["Dallas", "Fort Worth", "Arlington"],
+  "voice_note_label": "junk removal / DFW / cleanout-aware, no pricing ever",
+  "banned_phrases": [
+    "per load",
+    "truckload rate",
+    "we buy",
+    "resell",
+    "we will resell",
+    "flat rate"
+  ],
+  "templates": [
+    "We haul junk around {city}. If it is a garage or a shed, the usual holdup is not the volume, it is deciding what actually goes. Happy to answer questions on how the day usually runs.",
+    "{trade} crew working {city} and the metroplex. We do the loading and the hauling, so nobody has to drag things to the curb. Ask away if you want to know how it works.",
+    "We do {trade} in the {city} area. Estate cleanouts are the ones people underestimate. It goes smoother if you flag the keep pile before the truck shows up.",
+    "Local {trade} outfit covering {city}. Furniture, appliances, yard debris, whole property clearouts. If you are not sure whether something can go, just ask.",
+    "We run {trade} jobs across {city}. Easiest thing you can do ahead of time is put a piece of tape on anything staying. Saves everybody a conversation."
+  ],
+  "urgent_templates": [
+    "If you are on a deadline, say the date. We do {trade} in {city} and can usually work around a closing or a move out day.",
+    "Short notice cleanouts are most of what we do. We cover {city} for {trade}. Tell us the date you have to be out and we can work backward from it.",
+    "Sounds time sensitive. We haul in {city} and can move quick on a cleanout. Flag anything staying and the rest can go same visit.",
+    "We can move on that. {trade} crew in {city}. If a property has to be clear by a set day, that is the job we do most."
+  ],
+  "signoff": "Glad to answer anything here first."
+}

@@ -1,0 +1,30 @@
+{
+  "slug": "jackson-roofing",
+  "display_name": "Jackson Roofing",
+  "trade": "roofing",
+  "default_city": "Plano",
+  "service_area": ["Plano", "Frisco", "McKinney", "Allen", "Richardson"],
+  "voice_note_label": "roofing / DFW suburbs / storm-aware",
+  "banned_phrases": [
+    "insurance claim",
+    "insurance company",
+    "adjuster",
+    "we handle the claim",
+    "full roof replacement guaranteed",
+    "lifetime warranty"
+  ],
+  "templates": [
+    "Roofer here, we work {city} and the surrounding suburbs. Happy to tell you what to look for before you call anybody out. Most of what we see around here traces back to hail.",
+    "We do {trade} work around {city}. If you want a second opinion on what somebody already told you, ask away. No obligation either way.",
+    "Local {trade} crew in the {city} area. Two things worth checking first: the shingle granules in your gutters, and any soft spots in the decking. That usually tells you how serious it is.",
+    "We run {trade} jobs across {city} and nearby. Storm season here beats roofs up more than people expect, so if you want somebody to actually look at it rather than guess, we can do that.",
+    "Been doing {trade} in {city} a long while. Photos from the ground help, but the real answer is usually up top. Glad to walk you through what we would check."
+  ],
+  "urgent_templates": [
+    "If water is coming in right now, get a tarp or a bucket under it first so the ceiling does not go. We do {trade} in {city} and can come look. Do not let it sit through another rain.",
+    "Active leak is a different animal than wear. Slow the water down inside first, then get eyes on the roof. We cover {city} for {trade} and can get out there.",
+    "That one needs looking at soon. Water finds the framing fast. We are a {trade} crew working {city} and can take a look before it spreads further.",
+    "Do not wait on that one. Pull anything valuable out from under the drip and cover what you can. We do {trade} around {city} if you want somebody out to check it."
+  ],
+  "signoff": "Happy to answer questions here either way."
+}

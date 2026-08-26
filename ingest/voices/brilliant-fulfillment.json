@@ -1,0 +1,43 @@
+{
+  "slug": "brilliant-fulfillment",
+  "display_name": "Brilliant Fulfillment",
+  "trade": "temperature controlled fulfillment",
+  "default_city": "Dallas",
+  "service_area": ["Dallas", "Fort Worth"],
+  "voice_note_label": "3PL / storage-degradation positioning per brilliant_voice.md (never transit or cold packs)",
+  "banned_phrases": [
+    "ice pack",
+    "ice packs",
+    "cold pack",
+    "cold packs",
+    "gel pack",
+    "gel packs",
+    "refrigerated truck",
+    "refrigerated trucks",
+    "refrigerated van",
+    "temperature controlled truck",
+    "temperature controlled trucks",
+    "melts in transit",
+    "melted in transit",
+    "hot truck",
+    "last mile",
+    "faster shipping",
+    "expedited shipping fixes",
+    "cold chain",
+    "in transit"
+  ],
+  "templates": [
+    "Worth separating two things here. Most of the time this is not the formula. It is how warm the product sat in storage before it ever shipped. We run a 240,000 sq ft temperature controlled warehouse outside {city} and hold inventory at a steady temperature the whole time it waits.",
+    "We see this a lot. Product that sits warm for weeks separates or goes off before anybody ever picks the order. Holding it at a steady temperature the entire storage window is what stops it. That is what we do near {city}.",
+    "The damage usually happens while it waits, not on the way out. If inventory sits warm for a month, potency and texture go with it. We keep it temperature controlled the whole time, FDA registered, {city} area.",
+    "Quick reframe. Storage time plus heat is what causes rancidity and separation. We hold inventory temperature controlled from receiving all the way to pick, outside {city}.",
+    "If product arrives off, the first place to look is how long it sat and how warm. We hold everything at a steady temperature for the entire time it is with us, {city} area, lot and expiry tracked."
+  ],
+  "urgent_templates": [
+    "If this is hitting live orders, the thing to check first is how long that lot sat and at what temperature. We hold inventory temperature controlled the whole storage window near {city} and can look at your numbers.",
+    "Happy to look at this quickly. When a batch goes off across many orders it is almost always storage temperature over time, not one bad run. We store temperature controlled outside {city}, FDA registered.",
+    "That is a real problem and it will keep repeating until the storage side changes. We hold product at a steady temperature the entire time it waits to ship, {city} area. Worth fifteen minutes?",
+    "Sounds like a batch that degraded before it ever went out. We can talk through your storage conditions. 240,000 sq ft temperature controlled near {city}, lot and expiry tracking."
+  ],
+  "signoff": "Nothing about how you ship has to change. Worth fifteen minutes?"
+}
