@@ -91,7 +91,10 @@ def clean_phone(raw):
 # Plano search. Flagged, not deleted: the human decides.
 DFW_AREA_CODES = {"214", "469", "972", "817", "682", "945", "940", "430", "903"}
 FOREIGN_TLD = re.compile(r"\.(in|uk|au|ca|pk|ph|ng|de|fr|ru|cn|br|za)$", re.I)
-EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]{2,}")
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
+# A numeric TLD is not a domain. The old pattern ended in [\w.]{2,}, which
+# happily matched npm "package@1.8.1" strings out of JavaScript bundles and
+# stored them as contact addresses.
 RATING_RE = re.compile(r"([0-5][.,]\d)\s*(?:out of 5|stars?|★|/\s*5)", re.I)
 REVIEWS_RE = re.compile(r"([\d,]{1,7})\s*(?:google\s*)?reviews?", re.I)
 
