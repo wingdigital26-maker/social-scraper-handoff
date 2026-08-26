@@ -197,6 +197,7 @@ CHARS_PER_TOKEN = 4      # rough but adequate for staying under a ceiling
 CHUNK_OVERLAP_CHARS = 1200   # so a technique straddling a boundary is still whole
 MAX_CHUNKS = 8               # a runaway transcript must not run for an hour
 MAX_PROPOSALS_PER_ITEM = 5   # chunking must not become a proposal firehose
+CHUNK_COMPLETION_RESERVE = 2600  # completion room a window must leave the model
 
 
 # ----------------------------------------------------------- quote grounding --
@@ -348,8 +349,13 @@ BUCKET = TokenMinuteBucket()
 
 # --------------------------------------------------------------- chunking ----
 def chunk_budget_chars(overhead_chars):
-    """How many transcript chars fit in ONE legal call, given fixed prompt overhead."""
-    prompt_tokens_allowed = TPM_BUDGET - MIN_COMPLETION
+    """How many transcript chars fit in ONE legal call, given fixed prompt overhead.
+
+    Reserving only MIN_COMPLETION would let a window grow to ~20k chars and leave
+    gpt-oss-120b barely any room for its <think> block plus the JSON — which is
+    how replies got truncated and read as a confident zero. Reserve real room.
+    """
+    prompt_tokens_allowed = TPM_BUDGET - CHUNK_COMPLETION_RESERVE
     chars = prompt_tokens_allowed * CHARS_PER_TOKEN - overhead_chars
     return max(2000, chars)
 
@@ -783,7 +789,10 @@ def self_test():
         ("a short transcript is a single window",
          len(chunk_transcript("short text here.", overhead)) == 1),
         ("prompt+completion for a full window stays under the TPM budget",
-         (budget + overhead) // CHARS_PER_TOKEN + MIN_COMPLETION <= TPM_BUDGET),
+         (budget + overhead) // CHARS_PER_TOKEN + CHUNK_COMPLETION_RESERVE
+         <= TPM_BUDGET),
+        ("a full window still leaves real completion room",
+         budget_completion("x" * (budget + overhead), "") >= CHUNK_COMPLETION_RESERVE),
         ("chunk count is capped", len(chunk_transcript(long_tr * 20, overhead))
          <= MAX_CHUNKS),
     ]
