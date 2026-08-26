@@ -399,13 +399,13 @@ def analyse(item, model, verbose=True, env=None):
                 kept2, dropped2 = _score(props2, item, transcript)
                 if verbose:
                     print(f"    [re-asked for verbatim quotes] "
-                          f"{len(kept2)} verified, {len(dropped2)} still ungrounded")
+                          f"{len(kept2)} verified, {len(dropped2)} still ungrounded", flush=True)
                 kept = kept2
                 dropped = dropped + dropped2
 
     if verbose and dropped:
         for d in dropped:
-            print(f"    [dropped] {d}")
+            print(f"    [dropped] {d}", flush=True)
     return kept, dropped
 
 
@@ -475,7 +475,7 @@ def fetch_items(env, auth, limit, item_id):
     r = sb_request("GET", f"{base}/rest/v1/intel_items?{q}", headers=auth)
     if r is None or r.status_code >= 300:
         print(f"  fetch failed: {r.status_code if r else 'no response'} "
-              f"{r.text[:200] if r is not None else ''}")
+              f"{r.text[:200] if r is not None else ''}", flush=True)
         return []
     return [x for x in r.json() if (x.get("transcript") or "").strip()]
 
@@ -502,7 +502,7 @@ def insert_proposals(env, auth, rows):
                    headers=h, json=rows)
     if r is None or r.status_code >= 300:
         print(f"  INSERT FAILED: {r.status_code if r else 'no response'} "
-              f"{r.text[:300] if r is not None else ''}")
+              f"{r.text[:300] if r is not None else ''}", flush=True)
         return []
     return r.json()
 
@@ -534,10 +534,10 @@ def self_test():
         mark = "PASS" if passed == should_pass else "FAIL"
         if passed != should_pass:
             ok = False
-        print(f"  [{mark}] {name}: {'accepted' if passed else 'rejected'}")
+        print(f"  [{mark}] {name}: {'accepted' if passed else 'rejected'}", flush=True)
         if got:
-            print(f"         stored verbatim span -> {got!r}")
-    print("\nself-test:", "all good" if ok else "FAILURES")
+            print(f"         stored verbatim span -> {got!r}", flush=True)
+    print("\nself-test:", "all good" if ok else "FAILURES", flush=True)
     return 0 if ok else 1
 
 
@@ -572,50 +572,50 @@ def main():
     if not ok:
         print(f"No free model available: {how}.\n"
               "Exiting without writing anything — a proposal is never written "
-              "without real model analysis.")
+              "without real model analysis.", flush=True)
         return
-    print(f"LLM lane: {how}")
+    print(f"LLM lane: {how}", flush=True)
 
     items = fetch_items(env, auth, a.limit, a.item)
     if not items:
         print("No transcribed intel_items to analyse "
-              "(intel_transcript.py fills intel_items.transcript).")
+              "(intel_transcript.py fills intel_items.transcript).", flush=True)
         return
     done = already_proposed(env, auth, [i["id"] for i in items])
     todo = [i for i in items if i["id"] not in done][:a.limit]
     print(f"{len(items)} transcribed, {len(done)} already proposed on, "
           f"{len(todo)} to analyse  (model={a.model}, "
-          f"{'DRY RUN' if a.dry_run else 'WRITING'})\n")
+          f"{'DRY RUN' if a.dry_run else 'WRITING'})\n", flush=True)
 
     total_kept = total_dropped = 0
     for item in todo:
-        print(f"[{item['id']}] {item.get('title')}")
+        print(f"[{item['id']}] {item.get('title')}", flush=True)
         kept, dropped = analyse(item, a.model, env=env)
         if kept is None:
-            print(f"    SKIPPED: {dropped[0]}\n")
+            print(f"    SKIPPED: {dropped[0]}\n", flush=True)
             continue
         total_dropped += len(dropped)
         if not kept:
-            print("    0 proposals — nothing in this video applies to Wing.\n")
+            print("    0 proposals — nothing in this video applies to Wing.\n", flush=True)
             continue
         total_kept += len(kept)
         for p in kept:
-            print(f"    + {p['title']}   [{p['target_system']} / {p['effort']}]")
-            print(f"      rationale: {p['rationale']}")
+            print(f"    + {p['title']}   [{p['target_system']} / {p['effort']}]", flush=True)
+            print(f"      rationale: {p['rationale']}", flush=True)
             print(f"      evidence : \"{p['evidence_quote']}\""
-                  + (f"  @{p['evidence_ts']}" if p["evidence_ts"] else ""))
-            print(f"      paths    : {p['target_paths'] or '(none)'}")
-            print(f"      risk     : {p['risk']}")
+                  + (f"  @{p['evidence_ts']}" if p["evidence_ts"] else ""), flush=True)
+            print(f"      paths    : {p['target_paths'] or '(none)'}", flush=True)
+            print(f"      risk     : {p['risk']}", flush=True)
         if not a.dry_run:
             wrote = insert_proposals(env, auth, kept)
             print(f"    -> wrote {len(wrote)} row(s) to intel_proposals "
-                  f"(status 'proposed', nothing applied)")
-        print()
+                  f"(status 'proposed', nothing applied)", flush=True)
+        print(flush=True)
 
     print(f"DONE: {total_kept} proposal(s) kept, {total_dropped} dropped "
-          f"(ungrounded/invalid) across {len(todo)} video(s).")
+          f"(ungrounded/invalid) across {len(todo)} video(s).", flush=True)
     if not a.dry_run and total_kept:
-        print("All rows are status 'proposed'. A human approves before anything changes.")
+        print("All rows are status 'proposed'. A human approves before anything changes.", flush=True)
 
 
 if __name__ == "__main__":
