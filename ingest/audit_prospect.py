@@ -396,6 +396,18 @@ def _norm(s):
                   (s or "").lower())
 
 
+def _distinctive(name):
+    """The part of a business name that actually identifies it.
+
+    "DM Roofing and Construction DFW", "PI-LAR Roofing and Construction" and
+    "Norman Roofing and Construction" all share the generic tail, and a
+    length-ratio check let all three collide with "Texas Roofing &
+    Construction Inc". Identity lives in what is left after the trade words
+    come out.
+    """
+    return "".join(sorted(_tokens(name)))
+
+
 def match_business(name, recs):
     """Find this prospect inside the cached Maps results (fuzzy, conservative)."""
     n = _norm(name)
@@ -404,9 +416,10 @@ def match_business(name, recs):
     for r in recs:                                   # exact normalized match first
         if _norm(r.get("title")) == n:
             return r
-    # Containment only when the two names are close in length. Without this,
-    # "roofingdallas" wrongly matches "lowcostroofingdallas" and we would
-    # attribute another company's rating and phone number to this prospect.
+    # Containment only when the two names are close in length AND their
+    # distinctive parts agree. Length alone let three different companies
+    # collide on the shared tail "roofing and construction".
+    dn = _distinctive(name)
     best, best_len = None, 0
     for r in recs:
         t = _norm(r.get("title"))
@@ -415,6 +428,12 @@ def match_business(name, recs):
         if t in n or n in t:
             short, long_ = sorted((len(t), len(n)))
             if short / long_ < 0.75:      # too different to be the same business
+                continue
+            # Both names must carry the SAME identifying word. If one side has
+            # no distinctive token at all (a purely generic name like
+            # "Roofing"), refuse rather than guess.
+            dt = _distinctive(r.get("title"))
+            if not dn or not dt or dn != dt:
                 continue
             if len(t) > best_len:
                 best, best_len = r, len(t)

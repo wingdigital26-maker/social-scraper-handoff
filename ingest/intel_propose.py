@@ -31,7 +31,16 @@ Usage:
     python intel_propose.py --dry-run            # analyse, print, write nothing
     python intel_propose.py --limit 5            # analyse + write up to 5 items
     python intel_propose.py --item 3 --dry-run   # one specific intel_items.id
-    python intel_propose.py --self-test          # quote-verification unit tests
+    python intel_propose.py --self-test          # quote + chunk + merge unit tests
+    python intel_propose.py --min-chars 5000 --reanalyse --limit 5   # long videos
+
+LONG VIDEOS: the free tier's ceiling is 8000 tokens/minute counting prompt AND
+requested completion together, so a 30k-char transcript cannot be one call. It
+is split into OVERLAPPING windows, each sized to fit one legal call, analysed in
+separate passes paced by a shared per-minute token bucket, and the results are
+merged (same idea found in two windows collapses to one, keeping the strongest
+evidence). Every evidence_quote is still verified character-exact against the
+FULL transcript, never against the window it came from.
 """
 import argparse
 import json
@@ -176,16 +185,18 @@ MIN_QUOTE_CHARS = 40      # below this a "quote" can match by accident
 # completion requested 10.4k and the provider rejected the whole call (seen as
 # both 429 and 413). Two of fifteen videos died that way.
 #
-# So the budget below is what actually matters, and max_tokens is computed per
-# item from the real prompt size rather than fixed. Truncating the transcript
-# is strictly better than skipping the item: the technique in these videos is
-# nearly always described in the first stretch, and the quote check runs
-# against the FULL transcript either way — truncation can only cost a proposal,
-# never admit an ungrounded one.
+# The OLD mitigation was to truncate to 10k chars. That kept the call legal but
+# left a 30k-char video two-thirds unread, and the five long videos are the only
+# ones worth mining. So instead: split the transcript into OVERLAPPING windows
+# each sized to fit one legal call, analyse every window, and merge the results.
+# MAX_TRANSCRIPT_CHARS is now only the threshold at which chunking kicks in.
 MAX_TRANSCRIPT_CHARS = 10000
 TPM_BUDGET = 7600        # keep under groq free tier's 8000 tok/min
 MIN_COMPLETION = 1500    # gpt-oss-120b needs room for its <think> block + JSON
 CHARS_PER_TOKEN = 4      # rough but adequate for staying under a ceiling
+CHUNK_OVERLAP_CHARS = 1200   # so a technique straddling a boundary is still whole
+MAX_CHUNKS = 8               # a runaway transcript must not run for an hour
+MAX_PROPOSALS_PER_ITEM = 5   # chunking must not become a proposal firehose
 
 
 # ----------------------------------------------------------- quote grounding --
@@ -300,21 +311,103 @@ def budget_completion(prompt, system):
     return max(MIN_COMPLETION, min(4000, TPM_BUDGET - est_prompt))
 
 
-def call_router(model, prompt, system, max_tokens=None, env=None):
+# ----------------------------------------------------- cross-call rate limit --
+# The free tier's ceiling is per MINUTE, not per call. One chunked 30k-char
+# transcript is 4-5 calls back to back, so budgeting each call in isolation
+# still blows the limit — the second call arrives while the first is still
+# inside the same 60s window. This bucket makes the whole run respect it.
+class TokenMinuteBucket:
+    def __init__(self, budget=TPM_BUDGET, window=60.0):
+        self.budget, self.window, self.spent = budget, window, []
+
+    def _drop_old(self, now):
+        self.spent = [(t, n) for (t, n) in self.spent if now - t < self.window]
+
+    def reserve(self, tokens, verbose=True):
+        """Block until `tokens` fit inside the trailing 60s window."""
+        while True:
+            now = time.time()
+            self._drop_old(now)
+            used = sum(n for _, n in self.spent)
+            if used + tokens <= self.budget or not self.spent:
+                self.spent.append((now, tokens))
+                return
+            wait = self.window - (now - self.spent[0][0]) + 0.5
+            if verbose:
+                print(f"    (rate budget: {used}+{tokens} > {self.budget} tok/min "
+                      f"— pacing {wait:.0f}s)", flush=True)
+            time.sleep(max(wait, 1.0))
+
+    def penalise(self, tokens):
+        """Provider said 429 even though we thought we had room — charge it."""
+        self.spent.append((time.time(), tokens))
+
+
+BUCKET = TokenMinuteBucket()
+
+
+# --------------------------------------------------------------- chunking ----
+def chunk_budget_chars(overhead_chars):
+    """How many transcript chars fit in ONE legal call, given fixed prompt overhead."""
+    prompt_tokens_allowed = TPM_BUDGET - MIN_COMPLETION
+    chars = prompt_tokens_allowed * CHARS_PER_TOKEN - overhead_chars
+    return max(2000, chars)
+
+
+def _split_points(text, target, overlap):
+    """Window starts/ends, each <= target chars, overlapping by `overlap`."""
+    if len(text) <= target:
+        return [(0, len(text))]
+    step = max(target - overlap, target // 2)
+    spans, start = [], 0
+    while start < len(text):
+        end = min(start + target, len(text))
+        # prefer to cut on a sentence boundary so a technique is not sliced
+        if end < len(text):
+            window = text.rfind(". ", start + step // 2, end)
+            if window > start:
+                end = window + 1
+        spans.append((start, end))
+        if end >= len(text):
+            break
+        start = max(end - overlap, start + 1)
+        if len(spans) >= MAX_CHUNKS:
+            break
+    return spans
+
+
+def chunk_transcript(transcript, overhead_chars, overlap=CHUNK_OVERLAP_CHARS):
+    """Overlapping windows of the FULL transcript, each sized for one legal call."""
+    target = chunk_budget_chars(overhead_chars)
+    return [transcript[s:e] for s, e in _split_points(transcript, target, overlap)]
+
+
+def call_router(model, prompt, system, max_tokens=None, env=None, bucket=BUCKET):
     """Jack's FREE model router as a subprocess, or free-provider REST in the
     cloud where the router file does not exist. Never a paid API, never Claude.
 
-    Retries once on a rate-limit answer: the free tier resets per minute, and
-    the router's own backoff (5s, 10s) is shorter than the ~14s groq asks for.
+    Paced against a per-minute token bucket shared by every call in the run
+    (chunked transcripts are several calls), with exponential backoff on 429.
     """
     if max_tokens is None:
         max_tokens = budget_completion(prompt, system)
-    out, err = _call_once(model, prompt, system, max_tokens, env)
-    if err and re.search(r"rate.?limit|429", err, re.I):
-        print(f"    (rate-limited — waiting 20s and retrying once)", flush=True)
-        time.sleep(20)
+    cost = (len(prompt) + len(system)) // CHARS_PER_TOKEN + max_tokens
+    err = None
+    for attempt in range(3):
+        if bucket is not None:
+            bucket.reserve(cost)
         out, err = _call_once(model, prompt, system, max_tokens, env)
-    return out, err
+        if not err:
+            return out, None
+        if not re.search(r"rate.?limit|429|413|too large", err, re.I):
+            return None, err
+        if bucket is not None:
+            bucket.penalise(cost)
+        wait = 20 * (attempt + 1)
+        print(f"    (rate-limited — backing off {wait}s, attempt {attempt + 2}/3)",
+              flush=True)
+        time.sleep(wait)
+    return None, err
 
 
 def _call_once(model, prompt, system, max_tokens, env):
@@ -397,18 +490,115 @@ supports the proposal, drop that proposal and return fewer (or zero).
 """
 
 
+CHUNK_NOTE = """
+NOTE: this is PART {n} of {total} of a long transcript, split for length. Judge
+only what is in front of you. Do not speculate about the other parts, and do not
+lower your bar because this part is short — zero proposals from a part is the
+normal, correct answer.
+"""
+
+
+def _dedupe_key(title):
+    """Content words of a title, for spotting the same idea found twice."""
+    stop = {"a", "an", "the", "to", "for", "of", "in", "on", "and", "with",
+            "add", "use", "using", "into", "your", "wing", "s"}
+    words = re.findall(r"[a-z0-9]+", (title or "").lower())
+    return {w for w in words if w not in stop and len(w) > 2}
+
+
+def merge_proposals(groups, verbose=True):
+    """Merge per-chunk proposal lists, deduping the same idea found twice.
+
+    Two proposals are the same idea when they target the same Wing system AND
+    their titles share most content words, OR when one's verified evidence span
+    contains the other's. The survivor keeps the LONGEST verified evidence span
+    (the strongest grounding) and the longest rationale.
+    """
+    merged = []
+    for props in groups:
+        for p in props:
+            hit = None
+            pk = _dedupe_key(p["title"])
+            for m in merged:
+                if m["target_system"] != p["target_system"]:
+                    continue
+                mk = _dedupe_key(m["title"])
+                overlap = len(pk & mk) / max(1, min(len(pk), len(mk)))
+                same_ev = (p["evidence_quote"] in m["evidence_quote"]
+                           or m["evidence_quote"] in p["evidence_quote"])
+                if overlap >= 0.6 or same_ev:
+                    hit = m
+                    break
+            if hit is None:
+                merged.append(dict(p))
+                continue
+            if verbose:
+                print(f"    [merged duplicate] {p['title']!r} == {hit['title']!r}",
+                      flush=True)
+            if len(p["evidence_quote"]) > len(hit["evidence_quote"]):
+                hit["evidence_quote"] = p["evidence_quote"]
+                hit["evidence_ts"] = p["evidence_ts"]
+            if len(p.get("rationale") or "") > len(hit.get("rationale") or ""):
+                hit["rationale"] = p["rationale"]
+            if len(p.get("target_paths") or "") > len(hit.get("target_paths") or ""):
+                hit["target_paths"] = p["target_paths"]
+    return merged
+
+
 def analyse(item, model, verbose=True, env=None):
-    """Return (kept_proposals, dropped_reasons) for one intel_items row."""
+    """Return (kept_proposals, dropped_reasons) for one intel_items row.
+
+    Long transcripts are split into overlapping windows and analysed in passes;
+    every window's proposals are still verified against the FULL transcript, so
+    chunking cannot weaken the verbatim-quote rule.
+    """
     transcript = (item.get("transcript") or "").strip()
+    fmt = dict(wing=WING_CONTEXT.strip(),
+               handle=item.get("source_handle") or "unknown",
+               title=item.get("title") or "(untitled)")
+    overhead = len(USER_TEMPLATE.format(transcript="", **fmt)) + len(SYSTEM_PROMPT) \
+        + len(CHUNK_NOTE) + 200
+    windows = chunk_transcript(transcript, overhead)
+
+    if len(windows) == 1:
+        return _analyse_window(item, transcript, windows[0], model, "", verbose, env)
+
+    if verbose:
+        print(f"    (transcript {len(transcript)} chars — {len(windows)} overlapping "
+              f"passes, quotes verified against the FULL text)", flush=True)
+    groups, all_dropped, any_ok = [], [], False
+    for n, w in enumerate(windows, 1):
+        if verbose:
+            print(f"    pass {n}/{len(windows)} ({len(w)} chars)", flush=True)
+        note = CHUNK_NOTE.format(n=n, total=len(windows))
+        kept, dropped = _analyse_window(item, transcript, w, model, note, verbose, env)
+        if kept is None:
+            all_dropped.append(f"pass {n}: {dropped[0]}")
+            continue
+        any_ok = True
+        groups.append(kept)
+        all_dropped.extend(dropped)
+    if not any_ok:
+        return None, all_dropped or ["every pass failed"]
+    merged = merge_proposals(groups, verbose)
+    if len(merged) > MAX_PROPOSALS_PER_ITEM:
+        # Chunking must not turn into a proposal firehose. More proposals is not
+        # automatically better; a long video still gets a short list.
+        if verbose:
+            print(f"    (capping {len(merged)} merged proposals at "
+                  f"{MAX_PROPOSALS_PER_ITEM})", flush=True)
+        merged = merged[:MAX_PROPOSALS_PER_ITEM]
+    return merged, all_dropped
+
+
+def _analyse_window(item, transcript, window, model, note, verbose, env):
+    """One model pass over one window. Grounding is ALWAYS the full transcript."""
     prompt = USER_TEMPLATE.format(
         wing=WING_CONTEXT.strip(),
         handle=item.get("source_handle") or "unknown",
         title=item.get("title") or "(untitled)",
-        transcript=transcript[:MAX_TRANSCRIPT_CHARS],
-    )
-    if verbose and len(transcript) > MAX_TRANSCRIPT_CHARS:
-        print(f"    (transcript {len(transcript)} chars — analysing first "
-              f"{MAX_TRANSCRIPT_CHARS}; quote check still runs on the full text)")
+        transcript=window,
+    ) + note
     raw, err = call_router(model, prompt, SYSTEM_PROMPT, env=env)
     if err:
         return None, [f"router error: {err}"]
@@ -500,13 +690,13 @@ def _score(props, item, transcript):
 
 
 # ------------------------------------------------------------------ supabase --
-def fetch_items(env, auth, limit, item_id):
+def fetch_items(env, auth, limit, item_id, fetch_all=False):
     base = env["SUPABASE_URL"].rstrip("/")
     q = ("select=id,source_handle,title,url,transcript,transcript_status"
          "&transcript=not.is.null&order=id.asc")
     if item_id:
         q = "select=id,source_handle,title,url,transcript,transcript_status&id=eq.%d" % item_id
-    else:
+    elif not fetch_all:
         q += f"&limit={max(limit * 4, limit)}"
     r = sb_request("GET", f"{base}/rest/v1/intel_items?{q}", headers=auth)
     if r is None or r.status_code >= 300:
@@ -573,6 +763,72 @@ def self_test():
         print(f"  [{mark}] {name}: {'accepted' if passed else 'rejected'}", flush=True)
         if got:
             print(f"         stored verbatim span -> {got!r}", flush=True)
+
+    # ---- chunking ---------------------------------------------------------
+    print("\n  chunking:", flush=True)
+    long_tr = " ".join(f"Sentence number {i} explains a technique in detail here."
+                       for i in range(1, 900))          # ~54k chars
+    overhead = len(USER_TEMPLATE.format(wing=WING_CONTEXT, handle="x", title="y",
+                                        transcript="")) + len(SYSTEM_PROMPT)
+    wins = chunk_transcript(long_tr, overhead)
+    budget = chunk_budget_chars(overhead)
+    checks = [
+        ("splits a long transcript into >1 window", len(wins) > 1),
+        ("every window fits the per-call budget",
+         all(len(w) <= budget for w in wins)),
+        ("every window is a verbatim slice of the transcript",
+         all(w in long_tr for w in wins)),
+        ("windows overlap (no idea lost on a boundary)",
+         len(wins) < 2 or long_tr.find(wins[1]) < long_tr.find(wins[0]) + len(wins[0])),
+        ("a short transcript is a single window",
+         len(chunk_transcript("short text here.", overhead)) == 1),
+        ("prompt+completion for a full window stays under the TPM budget",
+         (budget + overhead) // CHARS_PER_TOKEN + MIN_COMPLETION <= TPM_BUDGET),
+        ("chunk count is capped", len(chunk_transcript(long_tr * 20, overhead))
+         <= MAX_CHUNKS),
+    ]
+
+    # ---- quote grounding survives chunking --------------------------------
+    # A quote the model found in window 2 must still verify against the FULL
+    # transcript, and a quote stitched across a boundary must NOT sneak through.
+    mid = wins[1]
+    real_span = mid[100:400]
+    checks.append(("a window-2 quote verifies against the FULL transcript",
+                   verify_quote(real_span, long_tr) is not None))
+    checks.append(("a paraphrase of a window-2 quote is still rejected",
+                   verify_quote(real_span.replace("technique", "approach"),
+                                long_tr) is None))
+    checks.append(("text absent from the transcript is rejected",
+                   verify_quote("this sentence never appeared anywhere in the "
+                                "source video transcript at all", long_tr) is None))
+
+    # ---- merge / dedupe ---------------------------------------------------
+    def mk(t, sysm, ev, rat="r"):
+        return {"title": t, "target_system": sysm, "evidence_quote": ev,
+                "evidence_ts": "", "rationale": rat, "target_paths": ""}
+    g1 = [mk("Add a self-audit pass to blog drafting", "content-pipeline",
+             "the model grades its own output against the checklist")]
+    g2 = [mk("Add self-audit pass to the blog drafting step", "content-pipeline",
+             "so the model grades its own output against the checklist before ship"),
+          mk("Cache the router prompts", "llm-router", "cache the system prompt")]
+    m = merge_proposals([g1, g2], verbose=False)
+    checks.append(("duplicate idea across two chunks collapses to one",
+                   len(m) == 2))
+    checks.append(("merge keeps the LONGEST evidence quote",
+                   m[0]["evidence_quote"] ==
+                   "so the model grades its own output against the checklist before ship"))
+    checks.append(("same wording, different target system is NOT merged",
+                   len(merge_proposals([g1, [mk("Add a self-audit pass to blog drafting",
+                                                "sonar", "different quote entirely")]],
+                                       verbose=False)) == 2))
+
+    print("", flush=True)
+    for name, cond in checks:
+        if not cond:
+            ok = False
+        print(f"  [{'PASS' if cond else 'FAIL'}] {name}", flush=True)
+    print(f"\n  (window budget {budget} chars each; {len(wins)} windows for a "
+          f"{len(long_tr)}-char transcript)", flush=True)
     print("\nself-test:", "all good" if ok else "FAILURES", flush=True)
     return 0 if ok else 1
 
@@ -590,6 +846,12 @@ def main():
     # alias name is just the router's routing key.
     ap.add_argument("--model", default="seo",
                     help="llm_router alias: seo|research|json|fast|voice")
+    ap.add_argument("--reanalyse", action="store_true",
+                    help="also analyse items that already have proposals "
+                         "(for re-mining a long video that was previously truncated); "
+                         "duplicate titles are ignored on insert")
+    ap.add_argument("--min-chars", type=int, default=0,
+                    help="only analyse transcripts at least this long")
     ap.add_argument("--self-test", action="store_true",
                     help="run quote-verification unit tests and exit")
     a = ap.parse_args()
@@ -612,13 +874,17 @@ def main():
         return
     print(f"LLM lane: {how}", flush=True)
 
-    items = fetch_items(env, auth, a.limit, a.item)
+    items = fetch_items(env, auth, a.limit, a.item, fetch_all=bool(a.min_chars))
     if not items:
         print("No transcribed intel_items to analyse "
               "(intel_transcript.py fills intel_items.transcript).", flush=True)
         return
+    if a.min_chars:
+        items = [i for i in items
+                 if len((i.get("transcript") or "").strip()) >= a.min_chars]
     done = already_proposed(env, auth, [i["id"] for i in items])
-    todo = [i for i in items if i["id"] not in done][:a.limit]
+    todo = [i for i in items
+            if a.reanalyse or i["id"] not in done][:a.limit]
     print(f"{len(items)} transcribed, {len(done)} already proposed on, "
           f"{len(todo)} to analyse  (model={a.model}, "
           f"{'DRY RUN' if a.dry_run else 'WRITING'})\n", flush=True)

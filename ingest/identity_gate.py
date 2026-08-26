@@ -151,6 +151,22 @@ def main():
         print("Nothing to classify.")
         return
 
+    # A candidate's "city" came from the SEARCH QUERY, not from reality — a
+    # Plano roofer discovered by a Frisco query is still a Plano roofer. Match
+    # against the whole metro's listings, not just one city's. Safe only
+    # because the matcher now requires the DISTINCTIVE part of the name to
+    # agree; on length alone, three different companies collided with "Texas
+    # Roofing & Construction Inc".
+    import glob, json as _json
+    metro = []
+    for f in glob.glob(str(pathlib.Path(__file__).resolve().parent / ".maps_cache" / "*.json")):
+        try:
+            metro += _json.loads(pathlib.Path(f).read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    print(f"metro-wide Maps listings available: {len(metro)}")
+
+
     # One Maps scrape per niche+city, shared by every row in that group.
     groups = {}
     for row in rows:
@@ -161,7 +177,10 @@ def main():
           f"{' (DRY RUN)' if args.dry_run else ''}\n")
 
     for (niche, city), group in groups.items():
-        recs = A.maps_cache(niche, city) if (niche and city) else []
+        recs = (A.maps_cache(niche, city) if (niche and city) else [])
+        # Own city first (best signal), then the rest of the metro.
+        seen_titles = {r.get("title") for r in recs}
+        recs = recs + [r for r in metro if r.get("title") not in seen_titles]
         print(f"[{niche} / {city}]  {len(group)} rows, {len(recs)} Maps listings")
         for row in group:
             identity, reason, place = classify(row, recs)
