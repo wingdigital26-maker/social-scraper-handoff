@@ -196,6 +196,12 @@ statement = score_hit(
 show("statement, not a request", statement)
 check("statement scores below a real ask", statement["score"] < good["score"] - 0.15,
       f"{statement['score']} vs {good['score']}")
+# Contract change 2026-08-26 (intent floor): a statement with no ask, question,
+# complaint or urgency is now rejected outright rather than merely down-ranked.
+# It used to score 0.706 — twice watch_social's 0.35 bar — purely for being
+# on-topic and recent, which is how "Hello! - San Marcos, TX" reached a draft.
+check("statement is rejected outright, not just down-ranked", statement["reject"] is True,
+      statement["reject_reason"] or "not rejected")
 
 # --------------------------------------------------- 11. published_hint honored
 hinted = score_hit(
@@ -237,7 +243,9 @@ for name, r in (("good", good), ("biz", biz_url), ("oos", oos),
 # ------------------------------------------------------------------ 14. ranking
 ranked = sorted(
     [("nearby urgent", nearby), ("fresh Plano ask", good),
-     ("dateless ask", nodate), ("statement", statement), ("7-month-old ask", aging)],
+     # `statement` left out: it is now a hard reject at 0.0, so it never
+     # reaches a queue and ranking it is meaningless.
+     ("dateless ask", nodate), ("7-month-old ask", aging)],
     key=lambda kv: -kv[1]["score"])
 print("\n--- ranking a mixed queue (what a human would see, best first)")
 for n, r in ranked:

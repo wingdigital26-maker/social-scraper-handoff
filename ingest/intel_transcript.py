@@ -123,38 +123,110 @@ def _finish(text, segments, source):
     return {"text": text, "status": "ok", "segments": segments, "source": source}
 
 
+# ------------------------------------------------------- outcome taxonomy ---
+# Every backend attempt ends in exactly one of these. The whole point is that
+# "we got nothing" is never one undifferentiated bucket: a video with captions
+# switched off is a permanent, normal, correct zero, while a blocked IP or an
+# uninstalled library is an operator problem that must be shouted about.
+#
+#   ok                 -- captions retrieved
+#   no_captions        -- YouTube answered: this video has no captions
+#   video_gone         -- video deleted/private/never existed; nothing to fetch
+#   blocked            -- YouTube refused US: IP ban, rate limit, bot check.
+#                         Common on datacenter IPs such as GitHub Actions.
+#   unreachable        -- DNS/timeout/transport failure; retry later
+#   missing_dependency -- the backend is not installed in THIS environment.
+#                         Not a YouTube verdict at all: nothing was attempted.
+#   code_error         -- our bug: unexpected exception, bad parse
+_PERMANENT = {"no_captions", "video_gone"}
+_TRANSIENT = {"blocked", "unreachable"}
+_ENVIRONMENT = {"missing_dependency"}
+
 # ----------------------------------------------- method 1: transcript api ----
 # Errors that mean "YouTube answered, there really are no captions".
 _NO_CAPTION_NAMES = {
     "TranscriptsDisabled", "NoTranscriptFound", "NotTranslatable",
     "TranslationLanguageNotAvailable",
 }
+# Errors that mean YouTube actively refused this client. On a hosted runner
+# this is the expected failure: YouTube blocks datacenter address ranges.
+_BLOCKED_NAMES = {
+    "IpBlocked", "RequestBlocked", "PoTokenRequired", "AgeRestricted",
+    "VideoUnplayable",
+}
 # Errors that mean "we could not get a usable answer" -- never call these none.
 _UNREACHABLE_NAMES = {
-    "IpBlocked", "RequestBlocked", "PoTokenRequired", "YouTubeRequestFailed",
-    "YouTubeDataUnparsable", "FailedToCreateConsentCookie", "AgeRestricted",
-    "VideoUnplayable",
+    "YouTubeRequestFailed", "YouTubeDataUnparsable",
+    "FailedToCreateConsentCookie", "ConnectionError", "Timeout",
+    "ReadTimeout", "ConnectTimeout", "RequestException", "SSLError",
 }
 # InvalidVideoId / VideoUnavailable = the video does not exist. Nothing to
 # retry and nothing to fetch: that is a definitive "no transcript here".
 _GONE_NAMES = {"InvalidVideoId", "VideoUnavailable"}
 
+# Text fingerprints for blocks, used when the exception class is unhelpful
+# (the library wraps a lot of things in generic errors).
+_BLOCK_HINTS = (
+    "too many requests", "http error 429", "sign in to confirm",
+    "not a bot", "blocking requests from your ip", "ip has been blocked",
+    "captcha", "consent", "requests from your network",
+)
+
+
+def _classify_exc(e):
+    """(outcome, detail) for one exception raised by a transcript backend."""
+    kind = type(e).__name__
+    msg = " ".join(str(e).split())[:200]
+    if kind in _NO_CAPTION_NAMES:
+        return "no_captions", kind
+    if kind in _GONE_NAMES:
+        return "video_gone", kind
+    if kind in _BLOCKED_NAMES:
+        return "blocked", kind
+    low = str(e).lower()
+    if any(h in low for h in _BLOCK_HINTS):
+        return "blocked", f"{kind}: {msg}"
+    if kind in _UNREACHABLE_NAMES:
+        return "unreachable", f"{kind}: {msg}"
+    return "unreachable", f"{kind}: {msg}"
+
+
+def _attempt(backend, outcome, detail="", tries=1):
+    return {"backend": backend, "outcome": outcome, "detail": detail,
+            "tries": tries}
+
 
 def _via_api(vid, attempts=3):
-    """Returns (result_dict | None, definitive_status | None).
+    """Returns (result_dict | None, attempt_record).
 
-    None/None means "this method could not decide" -> fall through to yt-dlp.
+    The attempt record always says what happened, even on success, so the
+    caller can log a real diagnosis instead of "failed via none".
     """
+    name = "youtube-transcript-api"
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
-    except ImportError:
-        return None, None
+    except ImportError as e:
+        return None, _attempt(name, "missing_dependency",
+                              f"not installed ({e}); pip install youtube-transcript-api",
+                              tries=0)
 
     delay = 2
-    last_kind = None
+    last = ("unreachable", "no attempt made")
     for attempt in range(attempts):
         try:
             fetched = YouTubeTranscriptApi().fetch(vid, languages=list(LANGS))
+        except Exception as e:
+            outcome, detail = _classify_exc(e)
+            last = (outcome, detail)
+            if outcome in _PERMANENT:
+                # Definitive answer from YouTube -- do not retry, but let
+                # yt-dlp have a shot at captions the API cannot see.
+                return None, _attempt(name, outcome, detail, attempt + 1)
+            if attempt < attempts - 1:
+                time.sleep(delay)
+                delay *= 2
+            continue
+        try:
             segments, parts = [], []
             for sn in fetched:
                 t = float(getattr(sn, "start", 0.0) or 0.0)
@@ -163,20 +235,17 @@ def _via_api(vid, attempts=3):
                     continue
                 segments.append({"t": round(t, 2), "text": txt})
                 parts.append(txt)
-            return _finish(" ".join(parts), segments, "youtube-transcript-api"), None
         except Exception as e:
-            kind = type(e).__name__
-            last_kind = kind
-            if kind in _NO_CAPTION_NAMES or kind in _GONE_NAMES:
-                # Definitive answer from YouTube -- do not retry, but let
-                # yt-dlp have a shot at captions the API cannot see.
-                return None, "none"
-            # Anything else (DNS, timeout, block, unknown) is unreachable.
-            if attempt < attempts - 1:
-                time.sleep(delay)
-                delay *= 2
-    print(f"      transcript-api unreachable ({last_kind})")
-    return None, "failed"
+            # Parsing our own result failed -> that is our bug, not YouTube's.
+            return None, _attempt(name, "code_error",
+                                  f"{type(e).__name__}: {str(e)[:160]}", attempt + 1)
+        if not parts:
+            return None, _attempt(name, "no_captions",
+                                  "API returned an empty caption track", attempt + 1)
+        return (_finish(" ".join(parts), segments, name),
+                _attempt(name, "ok", f"{len(segments)} segments", attempt + 1))
+
+    return None, _attempt(name, last[0], last[1], attempts)
 
 
 # ------------------------------------------------------ method 2: yt-dlp -----
@@ -217,10 +286,36 @@ def parse_vtt(raw: str):
     return segments
 
 
+_GONE_HINTS = ("video unavailable", "is not a valid url", "incomplete youtube id",
+               "private video", "does not exist", "removed by the uploader",
+               "has been terminated", "account associated with this video")
+
+
+def _ytdlp_installed():
+    """True if `python -m yt_dlp` can actually run in THIS interpreter.
+
+    Checked separately because a missing module makes yt-dlp exit non-zero
+    exactly like a YouTube failure would -- which is how a completely
+    uninstalled fallback masqueraded as a network problem for weeks.
+    """
+    try:
+        import importlib.util
+        return importlib.util.find_spec("yt_dlp") is not None
+    except Exception:
+        return False
+
+
 def _via_ytdlp(vid, attempts=2):
-    """Returns (result | None, definitive_status | None)."""
+    """Returns (result | None, attempt_record)."""
+    name = "yt-dlp"
+    if not _ytdlp_installed():
+        return None, _attempt(name, "missing_dependency",
+                              "yt_dlp module not importable; pip install yt-dlp",
+                              tries=0)
+
     url = f"https://www.youtube.com/watch?v={vid}"
     delay = 3
+    last = ("unreachable", "no attempt made")
     for attempt in range(attempts):
         with tempfile.TemporaryDirectory(prefix="ytsub_") as td:
             cmd = [
@@ -237,71 +332,150 @@ def _via_ytdlp(vid, attempts=2):
                 r = subprocess.run(cmd, capture_output=True, text=True,
                                    encoding="utf-8", errors="replace", timeout=180)
             except subprocess.TimeoutExpired:
-                print("      yt-dlp: timed out")
                 r = None
+                last = ("unreachable", "yt-dlp timed out after 180s")
             except Exception as e:
-                print(f"      yt-dlp: could not launch ({e})")
-                return None, "failed"
+                return None, _attempt(name, "code_error",
+                                      f"could not launch: {type(e).__name__}: {str(e)[:140]}",
+                                      attempt + 1)
 
             files = sorted(pathlib.Path(td).glob("*.vtt"))
             if files:
                 raw = files[0].read_text(encoding="utf-8", errors="replace")
                 segments = parse_vtt(raw)
                 if segments:
-                    return _finish(" ".join(s["text"] for s in segments),
-                                   segments, "yt-dlp"), None
+                    return (_finish(" ".join(s["text"] for s in segments),
+                                    segments, name),
+                            _attempt(name, "ok", f"{len(segments)} segments",
+                                     attempt + 1))
+                last = ("code_error", f"VTT written but parsed to 0 segments ({files[0].name})")
+                return None, _attempt(name, *last, tries=attempt + 1)
 
-            err = ((r.stderr if r else "") or "").lower()
-            # yt-dlp reached YouTube and YouTube said the video is gone/private:
-            # definitive, nothing to retry.
-            if any(s in err for s in ("video unavailable", "is not a valid url",
-                                      "incomplete youtube id", "private video",
-                                      "does not exist", "removed by the uploader",
-                                      "unavailable")):
-                return None, "none"
-            # Reached YouTube fine, it just has no subtitles for this video.
-            if r is not None and r.returncode == 0:
-                return None, "none"
+            if r is not None:
+                err = " ".join(((r.stderr or "") + " " + (r.stdout or "")).split())
+                low = err.lower()
+                if any(s in low for s in _GONE_HINTS):
+                    return None, _attempt(name, "video_gone", err[:200], attempt + 1)
+                if any(h in low for h in _BLOCK_HINTS):
+                    return None, _attempt(name, "blocked", err[:200], attempt + 1)
+                if r.returncode == 0:
+                    # Reached YouTube fine, it just has no subtitles here.
+                    return None, _attempt(name, "no_captions",
+                                          "yt-dlp exited 0 with no subtitle file",
+                                          attempt + 1)
+                last = ("unreachable", f"exit {r.returncode}: {err[:200]}" if err
+                        else f"exit {r.returncode} with no output")
+
             if attempt < attempts - 1:
                 time.sleep(delay)
                 delay *= 2
-    return None, "failed"
+    return None, _attempt(name, last[0], last[1], attempts)
 
 
 # ------------------------------------------------------------- public api ----
+def describe(res: dict) -> str:
+    """One-line human diagnosis of a fetch_transcript result."""
+    head = (f"{res['status']} via {res['source']} "
+            f"({len(res['text'])} chars, {len(res['segments'])} segments)")
+    reason = res.get("reason")
+    if res["status"] in ("ok", "too_long"):
+        return head
+    return f"{head} — {reason}: {res.get('detail', '')}".rstrip(" —:")
+
+
+def attempt_lines(res: dict):
+    """Per-backend log lines: what was tried, and what each one said."""
+    out = []
+    for a in res.get("attempts", []):
+        detail = a.get("detail") or ""
+        tries = a.get("tries", 1)
+        suffix = f" after {tries} tries" if tries > 1 else ("" if tries else " (not attempted)")
+        out.append(f"{a['backend']}: {a['outcome']}{suffix}"
+                   + (f" — {detail}" if detail else ""))
+    return out
+
+
 def fetch_transcript(video_url_or_id: str) -> dict:
-    """Return {text, status, segments, source}.
+    """Return {text, status, segments, source, reason, detail, attempts}.
 
     status: ok | none | failed | too_long
       ok       -- captions retrieved
       too_long -- captions retrieved but truncated to MAX_CHARS
-      none     -- YouTube answered; this video has no captions (or is gone)
-      failed   -- we could not reach YouTube; retry this video later
+      none     -- YouTube answered; this video has no captions (or is gone).
+                  PERMANENT and normal. Safe to stop retrying.
+      failed   -- we did not get an answer we can trust. TRANSIENT or an
+                  environment problem. Retry later; never record as "none".
+
+    `reason` explains a non-ok status in one word, and is the field that makes
+    the difference actionable:
+      no_captions | video_gone         -> nothing is broken, this is the truth
+      blocked                          -> YouTube refused this IP (datacenter)
+      unreachable                      -> network/transport failure
+      missing_dependency               -> no backend is even installed here
+      code_error                       -> our bug
+      bad_url                          -> we were handed an unparseable url
+
     Never invents or approximates a transcript.
     """
     vid = video_id(video_url_or_id)
     if not vid:
-        return {"text": "", "status": "failed", "segments": [],
-                "source": "none", "error": "unparseable video url/id"}
+        return {"text": "", "status": "failed", "segments": [], "source": "none",
+                "reason": "bad_url", "detail": f"unparseable video url/id: {video_url_or_id!r}",
+                "attempts": []}
 
-    res, verdict = _via_api(vid)
-    if res:
-        return res
-    api_verdict = verdict  # 'none' | 'failed' | None (lib missing)
+    attempts = []
+    for backend in (_via_api, _via_ytdlp):
+        res, rec = backend(vid)
+        attempts.append(rec)
+        if res:
+            res["reason"] = "ok"
+            res["detail"] = ""
+            res["attempts"] = attempts
+            return res
 
-    res, verdict = _via_ytdlp(vid)
-    if res:
-        return res
+    outcomes = [a["outcome"] for a in attempts]
 
-    # Only say "no captions" when at least one method definitively said so and
-    # neither method reported an unreachable network. A `failed` anywhere wins.
-    if api_verdict == "failed" or verdict == "failed":
-        status = "failed"
-    elif "none" in (api_verdict, verdict):
-        status = "none"
+    def pick(outcome):
+        return next((a for a in attempts if a["outcome"] == outcome), None)
+
+    # Precedence matters. An environment/transport problem ALWAYS outranks a
+    # "no captions" verdict from the other backend, because a wrong `none` is
+    # written to the DB permanently and the video is never retried.
+    if all(o in _ENVIRONMENT for o in outcomes):
+        chosen, status = pick("missing_dependency"), "failed"
+    elif "blocked" in outcomes:
+        chosen, status = pick("blocked"), "failed"
+    elif "code_error" in outcomes:
+        chosen, status = pick("code_error"), "failed"
+    elif "unreachable" in outcomes:
+        chosen, status = pick("unreachable"), "failed"
+    elif "video_gone" in outcomes:
+        chosen, status = pick("video_gone"), "none"
+    elif "no_captions" in outcomes:
+        chosen, status = pick("no_captions"), "none"
     else:
-        status = "failed"
-    return {"text": "", "status": status, "segments": [], "source": "none"}
+        chosen, status = None, "failed"
+
+    reason = chosen["outcome"] if chosen else "unknown"
+    detail = chosen["detail"] if chosen else "no backend produced a verdict"
+    if reason == "missing_dependency":
+        detail = ("no transcript backend is installed in this environment "
+                  "(" + "; ".join(a["detail"] for a in attempts if a["detail"]) + ")")
+    return {"text": "", "status": status, "segments": [], "source": "none",
+            "reason": reason, "detail": detail, "attempts": attempts}
+
+
+def backend_report() -> str:
+    """Which backends this environment can actually use. Printed up front so a
+    dependency-less runner is obvious in the first line of the log."""
+    bits = []
+    try:
+        import youtube_transcript_api  # noqa: F401
+        bits.append("youtube-transcript-api=yes")
+    except ImportError:
+        bits.append("youtube-transcript-api=MISSING")
+    bits.append(f"yt-dlp={'yes' if _ytdlp_installed() else 'MISSING'}")
+    return "  ".join(bits)
 
 
 # ---------------------------------------------------------------- backfill ---
@@ -326,15 +500,20 @@ def backfill(n, dry_run=False):
         print("Nothing to backfill -- every intel_items row already has a transcript.")
         return
 
-    print(f"Backfilling transcripts for {len(rows)} intel_items rows\n")
-    tally = {}
+    print(f"Backfilling transcripts for {len(rows)} intel_items rows")
+    print(f"backends available: {backend_report()}\n")
+    tally, reasons, chars = {}, {}, 0
     for row in rows:
         title = (row.get("title") or "")[:70]
         print(f"  [{row['id']}] {title}")
         res = fetch_transcript(row.get("url") or "")
         tally[res["status"]] = tally.get(res["status"], 0) + 1
-        print(f"      {res['status']} via {res['source']} "
-              f"({len(res['text'])} chars, {len(res['segments'])} segments)")
+        if res["status"] not in ("ok", "too_long"):
+            reasons[res["reason"]] = reasons.get(res["reason"], 0) + 1
+        chars += len(res["text"])
+        print(f"      {describe(res)}")
+        for line in attempt_lines(res):
+            print(f"        - {line}")
         if dry_run:
             continue
         patch = {"transcript_status": res["status"]}
@@ -343,6 +522,8 @@ def backfill(n, dry_run=False):
         elif res["status"] == "none":
             # Mark it so it isn't re-attempted forever. Empty string, not null,
             # so the `transcript is null` filter stops picking it up.
+            # Only reached for no_captions / video_gone -- a genuine, permanent
+            # YouTube answer. A block or a missing library never lands here.
             patch["transcript"] = ""
         else:
             # failed -> leave transcript NULL so a later run retries it.
@@ -352,7 +533,41 @@ def backfill(n, dry_run=False):
         if pr is None or not pr.ok:
             print(f"      WARNING: write-back failed "
                   f"({pr.status_code if pr is not None else 'no response'})")
+
+    got = tally.get("ok", 0) + tally.get("too_long", 0)
     print("\n" + "  ".join(f"{k}={v}" for k, v in sorted(tally.items())))
+    if reasons:
+        print("failure reasons: " + "  ".join(f"{k}={v}" for k, v in sorted(reasons.items())))
+    print(f"transcript chars fetched: {chars}")
+
+    # ZERO-YIELD IS A FAILURE, NOT A QUIET SUCCESS.
+    # This project has been burned by a step exiting 0 having produced nothing.
+    # If we attempted rows and not one transcript came back, and the reason is
+    # anything other than "these videos genuinely have no captions", the step
+    # must go red so the operator sees it.
+    if got == 0:
+        env_or_transient = sum(v for k, v in reasons.items()
+                               if k not in ("no_captions", "video_gone"))
+        summary = "  ".join(f"{k}={v}" for k, v in sorted(reasons.items()))
+        if env_or_transient:
+            print(f"\nZERO-YIELD FAILURE: {len(rows)} video(s) attempted, 0 transcripts "
+                  f"retrieved, and {env_or_transient} of them failed for a reason that is "
+                  f"NOT 'this video has no captions' ({summary}).")
+            if reasons.get("missing_dependency"):
+                print("  -> No transcript backend is installed in this environment. "
+                      "Install them where this runs:\n"
+                      "     pip install youtube-transcript-api yt-dlp")
+            if reasons.get("blocked"):
+                print("  -> YouTube refused this IP. Hosted CI runners (GitHub Actions) "
+                      "sit in datacenter ranges that YouTube blocks; there is no free fix "
+                      "from a hosted runner. Run this leg locally or via a residential "
+                      "egress, and treat these rows as unfetched (they stay NULL and retry).")
+            print("  Downstream proposals from these videos would be based on NO "
+                  "transcript. That is not a clean zero.")
+            sys.exit(1)
+        print(f"\n0 transcripts retrieved, but all {len(rows)} video(s) genuinely have no "
+              f"captions ({summary}). That is a real, permanent zero -- not an error.")
+    return
 
 
 def main():
@@ -370,14 +585,23 @@ def main():
         if args.json:
             print(json.dumps(res, ensure_ascii=False, indent=2))
             return
+        print(f"backends: {backend_report()}")
         print(f"status : {res['status']}")
+        print(f"reason : {res.get('reason')}")
+        if res.get("detail"):
+            print(f"detail : {res['detail']}")
         print(f"source : {res['source']}")
         print(f"chars  : {len(res['text'])}   segments: {len(res['segments'])}")
+        for line in attempt_lines(res):
+            print(f"  tried  {line}")
         if res["segments"][:1]:
             s = res["segments"][0]
             print(f"first  : [{s['t']}s] {s['text'][:80]}")
         print("-" * 60)
         print(res["text"][:400])
+        # Non-zero exit on a non-permanent failure so callers/CI can react.
+        if res["status"] == "failed":
+            sys.exit(2)
         return
 
     if args.backfill:

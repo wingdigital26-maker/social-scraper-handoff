@@ -29,12 +29,17 @@ HARD RULES
 
   score_hit(...) -> {"score": float 0-1, "reasons": [str],
                      "reject": bool, "reject_reason": str|None,
+                     "verdict": "ok"|"unresolved_location"|"reject",
                      "components": {...}}
+
+THREE VERDICTS, NOT TWO. `reject` answers "is this wrong". It cannot answer
+"is this unproven", and conflating the two is how r/Roofing item 1vb2zkg
+scored 0.910. See UNRESOLVED_LOCATION_CAP below.
 """
 import datetime as _dt
 import re
 
-__all__ = ["score_hit", "DFW_CITIES", "WEIGHTS"]
+__all__ = ["score_hit", "DFW_CITIES", "WEIGHTS", "UNRESOLVED_LOCATION_CAP"]
 
 # ---------------------------------------------------------------------------
 # Weights. They sum to 1.0 so `score` is directly readable as a 0-1 confidence.
@@ -51,6 +56,35 @@ WEIGHTS = {
     "geo": 0.18,
 }
 NEUTRAL = 0.5   # what an honestly-unknown signal scores
+
+# ---------------------------------------------------------------------------
+# UNRESOLVED LOCATION. A local-services lead with no resolvable geography.
+#
+# WHY. Re-scoring the six Jackson Roofing drafts already sitting in Supabase,
+# five were rejected on geography (Buckeye AZ, antioch--ca, r/akron,
+# r/milwaukee, r/saskatoon). The sixth scored 0.910:
+#
+#   r/Roofing on Reddit: "Hail Storm came through town 2 days ago. Roofers
+#   swarmed the town. Do I need a new roof based on this random sample"
+#
+# The demand is real — genuine hail urgency, a genuine homeowner question. The
+# problem is that "town" is every town on earth. r/Roofing is a TRADE
+# subreddit, so the subreddit check has nothing to conflict with, and NEUTRAL
+# geography silently meant "no problem" instead of "unverified". That is the
+# same wildcard bug as region="Texas", pointing the other way.
+#
+# The fix is NOT a banned-subreddit list — r/Roofing today, r/HVAC and
+# r/Plumbing tomorrow, and the list rots. We detect the absence of any
+# resolvable place, generically, wherever it comes from.
+#
+# These hits are NOT junk. Following identity_gate.py's house rule, unresolved
+# means unproven, not wrong: they get their own verdict so a human can check
+# the thread's actual location, and they are capped below watch_social's
+# MIN_RELEVANCE (0.35) so nothing can auto-file one as a ready-to-send reply
+# claiming "we do roofing around Plano". The pre-cap number is preserved in
+# components["score_if_located"] so no information is destroyed.
+# ---------------------------------------------------------------------------
+UNRESOLVED_LOCATION_CAP = 0.30
 
 # A thread older than this is not a lead at any weight — the person hired
 # somebody eighteen months ago. It never reaches the queue.
@@ -83,6 +117,26 @@ DFW_CITIES = {
     "terrell", "greenville", "sherman", "denison", "dfw", "metroplex",
 }
 TEXAS_HINTS = {"texas", " tx ", ", tx", "(tx", "tx)", "north texas", "dfw"}
+
+# A configured "city" that is really a whole state or metro. Brilliant
+# Fulfillment's row literally says "Texas", and that string alone let San
+# Marcos (200 miles from DFW) read as an exact target-city match worth geo=1.0.
+# Texas is 800 miles wide. For a local-services lead, statewide means "we do
+# not know the city", NOT "anywhere in Texas is fine".
+_STATEWIDE_REGIONS = {
+    "", "tx", "texas", "north texas", "central texas", "east texas",
+    "west texas", "south texas", "dfw", "dfw metroplex", "metroplex",
+    "statewide", "nationwide", "usa", "us", "united states",
+}
+
+# A "City, TX" label — the shape Nextdoor puts in every post title and the
+# shape people type in a snippet. Used to catch in-state-but-out-of-market.
+_CITY_ST_TX = re.compile(r"\b([A-Za-z][A-Za-z .']{2,28}?),\s*(?:TX|Texas)\b", re.I)
+
+# Words that appear in a "City, TX" capture but are not the city name.
+_CITY_STOPWORDS = {"in", "near", "around", "from", "to", "at", "the", "of",
+                   "here", "we", "us", "i", "you", "everyone", "neighbors",
+                   "neighbours", "hello", "hi", "thanks", "today", "tomorrow"}
 
 # Every state but Texas. A post anchored to one of these is somebody else's lead.
 _OTHER_STATES = [
@@ -117,6 +171,24 @@ _OTHER_BIG_CITIES = re.compile(
 # ---------------------------------------------------------------------------
 # Demand shape. Someone ASKING is the only moment worth a reply.
 # ---------------------------------------------------------------------------
+# Terms trade_vocab hands us for EVERY trade (its GENERIC_CONFIRM list) plus the
+# obvious near-misses. They prove somebody said a hiring-shaped word; they prove
+# nothing about the trade. Duplicated here on purpose — this module imports
+# nothing from the project so it stays unit-testable standalone.
+#
+# WHY. For niche "health & beauty DTC" the vocabulary is
+# ['health','beauty','dtc','recommend','recommendation','quote','estimate',
+#  'hire','hiring','contractor','company','service','looking for', ...].
+# The San Marcos intro post's only vocabulary hit was "recommendation", which
+# bought it trade=0.65 for a post that never mentions the trade at all.
+_GENERIC_TERMS = {
+    "recommend", "recommends", "recommended", "recommendation", "recommendations",
+    "quote", "quotes", "estimate", "estimates", "hire", "hiring", "hired",
+    "contractor", "contractors", "company", "companies", "service", "services",
+    "business", "businesses", "looking for", "need someone", "who do you use",
+    "any suggestions", "suggestion", "suggestions", "referral", "referrals",
+}
+
 _ASK_STRONG = re.compile(
     r"(anyone\s+(know|recommend|have|used)|can\s+anyone\s+recommend|"
     r"any\s+recommendations?|looking\s+for\s+(a|an|someone)|"
@@ -137,6 +209,48 @@ _URGENT = re.compile(
     r"\b(asap|urgent|emergency|today|tomorrow|this\s+week|leak|leaking|"
     r"no\s+ac|no\s+heat|flood|storm\s+damage|burst)\b", re.I)
 _FIRST_PERSON = re.compile(r"\b(i|i'm|im|my|we|we're|our)\b", re.I)
+
+# ---------------------------------------------------------------------------
+# Intent floor. Absence of evidence is not evidence of demand.
+#
+# WHY. Run 32976099694 filed "Hello! - San Marcos, TX | Nextdoor" as a
+# client-ready draft. It is a neighbourhood introduction post. Nothing in it
+# expresses a need for anything, let alone for the client's trade. It survived
+# because `intent` merely DEFAULTED to 0.25 and the other three components
+# (trade, geo, recency) carried it over the 0.35 bar. A statement scored 0.72
+# on that arithmetic — twice the threshold — purely for being on-topic.
+#
+# So demand is now a GATE, not a weight. There must be positive evidence that
+# somebody is asking for something. Notice this costs nothing in recall: every
+# genuine lead shape ("anyone recommend", "looking for", "need someone to",
+# "who does", "quotes for", a question mark, a complaint about an incumbent,
+# an emergency) already trips one of the patterns below.
+# ---------------------------------------------------------------------------
+
+# Platform and location decoration that public-index titles carry. Stripped so
+# the greeting test can anchor on the real title. "Hello! - San Marcos, TX |
+# Nextdoor" is a REAL observed string; the whole title is the word "Hello!".
+_PLATFORM_TAIL = re.compile(
+    r"\s*[|]\s*(nextdoor|reddit|facebook|instagram|tiktok|x|twitter)\s*$", re.I)
+_LOC_TAIL = re.compile(r"\s*[-–—]\s*([A-Za-z][A-Za-z .']{1,28}),\s*([A-Za-z]{2})\s*$")
+
+# A title that is nothing but a salutation. No ask can hide in one word.
+_GREETING_ONLY = re.compile(
+    r"^[\s\W]*(hello|hi|hey|howdy|greetings|good\s+(morning|afternoon|evening)|"
+    r"welcome|happy\s+\w+|hello\s+(neighbors?|neighbours?|everyone|all|there))"
+    r"[\s!.,?–—-]*$", re.I)
+
+# "I just moved here / new to the neighborhood / introducing myself". These
+# posts very often DO contain a soft ask ("any recommendations for the area?"),
+# which is why a soft-ask check alone did not save us. A general request for
+# neighbourhood tips is not demand for the client's service, so an intro post
+# is rejected even when it asks something. This is a hard reject on purpose.
+_INTRO_POST = re.compile(
+    r"\b(new\s+(to\s+the\s+(area|neighborhood|neighbourhood|community)|"
+    r"here|neighbor|neighbour|resident)|just\s+moved\s+(here|in|to|into)|"
+    r"introduc(e|ing)\s+(myself|ourselves)|wanted\s+to\s+(say|introduce)\s+"
+    r"(hi|hello|myself)|saying\s+hello|first\s+post\s+here|"
+    r"glad\s+to\s+be\s+here|nice\s+to\s+meet\s+everyone)\b", re.I)
 
 # ---------------------------------------------------------------------------
 # Kill switch 1: a business advertising itself.
@@ -343,6 +457,37 @@ _SUB_RE = re.compile(r"reddit\.com/r/([A-Za-z0-9_]+)", re.I)
 _ND_SLUG_RE = re.compile(r"nextdoor\.com/[a-z-]*/?([a-z][a-z-]+)--([a-z]{2})", re.I)
 
 
+def _looks_like_city(name):
+    """Cheap guard so a captured 'City, TX' is plausibly a place name."""
+    n = name.strip().lower()
+    if not n or len(n) < 3 or len(n) > 28:
+        return False
+    words = n.split()
+    if not words or len(words) > 3:
+        return False
+    return not any(w in _CITY_STOPWORDS for w in words)
+
+
+def _out_of_metro_tx_city(name):
+    """True when `name` is a real Texas city label that is NOT in the DFW metro.
+
+    THE SAN MARCOS RULE. The old geography check had exactly two verdicts:
+    "some other state" (reject) or "Texas is mentioned" (geo 0.65, keep). There
+    was no third case for "Texas, but the wrong end of it", so San Marcos —
+    a three-hour drive past the southern edge of any DFW service area — scored
+    as in-market. Texas being one state does not make it one labor market.
+    """
+    n = " ".join(name.strip().lower().split())
+    if not _looks_like_city(n):
+        return False
+    if n in DFW_CITIES:
+        return False
+    # "north texas", "texas" etc. are regions, not cities: not a conflict.
+    if n in _STATEWIDE_REGIONS:
+        return False
+    return True
+
+
 def _url_location_conflict(url_low, city_l):
     """Return a reason string when the URL itself anchors somewhere else."""
     m = _ND_SLUG_RE.search(url_low)
@@ -350,6 +495,12 @@ def _url_location_conflict(url_low, city_l):
         slug_city, slug_state = m.group(1).replace("-", " "), m.group(2).lower()
         if slug_state != "tx":
             return f"Nextdoor slug says {slug_city.title()}, {slug_state.upper()}"
+        # In Texas but not in the metro. The slug is the most authoritative
+        # location a Nextdoor URL carries, so it outranks any city name that
+        # happens to appear in the body text.
+        if slug_city != city_l and _out_of_metro_tx_city(slug_city):
+            return (f"Nextdoor slug says {slug_city.title()}, TX — a Texas city "
+                    f"outside the DFW metro")
     m = _SUB_RE.search(url_low)
     if m:
         sub = m.group(1).lower()
@@ -361,6 +512,58 @@ def _url_location_conflict(url_low, city_l):
         if sub not in generic and sub not in _LOCAL_SUBS and len(sub) > 3:
             return f"subreddit r/{m.group(1)} is not a DFW community"
     return None
+
+
+def _label_location_conflict(title, text, city_l, in_market):
+    """Sibling of _url_location_conflict for the 'City, TX' labels in the TEXT.
+
+    A /p/ Nextdoor permalink carries no slug, so the URL check has nothing to
+    read — but the public-index TITLE still ends in the post's neighbourhood:
+    "Hello! - San Marcos, TX | Nextdoor". That label is the only geography the
+    result has, and it was being read as "Texas is mentioned, good enough".
+
+    Only fires when NO in-metro city appears anywhere. A post that says
+    "moving from San Marcos to Plano" keeps its DFW anchor and is not rejected.
+    """
+    if in_market:
+        return None
+    labels = []
+    m = _LOC_TAIL.search(_PLATFORM_TAIL.sub("", title or ""))
+    if m and m.group(2).lower() == "tx":
+        labels.append(m.group(1))
+    labels += _CITY_ST_TX.findall(text or "")
+    for name in labels:
+        if _out_of_metro_tx_city(name) and name.strip().lower() != city_l:
+            return (f"'{name.strip().title()}, TX' is a Texas city outside the "
+                    f"DFW service area")
+    return None
+
+
+_ZIP_RE = re.compile(r"\b\d{5}(-\d{4})?\b")
+_COUNTY_RE = re.compile(r"\b[A-Z][a-z]+\s+County\b")
+_ANY_CITY_ST_RE = re.compile(r"\b[A-Za-z][A-Za-z .']{2,28}?,\s*[A-Z]{2}\b")
+
+
+def _any_place_named(text, url_low):
+    """Did ANYTHING in this hit name a place — any place, anywhere?
+
+    Deliberately generic and deliberately permissive: it is asked only after
+    every out-of-market check has already passed, so its job is to separate
+    "a location exists and is merely ambiguous" from "there is no location in
+    this document at all". It must never be a list of subreddits to ban —
+    r/Roofing must fail this for the same structural reason r/HVAC and
+    r/Plumbing will, namely that a trade sub carries no geography.
+    """
+    if _ANY_CITY_ST_RE.search(text) or _COUNTY_RE.search(text):
+        return True
+    if _ZIP_RE.search(text):
+        return True
+    if _ND_SLUG_RE.search(url_low):
+        return True
+    m = _SUB_RE.search(url_low)
+    if m and m.group(1).lower() in _LOCAL_SUBS:
+        return True   # e.g. r/austin — a real place, just not our metro
+    return False
 
 
 def score_hit(title, snippet, url, trade, city, relevance_terms,
@@ -385,12 +588,13 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
     url_low = url.lower()
     reasons = []
 
-    def out(score, reject=False, reject_reason=None, comps=None):
+    def out(score, reject=False, reject_reason=None, comps=None, verdict=None):
         return {
             "score": round(max(0.0, min(1.0, score)), 3),
             "reasons": reasons,
             "reject": reject,
             "reject_reason": reject_reason,
+            "verdict": verdict or ("reject" if reject else "ok"),
             "components": comps or {},
         }
 
@@ -423,9 +627,17 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
 
     # -- geography -----------------------------------------------------------
     hay = f"{low} {url_low}"
-    city_l = city.lower()
+    city_l = city.lower().strip()
+    # A statewide/metro-wide "city" is an unknown city, not a match-anything
+    # wildcard. Without this, city="Texas" made every Texas post an exact
+    # target-city hit worth geo 1.0 — including San Marcos.
+    city_is_region = city_l in _STATEWIDE_REGIONS
+    if city_is_region and city_l:
+        reasons.append(f"configured region '{city}' is statewide, not a city — "
+                       f"judging by DFW metro membership instead")
+    city_named = bool(city_l) and not city_is_region and city_l in hay
     in_market = []
-    if city_l and city_l in hay:
+    if city_named:
         in_market.append(city)
     for c in DFW_CITIES:
         if c in hay and c != city_l:
@@ -456,7 +668,16 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
         reasons.append(url_conflict)
         return out(0.0, True, f"Out of market: {url_conflict}")
 
-    if city_l and city_l in hay:
+    label_conflict = _label_location_conflict(title, text, city_l, in_market)
+    if label_conflict:
+        reasons.append(label_conflict)
+        return out(0.0, True, f"Out of market: {label_conflict}")
+
+    # geo_resolved answers a different question from geo: not "how good is the
+    # location" but "did we find one at all". The old code had no way to say
+    # "nowhere" as distinct from "somewhere mediocre", so nowhere scored 0.5.
+    geo_resolved = True
+    if city_named:
         geo = 1.0
         reasons.append(f"target city '{city}' appears")
     elif in_market:
@@ -465,9 +686,18 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
     elif texas_named:
         geo = 0.65
         reasons.append("Texas named but no specific in-market city")
+    elif _any_place_named(text, url_low):
+        # Some place was named and it survived every out-of-market check. Not
+        # provably ours, not provably theirs. Honestly neutral.
+        geo = NEUTRAL
+        geo_resolved = True
+        reasons.append("a place is named but it resolves to neither DFW nor an "
+                       "excluded market — scored neutral, not guessed")
     else:
         geo = NEUTRAL
-        reasons.append("no location found in title, snippet or URL — scored neutral, not guessed")
+        geo_resolved = False
+        reasons.append("NO location resolvable in title, snippet or URL — "
+                       "the post could be anywhere on earth")
 
     # -- recency -------------------------------------------------------------
     when, how = (None, None)
@@ -494,12 +724,20 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
     trade_words = [w for w in re.split(r"\W+", trade.lower()) if len(w) > 2]
     matched = sorted({t for t in terms if t and t in low})
     trade_named = any(w in low for w in trade_words) if trade_words else False
+    specific = [t for t in matched if t not in _GENERIC_TERMS]
+    if not trade_named and not specific:
+        # Only generic hiring words matched. That is a shape, not a subject.
+        if matched:
+            reasons.append("only generic hire words matched: " + ", ".join(matched[:4]))
+        return out(0.0, True,
+                   f"No trade relevance: nothing trade-specific for '{trade}' appears"
+                   + (f" (only generic terms: {', '.join(matched[:3])})" if matched else ""))
     if trade_named and matched:
         tr = 1.0
     elif trade_named:
         tr = 0.75
-    elif matched:
-        tr = 0.55 + min(0.3, 0.1 * len(matched))
+    elif specific:
+        tr = 0.55 + min(0.3, 0.1 * len(specific))
     else:
         tr = 0.0
     if tr == 0.0:
@@ -514,6 +752,31 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
     reasons.append("trade match — " + "; ".join(bits))
 
     # -- demand shape --------------------------------------------------------
+    # INTENT FLOOR. Runs before scoring, because no amount of trade/geo/recency
+    # should be able to manufacture demand that the post does not express.
+    core_title = _LOC_TAIL.sub("", _PLATFORM_TAIL.sub("", title)).strip()
+    if _GREETING_ONLY.match(core_title):
+        reasons.append(f"title is a bare greeting ('{core_title}') — no need expressed")
+        return out(0.0, True,
+                   f"No demand: the whole title is a greeting ('{core_title}'), "
+                   f"nobody is asking for anything")
+    if _INTRO_POST.search(text):
+        reasons.append("neighbourhood introduction post — general chat, not a service request")
+        return out(0.0, True,
+                   "No demand: introduction / 'new to the area' post. Any ask in it "
+                   "is for general neighbourhood tips, not for this trade")
+
+    ask_strong = _ASK_STRONG.search(text)
+    switch = _SWITCH.search(text)
+    ask_soft = _ASK_SOFT.search(text)
+    urgent = _URGENT.search(text)
+    question = "?" in title or "?" in snippet
+    if not (ask_strong or switch or ask_soft or urgent or question):
+        reasons.append("no request language and no question anywhere — a statement")
+        return out(0.0, True,
+                   "No demand: nothing in the title or snippet expresses a need "
+                   "(no ask phrase, no question, no complaint, no urgency)")
+
     intent = 0.25
     if _ASK_STRONG.search(text):
         intent = 1.0
@@ -541,6 +804,21 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
     if _URGENT.search(text):
         score = min(1.0, score + 0.05)
         reasons.append("urgency language — bump +0.05")
+
+    # -- unresolved location -------------------------------------------------
+    # Held back, NOT discarded. The demand may be perfectly real; what is
+    # missing is proof it is OUR demand. Deleting it would repeat the mistake
+    # identity_gate.py exists to avoid — swapping confidently-wrong data for
+    # confidently-deleted data.
+    if not geo_resolved:
+        comps["geo_resolved"] = False
+        comps["score_if_located"] = round(min(1.0, score), 3)
+        reasons.append(
+            f"demand is strong ({comps['score_if_located']:.3f}) but unplaceable — "
+            f"held at {UNRESOLVED_LOCATION_CAP} for human location check, not sent")
+        return out(min(score, UNRESOLVED_LOCATION_CAP), False, None, comps,
+                   verdict="unresolved_location")
+    comps["geo_resolved"] = True
 
     return out(score, False, None, comps)
 
