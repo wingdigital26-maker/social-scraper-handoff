@@ -40,6 +40,7 @@ import pathlib
 import re
 import subprocess
 import sys
+import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from db import load_env                      # noqa: E402  ENV_FILE-aware .env loader
@@ -169,13 +170,22 @@ VALID_SYSTEMS = {"os-dashboard", "sonar", "content-pipeline", "llm-router",
                  "supabase", "scheduling"}
 VALID_EFFORT = {"small", "medium", "large"}
 MIN_QUOTE_CHARS = 40      # below this a "quote" can match by accident
-# Free-tier context is the binding constraint. A 17k-char transcript analysed
-# fine; a 24k one 404'd/failed across every free provider and the whole item was
-# skipped. Truncating is strictly better than skipping: the technique in these
-# videos is nearly always described in the first stretch, and the quote check
-# runs against the FULL transcript either way, so truncation can only cost us a
-# proposal, never produce an ungrounded one.
-MAX_TRANSCRIPT_CHARS = 15000
+# The binding constraint is NOT context length, it is groq's free-tier rate
+# limit: 8000 tokens per minute counting prompt AND requested completion
+# together. A 15k-char transcript is ~4.6k prompt tokens, so asking for 6k of
+# completion requested 10.4k and the provider rejected the whole call (seen as
+# both 429 and 413). Two of fifteen videos died that way.
+#
+# So the budget below is what actually matters, and max_tokens is computed per
+# item from the real prompt size rather than fixed. Truncating the transcript
+# is strictly better than skipping the item: the technique in these videos is
+# nearly always described in the first stretch, and the quote check runs
+# against the FULL transcript either way — truncation can only cost a proposal,
+# never admit an ungrounded one.
+MAX_TRANSCRIPT_CHARS = 10000
+TPM_BUDGET = 7600        # keep under groq free tier's 8000 tok/min
+MIN_COMPLETION = 1500    # gpt-oss-120b needs room for its <think> block + JSON
+CHARS_PER_TOKEN = 4      # rough but adequate for staying under a ceiling
 
 
 # ----------------------------------------------------------- quote grounding --
@@ -279,9 +289,35 @@ def call_direct(env, model, prompt, system, max_tokens):
     return None, f"all free providers failed: {last}"
 
 
-def call_router(model, prompt, system, max_tokens=6000, env=None):
+def budget_completion(prompt, system):
+    """Largest completion we can ask for without blowing the free-tier TPM cap.
+
+    Providers count prompt + requested completion against the same per-minute
+    budget and reject the whole call if the sum is over, so asking for a fixed
+    6000 on a long transcript loses the item entirely.
+    """
+    est_prompt = (len(prompt) + len(system)) // CHARS_PER_TOKEN
+    return max(MIN_COMPLETION, min(4000, TPM_BUDGET - est_prompt))
+
+
+def call_router(model, prompt, system, max_tokens=None, env=None):
     """Jack's FREE model router as a subprocess, or free-provider REST in the
-    cloud where the router file does not exist. Never a paid API, never Claude."""
+    cloud where the router file does not exist. Never a paid API, never Claude.
+
+    Retries once on a rate-limit answer: the free tier resets per minute, and
+    the router's own backoff (5s, 10s) is shorter than the ~14s groq asks for.
+    """
+    if max_tokens is None:
+        max_tokens = budget_completion(prompt, system)
+    out, err = _call_once(model, prompt, system, max_tokens, env)
+    if err and re.search(r"rate.?limit|429", err, re.I):
+        print(f"    (rate-limited — waiting 20s and retrying once)", flush=True)
+        time.sleep(20)
+        out, err = _call_once(model, prompt, system, max_tokens, env)
+    return out, err
+
+
+def _call_once(model, prompt, system, max_tokens, env):
     if not ROUTER.exists():
         return call_direct(env or {}, model, prompt, system, max_tokens)
     cmd = [sys.executable, str(ROUTER), "--model", model,

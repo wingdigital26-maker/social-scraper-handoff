@@ -213,15 +213,15 @@ _JUNK_URL = [
 # is someone selling; a category page has no specific ask at all.
 _MARKETPLACE_TITLE = [
     # Platform editorial dressed as a neighbour post.
-    (re.compile(r"(stories|moments)\s+from\s+nextdoor", re.I),
+    (re.compile(r"(stories|moments)\s+from\s+nextdoor", re.I),
      "Nextdoor editorial, not a neighbour"),
-    (re.compile(r"nextdoor\s+(100|blog|newsroom|guide)", re.I),
+    (re.compile(r"nextdoor\s+(100|blog|newsroom|guide)", re.I),
      "Nextdoor corporate content"),
-    (re.compile(r"^\s*for sale\s*(&|and)\s*free", re.I),
+    (re.compile(r"^\s*for sale\s*(&|and)\s*free", re.I),
      "marketplace category page, not a post"),
-    (re.compile(r"for sale.{0,30}nextdoor", re.I), "marketplace listing"),
-    (re.compile(r"for\s+\$\s?\d", re.I), "item listed for a price, a seller not a asker"),
-    (re.compile(r"(free|curb ?alert).{0,20}(pick ?up|porch|curb)", re.I),
+    (re.compile(r"for sale.{0,30}nextdoor", re.I), "marketplace listing"),
+    (re.compile(r"for\s+\$\s?\d", re.I), "item listed for a price, a seller not a asker"),
+    (re.compile(r"(free|curb ?alert).{0,20}(pick ?up|porch|curb)", re.I),
      "giveaway listing, not a service request"),
 ]
 _LISTICLE = [
@@ -327,6 +327,42 @@ def _recency_score(age_days):
 
 
 # ---------------------------------------------------------------------------
+
+# Geography hides in the URL, not the text. A reddit post is anchored by its
+# SUBREDDIT (/r/akron/ is Ohio, /r/saskatoon/ is Canada) and a Nextdoor post by
+# its slug (/austin--tx/). The old check only read title+snippet, so six
+# Jackson Roofing drafts were aimed at Arizona, California, Ohio, Wisconsin and
+# Saskatchewan — for a Dallas roofer. A place name in the URL is the single
+# most reliable location signal available and it was being ignored.
+_LOCAL_SUBS = {
+    "dfw", "dallas", "fortworth", "plano", "frisco", "mckinney", "allen",
+    "richardson", "denton", "arlington", "irving", "garland", "texas", "austin",
+    "houston", "sanantonio",
+}
+_SUB_RE = re.compile(r"reddit\.com/r/([A-Za-z0-9_]+)", re.I)
+_ND_SLUG_RE = re.compile(r"nextdoor\.com/[a-z-]*/?([a-z][a-z-]+)--([a-z]{2})", re.I)
+
+
+def _url_location_conflict(url_low, city_l):
+    """Return a reason string when the URL itself anchors somewhere else."""
+    m = _ND_SLUG_RE.search(url_low)
+    if m:
+        slug_city, slug_state = m.group(1).replace("-", " "), m.group(2).lower()
+        if slug_state != "tx":
+            return f"Nextdoor slug says {slug_city.title()}, {slug_state.upper()}"
+    m = _SUB_RE.search(url_low)
+    if m:
+        sub = m.group(1).lower()
+        # Only judge subs that look like a place. A topical sub (r/roofing,
+        # r/homeimprovement) carries no location and must not be rejected.
+        generic = {"roofing", "homeimprovement", "diy", "construction", "askacontractor",
+                   "realestate", "homeowners", "smallbusiness", "entrepreneur", "ecommerce",
+                   "3pl", "logistics", "supplychain", "amazonfba", "shopify"}
+        if sub not in generic and sub not in _LOCAL_SUBS and len(sub) > 3:
+            return f"subreddit r/{m.group(1)} is not a DFW community"
+    return None
+
+
 def score_hit(title, snippet, url, trade, city, relevance_terms,
               published_hint=None, now=None):
     """Score one search hit 0-1 and decide whether it may become a draft.
@@ -412,6 +448,13 @@ def score_hit(title, snippet, url, trade, city, relevance_terms,
     if other_state:
         reasons.append(f"location points to {other_state}, not the DFW metro")
         return out(0.0, True, f"Out of market: post is anchored to {other_state}")
+
+    # The URL is checked even when the text mentioned a DFW city, because a
+    # neighbour in Akron can still say the word "Dallas".
+    url_conflict = _url_location_conflict(url_low, city_l)
+    if url_conflict:
+        reasons.append(url_conflict)
+        return out(0.0, True, f"Out of market: {url_conflict}")
 
     if city_l and city_l in hay:
         geo = 1.0
