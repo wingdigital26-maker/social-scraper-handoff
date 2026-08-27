@@ -110,13 +110,49 @@ UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.3
                     "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"}
 FETCH_TIMEOUT = 20
 PACE = 1.0          # seconds between page fetches, per site
-MAX_PAGES = 7       # homepage + up to 6 contact/about/team pages
+MAX_PAGES = 12      # homepage + up to 11 contact/about/team/policy pages
 
-# Pages where a business names a human. Ordered: the ones that name owners come
-# first, so the crawl budget is spent where decision-makers actually live.
+# Pages where a business names a human OR prints an address.
+#
+# This was previously anchored as "/(team|contact|...)\b", i.e. the hint word
+# had to be the WHOLE first path segment. Measured against 30 live sites that
+# cost us real contacts: Dwell's team page is /why-dwell/the-dwell-team and
+# never matched. Substring matching is the fix.
+#
+# The two additions that actually paid: PRIVACY POLICY and TERMS pages. They
+# are legally obliged to name a contact route, so a business that hides behind
+# a web form on every other page still prints an address there. Measured on
+# this sample they recovered support@examplerooferA.com (from /privacy-policy/)
+# and customercare@examplerooferB.com (from /smstermsconditions/) -- two
+# businesses that were previously scored "no email exists".
 CONTACT_HINTS = re.compile(
-    r"/(about|about-us|our-team|team|meet-the-team|our-story|staff|leadership|"
-    r"who-we-are|owner|contact|contact-us)\b", re.I)
+    r"(about|our-?team|team|meet-?the-?team|our-?story|staff|leadership|"
+    r"who-we-are|owner|people|employees|contact|get-in-touch|reach-us|"
+    r"privacy|terms|careers)", re.I)
+
+# Substring matching means asset URLs sneak in: WordPress ships a plugin
+# directory literally named "jquery-validation-for-contact-form-7", which
+# contains "contact" and would burn a page of crawl budget on a .css file.
+ASSET_PATH = re.compile(
+    r"/(wp-content|wp-includes|assets|static|dist|node_modules|cdn-cgi)/", re.I)
+ASSET_TAIL = re.compile(
+    r"\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|pdf|zip|xml|json)$", re.I)
+
+
+def page_priority(path: str) -> int:
+    """Spend the crawl budget where decision-makers live, before policy pages.
+
+    Team/staff pages name humans AND print their addresses, so they are worth
+    strictly more than a privacy policy, which at best yields one role inbox.
+    """
+    p = (path or "").lower()
+    for i, w in enumerate(("team", "staff", "leadership", "employees", "people",
+                           "owner", "about", "contact", "get-in-touch",
+                           "reach-us", "our-story", "careers",
+                           "privacy", "terms")):
+        if w in p:
+            return i
+    return 99
 
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 
@@ -135,6 +171,20 @@ VERSION_LIKE = re.compile(r"@[\d.]+$")
 
 FREE_MAIL = {"gmail.com", "yahoo.com", "hotmail.com", "aol.com", "outlook.com",
              "icloud.com", "live.com", "msn.com", "protonmail.com", "me.com"}
+
+# Consumer ISP mailboxes. An established small trade that predates its own
+# domain very often still publishes the mailbox it has used since 2004.
+# examplecontractor2@verizon.net is in the mailto: on dobsoncontractors.com's
+# homepage -- unmistakably theirs -- and was being thrown away purely because
+# verizon.net was missing from the list above. This is a COMPLETENESS fix, not
+# a loosening: these domains go through the identical local-part-must-name-the-
+# business test as FREE_MAIL, so a random verizon.net address still fails.
+ISP_MAIL = {"verizon.net", "att.net", "sbcglobal.net", "bellsouth.net",
+            "comcast.net", "charter.net", "cox.net", "earthlink.net",
+            "swbell.net", "windstream.net", "roadrunner.com", "rr.com",
+            "juno.com", "aim.com", "ymail.com", "gmx.com", "mail.com",
+            "prodigy.net", "frontier.com", "optonline.net", "netzero.net"}
+CONSUMER_MAIL = FREE_MAIL | ISP_MAIL
 
 # Straight from wing_suppression.ROLE_JUNK_LOCALPARTS -- the addresses Wing has
 # already decided never to cold-email -- plus the obvious extras.
@@ -269,7 +319,7 @@ def belongs_to_business(email: str, site_host: str, biz_name: str) -> bool:
     Sites embed third-party widgets, agency credits, and chat scripts, all of
     which leak addresses belonging to other companies. Only two things pass:
     an address on the business's own registrable domain, or a free-mail address
-    whose local-part clearly IS this business (mesquiteroofing@gmail.com for
+    whose local-part clearly IS this business (examplecityroofing@gmail.com for
     mesquiteroofing.com -- very common for small trades).
     """
     site_reg = registrable(site_host)
@@ -278,7 +328,7 @@ def belongs_to_business(email: str, site_host: str, biz_name: str) -> bool:
     edom = registrable(email.split("@", 1)[1])
     if edom == site_reg:
         return True
-    if edom in FREE_MAIL:
+    if edom in CONSUMER_MAIL:
         local = norm_biz(email.split("@", 1)[0])
         for target in (norm_biz(site_reg.split(".")[0]), norm_biz(biz_name)):
             if target and len(target) >= 4 and local and len(local) >= 4:
@@ -287,8 +337,39 @@ def belongs_to_business(email: str, site_host: str, biz_name: str) -> bool:
     return False
 
 
+def sibling_domain(email: str, site_host: str, biz_name: str) -> bool:
+    """A DIFFERENT domain that is still demonstrably this business's own.
+
+    Blue Angel Roofing's site is blueangelroofinggc.com and the mailto: in its
+    header is brandname@examplebrandroof.com. Same company, older domain. The
+    strict same-registrable-domain rule threw it away, and that is the entire
+    reachable contact for that business.
+
+    The bar is deliberately high, because "domain looks a bit like the business"
+    is exactly how a scraper starts collecting the marketing agency that built
+    the site. BOTH must hold, and the caller additionally requires that the
+    address was published in a mailto: href rather than merely appearing
+    somewhere in the bytes:
+      * the email domain's root and the business/site name overlap as tokens
+      * that overlap is at least 6 characters, so "roof"/"roofing" alone --
+        which every one of these businesses shares -- can never carry a match
+    """
+    edom = registrable(email.split("@", 1)[1])
+    if edom in CONSUMER_MAIL or edom == registrable(site_host):
+        return False
+    root = norm_biz(edom.split(".")[0])
+    if not root or len(root) < 6:
+        return False
+    for target in (norm_biz(registrable(site_host).split(".")[0]),
+                   norm_biz(biz_name)):
+        if target and len(target) >= 6:
+            if root == target or root in target or target in root:
+                return True
+    return False
+
+
 # Local-part words that prove an address is a BUSINESS mailbox even though it
-# is not a classic role inbox. Without this, "mckinney.roofer@gmail.com" scores
+# is not a classic role inbox. Without this, "examplecity.roofer@gmail.com" scores
 # as personal on shape alone -- two alpha parts, neither of them info/sales --
 # and a "personal email" count built on that is a lie.
 NOT_A_PERSON_PART = {
@@ -332,6 +413,76 @@ def person_for_email(email: str, people: list):
         if matched and p[0].lower() not in [x[0].lower() for x in hits]:
             hits.append(p)
     return hits[0] if len(hits) == 1 else None
+
+
+def local_matches_name(local: str, name: str) -> bool:
+    """Is this local-part demonstrably built from this person's name?
+
+    The shapes below are the ones staff directories actually use. Two-letter
+    initials ("MB" for Mike Basler) are included ONLY here, where a proximate
+    published name is already the evidence -- they are far too weak to identify
+    a person on their own and are never used that way.
+    """
+    toks = [t for t in re.split(r"[^A-Za-z]+", name.lower()) if t]
+    if len(toks) < 2:
+        return False
+    first, last = toks[0], toks[-1]
+    squashed = re.sub(r"[^a-z]", "", local.lower())
+    if not squashed:
+        return False
+    shapes = {first + last, last + first, first[0] + last, first + last[0],
+              first[0] + "" + last[0], last + first[0], first, last}
+    if len(toks) >= 3:                       # middle initial: "MEB"
+        shapes.add(first[0] + toks[1][0] + last[0])
+    return squashed in shapes
+
+
+# A name and an address printed next to each other. Team pages render as
+# "Mark Junge Leadership Director of Construction MarkJ@norman.construction",
+# so the name sits a short, bounded distance in front of the address.
+NAME_NEAR = re.compile(r"\b((?:[A-Z][a-z]+|[A-Z]{2,})(?:\s+[A-Z]\.?)?"
+                       r"\s+(?:[A-Z][a-z]+|[A-Z]{2,}))")
+
+
+def pairs_on_page(html: str) -> list:
+    """[(email, name)] where the page ITSELF prints the name beside the address.
+
+    This is the single biggest source of named contacts and it is pure
+    evidence -- nothing is constructed. Norman Roofing publishes 27 on-domain
+    staff addresses; the title-regex extractor recognised 4 of the people
+    because it only fires on a known job title, and "Superintendent" and
+    "Estimator" are not in that list. Proximity does not care about titles.
+
+    TWO locks must both hold before a pairing is claimed, because proximity
+    alone will happily staple the nearest capitalised words onto a role inbox
+    ("Contact Us info@..."):
+      1. a person-shaped name occurs within PROXIMITY chars BEFORE the address
+      2. the local-part is demonstrably built from that same name
+
+    Lock 2 is what makes this honest. "Ras@norman.construction" sits right
+    after "Richard Salazar", but "ras" is not a shape derivable from those two
+    words, so we decline to claim the pairing. Norman's page yields 12 named
+    humans this way and refuses the rest -- refusing is the correct answer, not
+    a shortfall.
+    """
+    text = strip_tags(html).replace("&#64;", "@")
+    PROXIMITY = 140
+    out, seen = [], set()
+    for m in EMAIL_RE.finditer(text):
+        email = m.group(0).strip(".,;:").lower()
+        if email in seen or not plausible_email(email):
+            continue
+        local = email.split("@", 1)[0]
+        window = text[max(0, m.start() - PROXIMITY):m.start()]
+        best = None
+        for nm in NAME_NEAR.finditer(window):      # nearest match wins
+            cand = tidy_name(nm.group(1).strip())
+            if looks_like_person(cand) and local_matches_name(local, cand):
+                best = cand
+        if best:
+            seen.add(email)
+            out.append((email, best))
+    return out
 
 
 def classify_email(email: str, names: list) -> str:
@@ -432,6 +583,39 @@ BAD_NAME_WORDS = {
     "corporate", "division", "department", "office", "team", "marketing",
     "sales", "commercial", "residential", "project", "manager", "director",
     "president", "owner", "founder", "ceo", "principal", "partner",
+    # FUNCTION WORDS. Capitalised prose in a headline is shaped exactly like a
+    # name -- "What You Should Know", "Everything You Need To Know" -- and the
+    # name-then-title regex duly produced "Should Know" and "Need To (Owner)"
+    # as contact_name. Widening the crawl to blog and policy pages made this
+    # far more likely, so the guard has to widen with it. A wrong name is worse
+    # than no name: it is the first word out of Jack's mouth on the call.
+    "should", "would", "could", "must", "need", "needs", "want", "wants",
+    "know", "knows", "make", "makes", "take", "takes", "give", "gives",
+    "find", "finds", "keep", "keeps", "help", "helps", "let", "lets",
+    "to", "too", "for", "from", "with", "without", "into", "onto", "over",
+    "under", "about", "after", "before", "when", "where", "what", "which",
+    "who", "whom", "whose", "why", "how", "here", "there", "then", "than",
+    "you", "your", "yours", "they", "them", "their", "his", "her", "hers",
+    "its", "it", "us", "me", "my", "mine", "one", "two", "three", "first",
+    "second", "third", "next", "last", "best", "top", "more", "most", "less",
+    "every", "each", "any", "some", "many", "much", "such", "own", "same",
+    "not", "never", "always", "also", "just", "only", "even", "still", "yet",
+    "can", "may", "might", "shall", "will", "do", "does", "did", "done",
+    "is", "are", "was", "were", "be", "been", "being", "have", "has", "had",
+    "compliance", "specialist", "coordinator", "supervisor", "superintendent",
+    "estimator", "consultant", "representative", "assistant", "associate",
+    "technician", "inspector", "adjuster", "foreman", "crew", "expert",
+    "signs", "tips", "ways", "things", "reasons", "steps", "guide", "faq",
+    "questions", "answers", "cost", "costs", "price", "prices", "damage",
+    "repair", "replacement", "inspection", "warranty", "financing",
+    # Manufacturer certification badges. Roofing sites plaster "GAF Master
+    # Elite", "Owens Corning Preferred Contractor" and "Five Star Contractor"
+    # across the footer, and two of those capitalised words side by side parse
+    # as a person -- this produced the contact_name "Star Gaf".
+    "gaf", "star", "elite", "master", "certified", "preferred", "platinum",
+    "owens", "corning", "certainteed", "malarkey", "tamko", "atlas",
+    "shingle", "shingles", "contractor", "select", "award", "winner",
+    "haag", "installer", "authorized", "approved", "member", "accredited",
 }
 
 
@@ -495,6 +679,22 @@ def people_on_page(html: str) -> list:
     return dedup
 
 
+def seniority(p) -> int:
+    """Rank a (name, title) pair by decision-making power. Lower is better.
+
+    Module level because BOTH the found-an-address path and the no-address
+    path need it: whichever human we hand Jack should be the one who can say
+    yes, not whoever the scraper happened to see first.
+    """
+    t = (p[1] or "").lower()
+    for i, w in enumerate(("owner", "founder", "president", "ceo", "principal",
+                           "partner", "vice president", "general manager",
+                           "director", "manager")):
+        if w in t:
+            return i
+    return 99
+
+
 # ------------------------------------------------------------- the miner ---
 def mine(cand: dict) -> dict:
     """Crawl one lead's site. Returns the columns to write (or a no-find)."""
@@ -534,18 +734,43 @@ def mine(cand: dict) -> dict:
 
     pages = [(final, html)]
 
-    links = set(re.findall(r'href=["\']([^"\']+)["\']', html))
+    def consider(raw_url, bucket):
+        """Add an internal, non-asset, contact-ish URL to the crawl list."""
+        full = urljoin(final, raw_url).split("#")[0].split("?")[0]
+        if urlparse(full).netloc != urlparse(final).netloc:
+            return
+        path = urlparse(full).path or ""
+        if ASSET_PATH.search(path) or ASSET_TAIL.search(path):
+            return
+        if not CONTACT_HINTS.search(path):
+            return
+        if full not in [p for p, _ in pages] and full not in bucket:
+            bucket.append(full)
+
     internal = []
-    for l in links:
+    for l in set(re.findall(r'href=["\']([^"\']+)["\']', html)):
         if l.startswith(("mailto:", "tel:", "#", "javascript:")):
             continue
-        full = urljoin(final, l)
-        if urlparse(full).netloc != urlparse(final).netloc:
-            continue
-        if CONTACT_HINTS.search(urlparse(full).path or ""):
-            full = full.split("#")[0]
-            if full not in [p for p, _ in pages] and full not in internal:
-                internal.append(full)
+        consider(l, internal)
+
+    # The nav is not the whole site. A team page reachable only from a footer
+    # dropdown, or a privacy policy linked from one obscure corner, is invisible
+    # to a homepage link scrape but is always in the sitemap. Every site in the
+    # measured sample but one published a sitemap.xml.
+    sm, _sm_final = fetch(urljoin(final, "/sitemap.xml"), retries=1)
+    if sm and "<" in sm[:400]:
+        locs = re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", sm, re.I)
+        # A sitemap index points at further sitemaps rather than pages.
+        for sub in [u for u in locs if u.lower().endswith(".xml")][:3]:
+            time.sleep(PACE)
+            s2, _ = fetch(sub, retries=1)
+            if s2:
+                locs += re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", s2, re.I)
+        for loc in locs:
+            if not loc.lower().endswith(".xml"):
+                consider(loc, internal)
+
+    internal.sort(key=lambda u: page_priority(urlparse(u).path or ""))
     for link in internal[:MAX_PAGES - 1]:
         if not robots_ok(link):
             continue
@@ -560,13 +785,34 @@ def mine(cand: dict) -> dict:
         people.extend(people_on_page(h))
     names = [n for n, _ in people]
 
+    # --- which addresses does the site print a NAME beside?
+    # Direct published evidence, so it outranks every inference below.
+    paired = {}             # email -> name, exactly as the page presented them
+    for _, h in pages:
+        for e, nm in pairs_on_page(h):
+            paired.setdefault(e, nm)
+            if nm not in names:
+                names.append(nm)
+    if paired:
+        print(f"      {len(paired)} address(es) printed next to a name on-site")
+
     # --- what addresses literally appear, and on which page?
     found = []              # (email, source_url)
     for purl, h in pages:
+        mailtos = {m.strip(".,;:<>\"'").lower() for m in
+                   re.findall(r'mailto:\s*([^"\'?>\s&]+)', h, re.I)}
         for e in emails_on_page(h):
-            if belongs_to_business(e, host, biz) and e not in [x for x, _ in found]:
+            if e in [x for x, _ in found]:
+                continue
+            if belongs_to_business(e, host, biz):
                 found.append((e, purl))
-            elif not belongs_to_business(e, host, biz):
+            elif e in mailtos and sibling_domain(e, host, biz):
+                # A different domain, but the business published it itself as a
+                # clickable mailto: AND the domain names this same business.
+                print(f"      accepted sibling-domain {e} "
+                      f"(published as mailto: on {purl})")
+                found.append((e, purl))
+            else:
                 print(f"      rejected off-domain {e} (site is {registrable(host)})")
 
     if not found:
@@ -574,12 +820,27 @@ def mine(cand: dict) -> dict:
               f"{' | names seen: ' + ', '.join(names[:3]) if names else ''}")
         # Still record any human we found -- a name is worth having even without
         # an address, and it is what a human researcher would follow up on.
+        # Take the most SENIOR named person, not merely the first one scraped:
+        # now that policy and blog pages are crawled, "first on the page" is
+        # frequently a byline or a quoted customer rather than the owner.
         if people:
-            out["contact_name"], out["contact_title"] = people[0]
+            out["contact_name"], out["contact_title"] = min(people, key=seniority)
         return out
 
     # Prefer a personal address over a role one. Never relabel to get there.
-    scored = [(e, u, classify_email(e, names)) for e, u in found]
+    #
+    # An address the site printed a matching name beside is PERSONAL on the
+    # site's own authority -- it told us whose mailbox this is. That is
+    # stronger evidence than classify_email's shape heuristics, which score
+    # "MB@" and "TylerM@" as unknown for want of a job title nearby. It is not
+    # a relabelling: a role local-part is still checked first below, so
+    # info@ can never be promoted by a name happening to sit near it.
+    def kind_of(e):
+        if e in paired and classify_email(e, []) != "role":
+            return "personal"
+        return classify_email(e, names)
+
+    scored = [(e, u, kind_of(e)) for e, u in found]
     rank = {"personal": 0, "unknown": 1, "role": 2}
     scored.sort(key=lambda x: rank[x[2]])
     email, source, kind = scored[0]
@@ -589,7 +850,14 @@ def mine(cand: dict) -> dict:
     out["email_source"] = source
 
     # Attach the human, preferring the one the address itself points at.
-    person = person_for_email(email, people) if kind == "personal" else None
+    person = None
+    if email in paired:
+        # The site printed this name against this address. No inference at all.
+        title = next((t for n, t in people
+                      if n.lower() == paired[email].lower() and t), None)
+        person = (paired[email], title)
+    elif kind == "personal":
+        person = person_for_email(email, people)
 
     # A PERSONAL address whose owner we cannot identify gets NO name attached.
     # Falling through to "the most senior person on the site" would pair one
@@ -607,15 +875,7 @@ def mine(cand: dict) -> dict:
     # this company", not "who owns this inbox" -- so the most senior person
     # named is the right answer, not merely the first one on the page (a team
     # page lists ten project managers before the owner).
-    def seniority(p):
-        t = (p[1] or "").lower()
-        for i, w in enumerate(("owner", "founder", "president", "ceo", "principal",
-                               "partner", "vice president", "general manager",
-                               "director", "manager")):
-            if w in t:
-                return i
-        return 99
-    person = person or (sorted(people, key=seniority)[0] if people else None)
+    person = person or (min(people, key=seniority) if people else None)
     if person:
         out["contact_name"], out["contact_title"] = person
 

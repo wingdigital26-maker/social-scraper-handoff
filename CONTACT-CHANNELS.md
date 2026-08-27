@@ -170,8 +170,8 @@ From `leads/callable93.json`, 86 rows:
 | With a website | 64 (74%) |
 | With any email at all | 17 (20%) |
 | Role inbox (info@, sales@, help@) | 15 |
-| Genuinely a named person's mailbox | 1 (`ralph@townandcountryroofingdfw.com`, Ralph Harris) |
-| Business Gmail, not a person | 1 (`mckinney.roofer@gmail.com`) |
+| Genuinely a named person's mailbox | 1 (`firstname@examplerooferC.com`, Ralph Harris) |
+| Business Gmail, not a person | 1 (`examplecity.roofer@gmail.com`) |
 | With a named human contact of any kind | 8 |
 
 So the honest yield is roughly one usable named-person email per 86 leads. Jack's "2 personal"
