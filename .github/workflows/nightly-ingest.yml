@@ -1,16 +1,31 @@
 name: nightly-ingest
+# ---------------------------------------------------------------------------
 # SCHEDULE DISABLED 2026-08-25. This lane needs REDDIT_CLIENT_ID /
-# REDDIT_CLIENT_SECRET (and optionally YOUTUBE_API_KEY) which have never been
-# created, so it failed at step one every single morning — 08-21 through 08-25,
-# zero rows ever written. A red X arriving daily for a cause that cannot fix
-# itself just teaches you to ignore red Xs, which is worse than no alert.
+# REDDIT_CLIENT_SECRET, which have never been created, so it failed at step one
+# every morning — 08-21 through 08-25, five red Xs, zero rows ever written. A
+# red X arriving daily for a cause that cannot fix itself only teaches you to
+# ignore red Xs, which is worse than no alert at all.
 #
-# TO RE-ENABLE: create the two Reddit secrets (about 10 minutes, see
-# REDDIT-KEY-GUIDE.md), add them with `gh secret set`, then uncomment the cron.
+# TO RE-ENABLE — all three must be true first:
+#   1. REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET exist in Actions secrets
+#      (`gh secret list` shows them). ~10 min to create, see REDDIT-KEY-GUIDE.md.
+#   2. YOUTUBE_API_KEY exists, OR you have set `youtube_required: false` below
+#      and accepted in writing that the YouTube leg is off.
+#   3. A manual `gh workflow run nightly-ingest.yml` has gone GREEN once.
+# Then uncomment the two `schedule:` lines below. That is the whole change.
 on:
   # schedule:
   #   - cron: "0 8 * * *" # 3am Central
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      youtube_required:
+        description: "fail the run if YOUTUBE_API_KEY is missing (leave true)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: nightly-ingest
+  cancel-in-progress: false
 
 jobs:
   reddit:
@@ -22,31 +37,122 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests
-      - name: Ingest Reddit
-        working-directory: ingest
-        run: python reddit_ingest.py
+
+      # ------------------------------------------------------------------
+      # PREFLIGHT. Every credential this run depends on is checked HERE, once,
+      # before a single row is touched — so a missing key is one clear failure
+      # at the top instead of a confusing one deep in a pipeline, or (worse)
+      # a leg that quietly skips itself and lets the job report green.
+      #
+      # This prints only whether each name is SET. It never prints a value.
+      # ------------------------------------------------------------------
+      - name: Preflight — every credential this lane needs
         env:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
-      - name: Ingest YouTube (skips if no key)
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          YT_REQUIRED: ${{ github.event.inputs.youtube_required != 'false' }}
+        run: |
+          missing=""
+          for v in REDDIT_CLIENT_ID REDDIT_CLIENT_SECRET SUPABASE_URL SUPABASE_SERVICE_KEY; do
+            if [ -z "${!v}" ]; then echo "  MISSING  $v"; missing="$missing $v";
+            else echo "  set      $v"; fi
+          done
+          if [ -z "$YOUTUBE_API_KEY" ]; then
+            echo "  MISSING  YOUTUBE_API_KEY"
+            if [ "$YT_REQUIRED" = "true" ]; then missing="$missing YOUTUBE_API_KEY"; fi
+          else
+            echo "  set      YOUTUBE_API_KEY"
+          fi
+          if [ -n "$missing" ]; then
+            echo ""
+            echo "::error title=nightly-ingest cannot run::Missing secrets:$missing"
+            echo "This lane has NEVER produced a row. It is not failing today —"
+            echo "it has never been able to start. Create the secrets with"
+            echo "'gh secret set <NAME>' and dispatch this workflow manually"
+            echo "before uncommenting the schedule."
+            exit 1
+          fi
+          echo "All required credentials present."
+
+      - name: Ingest Reddit
+        working-directory: ingest
+        env:
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        run: python reddit_ingest.py
+
+      # ------------------------------------------------------------------
+      # THE SILENT SKIP IS GONE.
+      #
+      # This step used to read:
+      #     if [ -z "$YOUTUBE_API_KEY" ]; then echo "skipping"; else ...; fi
+      # and exit 0 either way. YOUTUBE_API_KEY has never existed, so the
+      # YouTube leg has NEVER EXECUTED ONCE — and reported green every time it
+      # didn't. That is the same failure mode that let tiktok_ingest exit 0
+      # with 0 rows four runs running.
+      #
+      # A capability that is switched off must be switched off LOUDLY, in one
+      # place (preflight), by someone who decided to switch it off. It must
+      # never be inferred at the point of use from an empty variable.
+      # ------------------------------------------------------------------
+      - name: Ingest YouTube
         working-directory: ingest
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        # Preflight already failed the job if this is required and missing.
+        # Reaching here with it unset means a human explicitly passed
+        # youtube_required=false, and the log says so in as many words.
         run: |
           if [ -z "$YOUTUBE_API_KEY" ]; then
-            echo "YOUTUBE_API_KEY not set — skipping YouTube leg"
-          else
-            python youtube_ingest.py
+            echo "::warning title=YouTube leg deliberately OFF::YOUTUBE_API_KEY is \
+          absent and this run was dispatched with youtube_required=false. This run's \
+          totals contain NO YouTube rows. Do not read them as a full nightly ingest."
+            exit 0
           fi
+          python youtube_ingest.py
+
       - name: Score + draft
         working-directory: ingest
         run: python enrich.py
+
       - name: Push to Supabase
         working-directory: ingest
-        run: python db.py --source reddit
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-      # TikTok leg intentionally NOT here: GitHub runner IPs are datacenter IPs
-      # and get blocked almost immediately. Run tiktok_ingest.py from a home
-      # machine on a schedule, then enrich.py + db.py --source tiktok the same way.
+        run: python db.py --source reddit
+
+      # A run that completes every step and writes nothing is the exact
+      # signature this project has already been burned by. Ask Supabase what
+      # actually landed rather than trusting that no step errored.
+      - name: Did this run actually write anything?
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python - <<'PY'
+          import datetime, json, os, sys, urllib.request
+          u, k = os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_KEY")
+          if not u or not k:
+              sys.exit("Supabase secrets absent — cannot verify what was written.")
+          since = (datetime.datetime.now(datetime.timezone.utc)
+                   - datetime.timedelta(hours=6)).isoformat()
+          req = urllib.request.Request(
+              f"{u}/rest/v1/run_log?ran_at=gte.{since}"
+              f"&order=ran_at.desc&select=ran_at,source,found,inserted",
+              headers={"apikey": k, "Authorization": "Bearer " + k})
+          rows = json.load(urllib.request.urlopen(req, timeout=30))
+          for r in rows:
+              print(f"  {r['ran_at'][:19]}  {r['source']:10} found={r['found']:4} "
+                    f"inserted={r['inserted']}")
+          if not rows:
+              sys.exit("ZERO WRITES: every step passed and run_log has no row from "
+                       "the last 6h. The pipeline ran without ingesting anything.")
+          if sum(r.get("found") or 0 for r in rows) == 0:
+              sys.exit("ZERO YIELD: rows were logged but every source found 0. "
+                       "Passing steps are not evidence of a working scraper.")
+          PY

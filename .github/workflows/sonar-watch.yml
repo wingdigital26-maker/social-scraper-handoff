@@ -3,11 +3,38 @@ name: sonar-watch
 #
 # Separate from sonar-daily (which discovers new prospect BUSINESSES). This
 # watches for PEOPLE publicly asking for what each client sells, and files a
-# drafted reply in the CRM under that client.
+# drafted reply in the CRM under that client. Sonar NEVER sends. A human
+# approves every draft.
 #
-# Paced deliberately: the search index rate-limits on burst volume — several
-# hundred rapid queries and it refuses across every backend — so this runs
-# little and often rather than hammering once.
+# Paced deliberately: the search index rate-limits on burst volume, so this
+# runs little and often rather than hammering once.
+#
+# ---------------------------------------------------------------------------
+# TWO JOBS, ON PURPOSE.
+#
+# These used to be one job, where the three intel steps carried BOTH
+# `continue-on-error: true` AND a trailing `|| echo "... — not fatal"`. The
+# stated reason was good — an intel hiccup must not mark the client watcher as
+# failed. The implementation was not: `|| echo` replaces the command's exit
+# code with echo's 0, so the step could not report failure even in principle,
+# and continue-on-error then discarded what was left.
+#
+# On 2026-08-26 (run 33000149740) that buried a real, permanent finding.
+# intel_transcript.py printed, correctly and in full:
+#
+#     ZERO-YIELD FAILURE: 2 video(s) attempted, 0 transcripts retrieved ...
+#     -> YouTube refused this IP. Hosted CI runners sit in datacenter ranges
+#        that YouTube blocks; there is no free fix from a hosted runner.
+#
+# and the workflow printed "transcript step failed — not fatal" over the top of
+# it. The run went red only because the client watcher independently hit the
+# index guard. Had the watcher passed, a permanently broken capability would
+# have reported green.
+#
+# Splitting into two jobs gets the isolation that was actually wanted —
+# neither lane can mark the other failed, and both are visible side by side in
+# the run — while every failure still turns the run red. Nothing is swallowed.
+# ---------------------------------------------------------------------------
 on:
   schedule:
     - cron: "0 13 * * *"   # 8am Central
@@ -27,6 +54,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # =========================================================================
+  # LANE 1 — the client watcher. This is the lane that finds leads.
+  # =========================================================================
   watch:
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -35,12 +65,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      # youtube-transcript-api and yt-dlp are what the intel leg fetches
-      # transcripts with. They were never installed here, so both backends
-      # ImportError'd silently and every video resolved to "failed via none"
-      # in 3.8 seconds — too fast to have been a network problem.
-      - run: pip install ddgs requests youtube-transcript-api yt-dlp
+      - run: pip install ddgs requests
 
+      # No continue-on-error, no `|| echo`, no `set +e`. watch_social.py exits
+      # 2 when IndexHealth concludes the index is refusing this host, and that
+      # exit code must arrive here intact and turn the run red. Verified doing
+      # exactly that in run 33000149740:
+      #   "!! INDEX DOWN — aborting run ... yield 0.13 results/query"
+      #   "##[error]Process completed with exit code 2."
       - name: Watch social for every active client
         working-directory: ingest
         env:
@@ -55,52 +87,9 @@ jobs:
             python watch_social.py --all --phrases "$PHRASES" --limit 40
           fi
 
-      # Creator/competitor intel. Free YouTube RSS, no local resources, so it
-      # rides along here. Non-fatal on purpose: an intel hiccup must never mark
-      # the client watcher as failed.
-      - name: Watch AI creators for new videos
-        if: always()
-        continue-on-error: true
-        working-directory: ingest
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: python intel_watch.py --limit 15 || echo "intel_watch failed — not fatal"
-
-      # Pull captions for anything new. A video with no captions yields no
-      # proposal, which is the correct outcome — never a guessed one.
-      - name: Fetch transcripts for new videos
-        if: always()
-        continue-on-error: true
-        working-directory: ingest
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: |
-          if [ -f intel_transcript.py ]; then
-            python intel_transcript.py --backfill 8 || echo "transcript step failed — not fatal"
-          else
-            echo "intel_transcript.py not present yet — skipping"
-          fi
-
-      # Turn transcripts into concrete proposals for Jack to approve. Writes
-      # rows with status 'proposed' ONLY. Nothing is ever applied here.
-      - name: Propose system improvements from what the videos said
-        if: always()
-        continue-on-error: true
-        working-directory: ingest
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          if [ -f intel_propose.py ]; then
-            python intel_propose.py --limit 5 || echo "propose step failed — not fatal"
-          else
-            echo "intel_propose.py not present yet — skipping"
-          fi
-
+      # Runs even when the watcher failed, so a red run still shows the queue
+      # it left behind. Reporting only — it cannot rescue a failed job, because
+      # a later successful step never clears an earlier failure in Actions.
       - name: CRM queue depth
         if: always()
         env:
@@ -112,7 +101,7 @@ jobs:
           u, k = os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"]
           req = urllib.request.Request(
               f"{u}/rest/v1/outbound?select=client,status&limit=5000",
-              headers={"apikey": k, "Authorization": f"Bearer {k}"})
+              headers={"apikey": k, "Authorization": "Bearer " + k})
           rows = json.load(urllib.request.urlopen(req, timeout=30))
           by = {}
           for r in rows:
@@ -121,3 +110,107 @@ jobs:
           for c, d in sorted(by.items()):
               print(f"{c}: " + ", ".join(f"{k2}={v}" for k2, v in sorted(d.items())))
           PY
+
+  # =========================================================================
+  # LANE 2 — creator/competitor intel. Free YouTube RSS + captions, no local
+  # resources, so it rides along on the same schedule. Independent job: it can
+  # go red without touching the watcher, and vice versa.
+  #
+  # Each step below carries `continue-on-error` WITH a matching id, and the
+  # gate at the bottom re-raises every failure. That is the opposite of the
+  # pattern this file used to use: nothing is discarded, the exit codes are
+  # collected so all three legs get to report, and then the job fails on the
+  # collected truth. If you add a step here, add it to the gate too.
+  # =========================================================================
+  intel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # youtube-transcript-api and yt-dlp are the two backends intel_transcript
+      # fetches captions with. They were absent until 2026-08-26, so both
+      # ImportError'd and every video resolved to "failed via none" in 3.8
+      # seconds — too fast to have been a network problem. Now installed and
+      # CONFIRMED loading: run 33000149740 logged
+      #   "backends available: youtube-transcript-api=yes  yt-dlp=yes"
+      # which is what turned a silent missing_dependency into an honest
+      # "blocked: RequestBlocked". The pip line is correct; the block it
+      # revealed is a separate, real problem. See the gate note below.
+      - run: pip install ddgs requests youtube-transcript-api yt-dlp
+
+      - name: Watch AI creators for new videos
+        id: watch_intel
+        continue-on-error: true
+        working-directory: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python intel_watch.py --limit 15
+
+      # The `if [ -f intel_transcript.py ]` guard that used to wrap this is
+      # gone. The file has existed since commit 3382b33; the guard could only
+      # ever hide a genuine deletion behind a cheerful "skipping" message.
+      # A missing file is now an honest crash.
+      - name: Fetch transcripts for new videos
+        id: transcripts
+        continue-on-error: true
+        working-directory: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python intel_transcript.py --backfill 8
+
+      # Turns transcripts into concrete proposals for Jack to approve. Writes
+      # rows with status 'proposed' ONLY. Nothing is ever applied here.
+      # Runs even if the transcript step failed: it works from transcripts
+      # already stored, and correctly produces nothing from rows that are still
+      # NULL. A blocked fetch must not also starve the backlog.
+      - name: Propose system improvements from what the videos said
+        id: propose
+        if: always()
+        continue-on-error: true
+        working-directory: ingest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python intel_propose.py --limit 5
+
+      # THE GATE. Every outcome collected above is re-raised here. This is the
+      # step that makes a red run visibly red, with the reason named.
+      - name: Intel gate — re-raise every swallowed failure
+        if: always()
+        run: |
+          fail=0
+          check() {
+            if [ "$2" = "failure" ]; then
+              echo "::error title=sonar-watch intel::$1 FAILED — read its step log above"
+              fail=1
+            else
+              echo "  ok  $1"
+            fi
+          }
+          check "intel_watch"      "${{ steps.watch_intel.outcome }}"
+          check "intel_transcript" "${{ steps.transcripts.outcome }}"
+          check "intel_propose"    "${{ steps.propose.outcome }}"
+          if [ "$fail" = "1" ]; then
+            echo ""
+            echo "KNOWN CAUSE, MEASURED 2026-08-26 (run 33000149740): YouTube"
+            echo "refuses caption requests from GitHub's Azure runner ranges."
+            echo "Both backends reported it honestly —"
+            echo "  youtube-transcript-api: blocked after 3 tries — RequestBlocked"
+            echo "  yt-dlp: Sign in to confirm you're not a bot"
+            echo "There is no free fix from a hosted runner. Until one exists,"
+            echo "this lane is expected to be RED in the cloud and must be run"
+            echo "from Jack's machine. Rows stay NULL and retry — no transcript"
+            echo "is ever guessed, and no proposal is ever built without one."
+            echo ""
+            echo "Do NOT silence this by restoring '|| echo not fatal'. If the"
+            echo "decision is that a blocked transcript lane is acceptable, turn"
+            echo "the STEP off explicitly and say so here."
+            exit 1
+          fi

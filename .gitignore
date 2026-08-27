@@ -7,3 +7,10 @@ seen_tiktok_ids.txt
 seen_youtube_ids.txt
 candidates.enriched.jsonl
 ingest/vault_sync.log
+
+# Real businesses' phone numbers and email addresses. These are other people's
+# contact details and this repo is shared, so lead data does not live in it.
+# The rendered, noindexed dial sheet is published separately.
+leads/*
+!leads/*.py
+*.jsonl

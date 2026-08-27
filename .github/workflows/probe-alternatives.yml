@@ -1,0 +1,297 @@
+name: probe-alternatives
+# Does ANY free option beat the datacenter block? MEASURE, never assume.
+#
+# ---------------------------------------------------------------------------
+# WHY THIS EXISTS, AND WHY THE HEADLINE EXPERIMENT IS WHAT IT IS
+#
+# The working theory was "the search index soft-blocks datacenter IPs". The
+# evidence for it was a hosted-runner yield of 0.13 results/query against
+# 3-10 on Jack's workstation. That is real. But run 32979332336's 24-query
+# volume probe shows the failures are NOT uniform:
+#
+#     queries 24  results 30  productive 3  errors 15
+#     15 of the 24 died as:  error sending request for url
+#                            (https://www.mojeek.com/search?q=...)
+#     6 more returned a genuine EMPTY
+#     the 3 that reached a working backend returned TEN results each
+#
+# Ten. Full workstation-grade yield. A soft-block does not hand back ten
+# results; it hands back nothing. So the runner is not uniformly refused.
+#
+# ddgs 9.14.4 is a METASEARCH library: it fans one query across
+# google, duckduckgo, brave, yandex, startpage, yahoo and mojeek. Measured on
+# Jack's own machine on 2026-08-26, across 4 real Sonar query shapes:
+#
+#     google       0.00 results/query      yandex   6.50 results/query
+#     duckduckgo   0.00                    yahoo    4.25
+#     brave        0.00                    mojeek   0.00
+#     startpage    0.00
+#
+# Sonar's ENTIRE yield, on every machine, comes from Yandex and Yahoo. The
+# other five contribute nothing anywhere. And Mojeek — which contributes
+# nothing even from a residential IP — is the one that hard-errors from Azure,
+# and a transport error aborts the fallback chain before Yandex is ever asked.
+#
+# That yields a specific, free, falsifiable hypothesis:
+#
+#     H: the cloud lane is not IP-blocked. It is losing ~62% of its queries to
+#        a backend that was never going to answer anyway. Pinning
+#        backend="yandex,yahoo" restores cloud yield to workstation levels.
+#
+# If H holds, Sonar finds leads with the PC off for $0. If H fails, the
+# datacenter-block story is confirmed and the fallbacks below are the answer.
+# Either way this run tells you WHICH, with numbers, and that is the point.
+# ---------------------------------------------------------------------------
+#
+# This is an instrument, not a lane. It never writes to Supabase, never files
+# a lead, and never gates anything.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  alternatives:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "ddgs==9.14.4" requests
+
+      - name: Where does this runner egress from?
+        run: |
+          python - <<'PY'
+          import requests
+          # The ASN is the whole point: "move to another free CI" only helps if
+          # the ASN differs AND is less flagged — two assumptions, not one.
+          try:
+              d = requests.get("https://ipinfo.io/json", timeout=15).json()
+              print(f"  egress org : {d.get('org')}")
+              print(f"  region     : {d.get('region')} / {d.get('country')}")
+              print("  (the IP itself is deliberately not printed — public repo)")
+          except Exception as e:
+              print(f"  ipinfo unavailable: {str(e)[:80]}")
+          PY
+
+      - name: "HEADLINE — per-backend yield from THIS runner"
+        run: |
+          python - <<'PY'
+          # The decisive measurement. Same 6 query shapes against each backend
+          # in isolation, so no fallback chain can hide which one answered.
+          # Compare each number to the workstation column printed beside it.
+          from ddgs import DDGS
+          import time
+
+          QS = ['"anyone recommend" roofer Plano TX',
+                'site:tiktok.com "hvac" Frisco TX',
+                'site:nextdoor.com "roof leak" Allen TX',
+                'site:linkedin.com/company hvac Irving TX',
+                'site:instagram.com roofing Dallas TX',
+                '"looking for" plumber McKinney TX']
+
+          # Measured on Jack's workstation 2026-08-26 over the first 4 shapes.
+          LOCAL = {"google": 0.00, "duckduckgo": 0.00, "brave": 0.00,
+                   "yandex": 6.50, "startpage": 0.00, "yahoo": 4.25,
+                   "mojeek": 0.00}
+
+          rows = []
+          for b in ["yandex", "yahoo", "google", "duckduckgo", "brave",
+                    "startpage", "mojeek"]:
+              tot = ok = empty = transport = 0
+              sample = ""
+              for q in QS:
+                  try:
+                      with DDGS() as d:
+                          r = list(d.text(q, max_results=10, backend=b))
+                      tot += len(r)
+                      if r:
+                          ok += 1
+                          if not sample:
+                              sample = (r[0].get("href") or "")[:58]
+                      else:
+                          empty += 1
+                  except Exception as e:
+                      m = str(e)
+                      # "No results found." = the backend answered, nothing
+                      # matched. Anything else = it refused or broke, which is
+                      # the only reading that implicates the IP.
+                      if "No results" in m:
+                          empty += 1
+                      else:
+                          transport += 1
+                  time.sleep(2)
+              y = tot / len(QS)
+              rows.append((b, y, ok, empty, transport, sample))
+              print(f"  {b:11} yield={y:5.2f}  productive={ok}/{len(QS)}  "
+                    f"empty={empty}  transport_err={transport}   "
+                    f"(workstation {LOCAL[b]:.2f})")
+              if sample:
+                  print(f"              e.g. {sample}")
+
+          best = max(rows, key=lambda r: r[1])
+          print(f"\n  BEST BACKEND ON THIS RUNNER: {best[0]} at {best[1]:.2f} results/query")
+          print("  Workstation best: yandex at 6.50\n")
+          if best[1] >= 3.0:
+              print("  VERDICT: H HOLDS. This runner is NOT IP-blocked. The cloud")
+              print("  lane was losing queries to backends that never answer for")
+              print("  anyone. Pin the backend and Sonar finds leads with the PC")
+              print("  off, for $0. See the one-line change in the final step.")
+          elif best[1] >= 0.5:
+              print("  VERDICT: PARTIAL. A backend answers but at degraded yield.")
+              print("  Cloud discovery would run, thinner than local. Decide")
+              print("  whether a thinner real lane beats no lane — do NOT widen")
+              print("  filters to make the number look better.")
+          else:
+              print("  VERDICT: H FAILS. Every backend is refused from this ASN.")
+              print("  The datacenter-block story is confirmed. Free search-based")
+              print("  discovery is not available with the PC off; read the")
+              print("  fallback sections below for what is left.")
+          PY
+
+      - name: "Control — default (unpinned) yield, the config running today"
+        run: |
+          python - <<'PY'
+          # What sonar-daily and sonar-watch actually experience right now.
+          # This is the number the guards fire on. It exists so the headline
+          # above is read as a DELTA and not in isolation.
+          from ddgs import DDGS
+          import time
+          QS = ['"anyone recommend" roofer Plano TX',
+                'site:tiktok.com "hvac" Frisco TX',
+                'site:nextdoor.com "roof leak" Allen TX',
+                'site:linkedin.com/company hvac Irving TX',
+                'site:instagram.com roofing Dallas TX',
+                '"looking for" plumber McKinney TX']
+          tot = ok = 0
+          mojeek_errs = 0
+          for q in QS:
+              try:
+                  with DDGS() as d:
+                      r = list(d.text(q, max_results=10))
+                  tot += len(r); ok += 1 if r else 0
+              except Exception as e:
+                  if "mojeek" in str(e).lower():
+                      mojeek_errs += 1
+              time.sleep(2)
+          print(f"  DEFAULT yield = {tot/len(QS):.2f} results/query  productive={ok}/{len(QS)}")
+          print(f"  queries lost to a mojeek transport error: {mojeek_errs}/{len(QS)}")
+          print("  workstation DEFAULT baseline: 7.50 results/query")
+          PY
+
+      - name: "Fallback 1 — keyless sources that are not a search index"
+        run: |
+          python - <<'PY'
+          # Only matters if the headline verdict was H FAILS. These are sources
+          # with no commercial incentive to fingerprint datacenter IPs.
+          import requests, time
+          UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                              "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"}
+
+          def probe(name, url, want, **kw):
+              try:
+                  r = requests.get(url, headers=UA, timeout=25, **kw)
+                  n = (r.text or "").count(want)
+                  verdict = "ANSWERS" if r.status_code == 200 and n else "BLOCKED/EMPTY"
+                  print(f"  {name:22} HTTP {r.status_code}  '{want}' x{n:<4} {verdict}")
+              except Exception as e:
+                  print(f"  {name:22} ERR {type(e).__name__}: {str(e)[:55]}")
+              time.sleep(2)
+
+          # CONTROL: intel_watch pulls these every single production run, so if
+          # this one fails the runner itself is sick and nothing else here counts.
+          probe("youtube-rss(CONTROL)",
+                "https://www.youtube.com/feeds/videos.xml?channel_id=UCXuqSBlHAE6Xw-yeJA0Tunw",
+                "<entry>")
+          # Reddit de-indexed itself from every engine except Google in Jul 2024,
+          # so its own JSON is the only remaining route — if it answers.
+          probe("reddit-json", "https://www.reddit.com/search.json", '"kind"',
+                params={"q": "roofing Dallas", "limit": 10})
+          probe("nominatim-osm", "https://nominatim.openstreetmap.org/search",
+                '"osm_id"', params={"q": "roofing contractor Plano Texas",
+                                    "format": "json", "limit": 10})
+          PY
+
+      - name: "Fallback 2 — Overpass, the keyless business index"
+        run: |
+          python - <<'PY'
+          # The one source structurally immune to the block: OSM has no reason
+          # to fingerprint anyone. If it answers, a PC-off DISCOVERY lane exists
+          # — but a NARROWER one. It gives name, address, phone, website. It
+          # gives NO reviews, NO social handles and NO buying intent, which are
+          # three of the four things Sonar scores on. That is a different
+          # product, honestly labelled — not a drop-in replacement.
+          import requests
+          Q = """
+          [out:json][timeout:60];
+          area["name"="Plano"]["boundary"="administrative"]->.a;
+          (
+            node["craft"~"roofer|hvac|plumber|electrician"](area.a);
+            way ["craft"~"roofer|hvac|plumber|electrician"](area.a);
+            node["office"="company"](area.a);
+            node["shop"="trade"](area.a);
+          );
+          out center 60;
+          """
+          try:
+              r = requests.post("https://overpass-api.de/api/interpreter",
+                                data={"data": Q}, timeout=90)
+              els = r.json().get("elements", []) if r.status_code == 200 else []
+              named = [e for e in els if (e.get("tags") or {}).get("name")]
+              sited = [e for e in named if (e.get("tags") or {}).get("website")]
+              print(f"  Overpass HTTP {r.status_code}")
+              print(f"  elements={len(els)}  named={len(named)}  with website={len(sited)}")
+              for e in named[:5]:
+                  t = e["tags"]
+                  print(f"    - {t.get('name','')[:38]:40}"
+                        f"{'  site' if t.get('website') else '      '}"
+                        f"{'  phone' if t.get('phone') else ''}")
+              print("  VERDICT: " + ("ANSWERS from a datacenter IP"
+                                     if named else "no usable rows"))
+          except Exception as e:
+              print(f"  Overpass ERR {type(e).__name__}: {str(e)[:80]}")
+          PY
+
+      - name: "Audit lane — is the OTHER half of Sonar cloud-viable?"
+        run: |
+          python - <<'PY'
+          # Sonar's audit lane only fetches a prospect's own website. If that
+          # works, half of Sonar runs in the cloud regardless of how the
+          # discovery question resolves — which decides how much moves and how
+          # much stays on Jack's machine.
+          import requests
+          UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120 Safari/537.36"}
+          SITES = ["https://newviewroofing.com", "https://www.berkeys.com",
+                   "https://www.baker-brothers.com"]
+          ok = 0
+          for u in SITES:
+              try:
+                  r = requests.get(u, headers=UA, timeout=20)
+                  print(f"  {r.status_code}  {len(r.text):7} bytes  {u}")
+                  ok += r.status_code < 400
+              except Exception as e:
+                  print(f"  ERR  {u} -> {str(e)[:60]}")
+          print(f"\n  SITE_FETCH_OK={ok}/{len(SITES)}")
+          PY
+
+      - name: What to do with the answer
+        if: always()
+        run: |
+          echo "IF THE HEADLINE SAID 'H HOLDS':"
+          echo "  The fix is one keyword argument, in ingest/ (NOT owned by the"
+          echo "  workflow layer — hand this to whoever owns those files):"
+          echo ""
+          echo "      d.text(query, max_results=limit, backend=\"yandex,yahoo\")"
+          echo ""
+          echo "  in social_discover.py search() and the equivalent call in"
+          echo "  watch_social.py. Then re-run this probe to confirm, and only"
+          echo "  then trust a green sonar-daily."
+          echo ""
+          echo "IF IT SAID 'H FAILS':"
+          echo "  No free option restores search-based discovery with the PC off."
+          echo "  What remains free: the audit lane, and an Overpass-based"
+          echo "  business lane with no reviews, no handles and no intent."
+          echo "  Everything else costs money — do not paper over it by"
+          echo "  loosening a filter to manufacture leads."
+          echo ""
+          echo "This step never fails. The probe reports; it does not gate."
