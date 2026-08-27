@@ -42,7 +42,7 @@ import re
 import sys
 import time
 import urllib.robotparser
-from urllib.parse import urljoin, urlparse
+from urllib.parse import unquote, urljoin, urlparse
 
 import requests
 
@@ -197,7 +197,44 @@ ROLE_LOCALPARTS = {
     "booking", "bookings", "schedule", "scheduling", "dispatch", "quotes",
     "quote", "leads", "customerservice", "claims", "warranty", "general",
     "reception", "frontdesk", "email", "web", "website", "everyone",
+    "customer", "customers", "policies", "policy", "compliance", "care",
+    "estimate", "appointments", "appointment", "inquiry", "enquiry", "request",
 }
+
+# Words that carry no identity of their own and are only ever glued onto a role
+# word: "contactus@", "salesteam@", "infodesk@".
+ROLE_FILLER = {
+    "us", "our", "the", "my", "team", "desk", "dept", "department", "inbox",
+    "box", "mail", "email", "here", "now", "today", "group", "office", "co",
+}
+
+
+def role_compound(local: str) -> bool:
+    """Is this single-token local-part two known role words glued together?
+
+    Supabase currently labels emailinfo@monroeroofing.com, contactus@
+    boydbonedry.com and policies@tarrantroofing.com as email_kind "unknown",
+    because the classifier only splits on . _ - + and digits, so a local-part
+    written as one word never gets examined. "unknown" is a legitimate answer
+    when we genuinely cannot tell -- but here we can tell, and mislabelling a
+    role inbox as "unknown" is what puts it in front of Grant as if it might
+    reach a human. It will not.
+
+    The test is deliberately exact-match-only: the local-part must split
+    cleanly into two whole known words. No prefix or substring matching, so a
+    real surname is never decomposed into fragments that happen to be role
+    words.
+    """
+    w = re.sub(r"[^a-z]", "", local.lower())
+    if not 4 <= len(w) <= 24:
+        return False
+    for i in range(2, len(w) - 1):
+        a, b = w[:i], w[i:]
+        if a in ROLE_LOCALPARTS and (b in ROLE_LOCALPARTS or b in ROLE_FILLER):
+            return True
+        if a in ROLE_FILLER and b in ROLE_LOCALPARTS:
+            return True
+    return False
 
 
 # --------------------------------------------------------------- fetching ---
@@ -280,6 +317,17 @@ def plausible_email(e: str) -> bool:
         return False
     if JUNK_TAIL.search(low) or VERSION_LIKE.search(low):
         return False
+    # A percent sign in the local part is never a real mailbox in this corpus;
+    # it is always leftover URL-escaping from a mailto: href. The address
+    # "%20info@lonepointroofing.com" is sitting in Supabase RIGHT NOW because
+    # `%` is a legal character in EMAIL_RE's local-part class, so the escaped
+    # leading space survived every existing filter. That address bounces: it is
+    # a fabrication produced by a parsing bug, which is exactly the failure mode
+    # this file exists to prevent. unescape_addr() below recovers the real
+    # address; this rejects anything that still carries an escape afterwards.
+    local = low.split("@", 1)[0]
+    if "%" in local:
+        return False
     dom = low.split("@", 1)[1]
     if dom.split(".")[-1].isdigit() or len(dom) < 4:
         return False
@@ -288,21 +336,101 @@ def plausible_email(e: str) -> bool:
     return True
 
 
+def unescape_addr(s: str) -> str:
+    """Undo the URL-escaping a mailto: href carries, then trim punctuation.
+
+    Hand-written markup routinely contains href="mailto:%20info@example.com" --
+    an author typed a space after the colon and the editor escaped it. The
+    finder used to keep the escape, and "%20info@lonepointroofing.com" is in
+    Supabase today as a result: an address that cannot receive mail, stored as
+    though a human had published it. Decoding first RECOVERS the genuine
+    address rather than merely discarding the row, so this raises the hit rate
+    and removes a fabrication at the same time.
+    """
+    try:
+        s = unquote(s)
+    except Exception:
+        pass
+    return s.strip().strip(".,;:<>()\"'")
+
+
+# Cloudflare's "Email Address Obfuscation" replaces every mailto: on a page
+# with <a class="__cf_email__" data-cfemail="HEX">[email protected]</a>. The
+# real address is right there in the HTML, XOR-encoded with a one-byte key that
+# is the first byte of the hex itself -- publicly documented, reversible with
+# arithmetic alone, no service and no key required.
+#
+# This is not a workaround for a paywall or an access control; the page is
+# served to us in full and the address is public contact information the
+# business chose to publish. Cloudflare scrambles it against naive harvesters.
+#
+# Measured on this sample, dwellroofing.com and accentroofing.com both fetched
+# cleanly, both were scored "no address exists anywhere on the site", and both
+# were carrying a real address inside data-cfemail the whole time.
+CF_EMAIL_ATTR = re.compile(r'data-cfemail=["\']([0-9a-fA-F]{8,})["\']')
+
+
+def cf_decode(hexstr: str) -> str:
+    """Decode one data-cfemail payload. Returns '' if it is not decodable."""
+    try:
+        raw = bytes.fromhex(hexstr)
+    except ValueError:
+        return ""
+    if len(raw) < 2:
+        return ""
+    key = raw[0]
+    try:
+        return "".join(chr(b ^ key) for b in raw[1:])
+    except Exception:
+        return ""
+
+
+# Cloudflare wraps the placeholder in whichever element the theme used -- an
+# <a> when the original was a mailto: link, but a <span> when the address was
+# plain text. dwellroofing.com's team page uses <span class="__cf_email__">, so
+# an <a>-only pattern substituted nothing and the eight staff addresses stayed
+# invisible to the name-pairing step even though the decoder had them. Match
+# the opening tag generically and let the closing tag be whatever it is.
+CF_ANCHOR = re.compile(
+    r'<(\w+)\b[^>]*data-cfemail=["\']([0-9a-fA-F]{8,})["\'][^>]*>.*?</\1>',
+    re.I | re.S)
+
+
+def cf_inline(html: str) -> str:
+    """Put each Cloudflare-decoded address back where the anchor stood.
+
+    pairs_on_page() works on PROXIMITY -- how close a name sits to an address --
+    so the decoded address has to occupy the same position in the text as the
+    "[email protected]" placeholder it replaces. Decoding into a separate list
+    would find the address but lose the human standing next to it, which on a
+    staff page is the whole prize.
+    """
+    def sub(m):
+        return " " + (cf_decode(m.group(2)) or "") + " "
+    return CF_ANCHOR.sub(sub, html)
+
+
 def emails_on_page(html: str) -> list:
     """Every address that literally appears in this page's bytes.
 
-    Covers plain text, mailto: hrefs, and the two obfuscations that actually
-    show up in the wild (&#64; entity and the "name [at] domain" spelling).
-    Nothing here invents an address -- each one is read off the page.
+    Covers plain text, mailto: hrefs, Cloudflare-obfuscated addresses, and the
+    two hand obfuscations that actually show up in the wild (&#64; entity and
+    the "name [at] domain" spelling). Nothing here invents an address -- each
+    one is read off the page, decoded at most.
     """
     text = html
     text = text.replace("&#64;", "@").replace("&commat;", "@").replace("%40", "@")
     text = re.sub(r"\s*\[\s*at\s*\]\s*|\s*\(\s*at\s*\)\s*", "@", text, flags=re.I)
     text = re.sub(r"\s*\[\s*dot\s*\]\s*|\s*\(\s*dot\s*\)\s*", ".", text, flags=re.I)
     found = []
-    # mailto: first -- an address a human deliberately published
+    # Cloudflare-protected addresses -- decoded from the page's own bytes.
+    for hx in CF_EMAIL_ATTR.findall(html):
+        dec = cf_decode(hx)
+        if dec:
+            found.append(dec)
+    # mailto: next -- an address a human deliberately published
     for m in re.findall(r'mailto:\s*([^"\'?>\s&]+)', text, re.I):
-        found.append(m)
+        found.append(unescape_addr(m))
     found += EMAIL_RE.findall(text)
     out, seen = [], set()
     for e in found:
@@ -310,6 +438,26 @@ def emails_on_page(html: str) -> list:
         if EMAIL_RE.fullmatch(e) and plausible_email(e) and e not in seen:
             seen.add(e)
             out.append(e)
+    return out
+
+
+def mailtos_on_page(html: str) -> set:
+    """Addresses this page published as a CLICKABLE mailto:, decoded.
+
+    mine() needs this set to decide whether a sibling-domain address was
+    deliberately published or merely appeared somewhere in the bytes. It used
+    to re-derive the set inline with a raw regex and no unescaping, so a
+    Cloudflare-protected or %-escaped mailto: never matched the address that
+    emails_on_page() had already cleaned up, and the sibling-domain rule could
+    never fire on those sites.
+    """
+    out = set()
+    for hx in CF_EMAIL_ATTR.findall(html):
+        dec = cf_decode(hx)
+        if dec:
+            out.add(dec.strip().strip('.,;:<>"\'').lower())
+    for m in re.findall(r'mailto:\s*([^"\'?>\s&]+)', html, re.I):
+        out.add(unescape_addr(m).lower())
     return out
 
 
@@ -465,7 +613,7 @@ def pairs_on_page(html: str) -> list:
     humans this way and refuses the rest -- refusing is the correct answer, not
     a shortfall.
     """
-    text = strip_tags(html).replace("&#64;", "@")
+    text = strip_tags(cf_inline(html)).replace("&#64;", "@")
     PROXIMITY = 140
     out, seen = [], set()
     for m in EMAIL_RE.finditer(text):
@@ -496,6 +644,8 @@ def classify_email(email: str, names: list) -> str:
     local = email.split("@", 1)[0].lower()
     parts = [p for p in re.split(r"[._\-+0-9]+", local) if p]
     if local in ROLE_LOCALPARTS or any(p in ROLE_LOCALPARTS for p in parts):
+        return "role"
+    if len(parts) == 1 and role_compound(parts[0]):
         return "role"
 
     name_tokens = set()
@@ -558,11 +708,21 @@ DEPT_LABEL = (r"Leadership|Staff|Team|Management|Executive|Administration|"
               r"Division|Department|Roofing|Residential|Commercial|"
               r"Dallas|Fort Worth|Houston|Austin|Plano|Frisco|McKinney|"
               r"Arlington|Denton|Irving|Garland")
+# Seniority prefixes. Without these the title alternation matches only the TAIL
+# of "Senior Project Manager", so the word "Senior" is left sitting between the
+# name and the matched title -- and the name group, which grabs the last two
+# capitalised words before the title, swallows it. Dwell Roofing's team page
+# produced FIVE people this way: "Griggs Senior", "Rosa Senior", "Allen Senior",
+# "Snyder Senior", "Martinez Senior" -- every real first name dropped and the
+# word "Senior" promoted to surname. Making the prefix part of the TITLE keeps
+# the name intact and records the fuller title.
+TITLE_PREFIX = (r"(?:Senior|Sr\.?|Junior|Jr\.?|Lead|Chief|Head|Executive|"
+                r"Assistant|Associate|Deputy|Regional|National)\s+")
 NAME_THEN_TITLE = re.compile(
     r"\b((?:[A-Z][a-z]+|[A-Z]{2,})(?:\s+[A-Z]\.?)?\s+(?:[A-Z][a-z]+|[A-Z]{2,}))"
     r"\s*(?:[,\-\u2013|]\s*)?"
     r"(?:\s*(?:" + DEPT_LABEL + r")\b)?"
-    r"\s*(?:[,\-\u2013|]\s*)?(" + TITLES + r")\b")
+    r"\s*(?:[,\-\u2013|]\s*)?((?:" + TITLE_PREFIX + r")?(?:" + TITLES + r"))\b")
 SCHEMA_PERSON = re.compile(
     r'"(?:founder|owner|employee|author)"\s*:\s*(?:\[\s*)?\{[^}]*?"name"\s*:\s*"([^"]{3,60})"', re.I)
 
@@ -616,6 +776,25 @@ BAD_NAME_WORDS = {
     "owens", "corning", "certainteed", "malarkey", "tamko", "atlas",
     "shingle", "shingles", "contractor", "select", "award", "winner",
     "haag", "installer", "authorized", "approved", "member", "accredited",
+    # Belt-and-braces behind TITLE_PREFIX: if a seniority word ever slips past
+    # the title regex again, it must not be recorded as somebody's surname.
+    "senior", "junior", "lead", "chief", "head", "deputy", "regional",
+    # Observed in Supabase as stored contact_names, scraped off rebate and
+    # policy pages: "Incentives Locations", "Association Guidelines".
+    "incentives", "incentive", "guidelines", "guideline", "locations",
+    "location", "association", "rebates", "rebate", "benefits", "benefit",
+    "terms", "conditions", "policies", "policy", "disclosures", "disclosure",
+    "materials", "material", "products", "product", "systems", "system",
+    "solutions", "options", "features", "resources", "updates", "notices",
+    # Insurance / claims prose. Every one of these sites explains the claims
+    # process, and two capitalised nouns from that copy parse as a person --
+    # pearsonroofing.com's only "name seen" was "Deductible Responsibility".
+    # Caught by the word list rather than by a -ity suffix rule, because
+    # Garrity and Doherty are real surnames and must survive.
+    "deductible", "deductibles", "responsibility", "responsibilities",
+    "coverage", "adjuster", "adjusters", "premium", "premiums", "claim",
+    "claims", "policyholder", "endorsement", "depreciation", "estimate",
+    "estimates", "invoice", "invoices", "supplement", "supplements",
 }
 
 
@@ -628,6 +807,22 @@ def tidy_name(name: str) -> str:
     return " ".join(toks)
 
 
+# Abstract-noun endings. Capitalised prose in a heading is shaped exactly like
+# a name, and the word list above can only ever catch words someone thought of
+# first. Supabase currently holds the contact_names "Incentives Locations" (from
+# a rebates page) and "Association Guidelines" (from a policy page) -- neither
+# word was on the list, and a wrong name is the first thing out of Jack's mouth
+# on a call.
+#
+# These four suffixes are the safe ones: English surnames essentially never end
+# in -tion(s), -ment(s), -ness or -ities. Deliberately EXCLUDED are -ing/-ings
+# and -ive(s) on their own, because Fleming and Cummings are real surnames --
+# so "Incentives" is caught by the explicit word list below instead. The
+# principle is to refuse only what cannot be a person, never to trim names that
+# merely look unusual.
+NON_NAME_SUFFIX = re.compile(r"(tions?|ments?|ness|ities|ances|ences)$", re.I)
+
+
 def looks_like_person(name: str) -> bool:
     toks = name.split()
     if not 2 <= len(toks) <= 3:
@@ -635,6 +830,8 @@ def looks_like_person(name: str) -> bool:
     for t in toks:
         bare = t.strip(".").lower()
         if bare in BAD_NAME_WORDS:
+            return False
+        if len(bare) > 4 and NON_NAME_SUFFIX.search(bare):
             return False
         if not re.fullmatch(r"[A-Z][a-z]+|[A-Z]{2,}|[A-Z]\.?", t):
             return False
@@ -727,8 +924,21 @@ def mine(cand: dict) -> dict:
 
     ok_page, why = _readable(html)
     if not ok_page:
-        # Recorded as checked-with-nothing rather than retried forever: a parked
-        # domain will still be parked tomorrow. No address is mined from it.
+        # A BOT WALL IS OUR PROBLEM, NOT THE BUSINESS'S. readable() literally
+        # labels this case "WE were blocked -- not a finding", and then the
+        # result was stored as contact_checked_at + no email, which permanently
+        # retires the lead: --recheck aside, the finder never looks again. Three
+        # of the 27 sites in the measured sample were retired that way, and at
+        # least one of them publishes an address plainly on its contact page.
+        #
+        # "unknown" is not "missing". A page we were refused is unknown, so it
+        # goes back in the queue exactly like a DNS failure does.
+        if "blocked" in (why or "").lower():
+            print(f"      {why} -- leaving unchecked for a retry, not recorded "
+                  f"as 'no email'")
+            return None
+        # A parked domain or a JS-only stub, by contrast, will be the same
+        # tomorrow, so it is recorded as genuinely checked-with-nothing.
         print(f"      {why} -- no address mined from this page")
         return out
 
@@ -799,8 +1009,7 @@ def mine(cand: dict) -> dict:
     # --- what addresses literally appear, and on which page?
     found = []              # (email, source_url)
     for purl, h in pages:
-        mailtos = {m.strip(".,;:<>\"'").lower() for m in
-                   re.findall(r'mailto:\s*([^"\'?>\s&]+)', h, re.I)}
+        mailtos = mailtos_on_page(h)
         for e in emails_on_page(h):
             if e in [x for x, _ in found]:
                 continue
@@ -840,9 +1049,32 @@ def mine(cand: dict) -> dict:
             return "personal"
         return classify_email(e, names)
 
-    scored = [(e, u, kind_of(e)) for e, u in found]
+    # Among several PERSONAL addresses, take the most SENIOR person's.
+    #
+    # A staff page that publishes every employee's address is the best case
+    # this file ever sees, and it was being spent badly: the first personal
+    # address in crawl order won. Dwell Roofing publishes eight named mailboxes
+    # on /why-dwell/the-dwell-team/ and this picked the Director of Marketing,
+    # while the owner's address sat in the same list. Grant gets one shot per
+    # business; it should be at the person who can say yes.
+    #
+    # Seniority is only ever read off a title the SITE printed next to that
+    # person. An address whose owner we cannot identify, or who has no stated
+    # title, ranks last among personal addresses rather than being promoted --
+    # unknown is not seniority.
+    def person_rank(e):
+        who = None
+        if e in paired:
+            nm = paired[e]
+            who = (nm, next((t for n, t in people
+                             if n.lower() == nm.lower() and t), None))
+        elif kind_of(e) == "personal":
+            who = person_for_email(e, people)
+        return seniority(who) if who else 99
+
     rank = {"personal": 0, "unknown": 1, "role": 2}
-    scored.sort(key=lambda x: rank[x[2]])
+    scored = [(e, u, kind_of(e)) for e, u in found]
+    scored.sort(key=lambda x: (rank[x[2]], person_rank(x[0])))
     email, source, kind = scored[0]
 
     out["contact_email"] = email
@@ -895,7 +1127,13 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="research + print, write nothing")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--recheck", action="store_true", help="re-do rows already checked")
+    ap.add_argument("--ids", default="",
+                    help="comma-separated candidate ids; re-do exactly these "
+                         "(implies --recheck). Lets a change be measured on the "
+                         "SAME sample before and after, instead of on whatever "
+                         "the queue happens to serve up next.")
     args = ap.parse_args()
+    want_ids = [s.strip() for s in args.ids.split(",") if s.strip()]
 
     env = load_env()
     url, key = env.get("SUPABASE_URL"), env.get("SUPABASE_SERVICE_KEY")
@@ -907,7 +1145,9 @@ def main():
     params = {"identity": "eq.verified", "website": "not.is.null",
               "select": "id,title,website,email,contact_email,contact_checked_at",
               "order": "id.asc"}
-    if not args.recheck:
+    if want_ids:
+        params["id"] = "in.(" + ",".join(want_ids) + ")"
+    elif not args.recheck:
         params["contact_checked_at"] = "is.null"
     if args.limit:
         params["limit"] = str(args.limit)
