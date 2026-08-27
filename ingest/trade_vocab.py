@@ -36,7 +36,8 @@ from __future__ import annotations
 import re
 
 __all__ = ["intent_queries", "relevance_terms", "is_relevant", "canonical_trade",
-           "TRADES", "GENERIC_ASKS", "GENERIC_CONFIRM"]
+           "TRADES", "GENERIC_ASKS", "GENERIC_CONFIRM",
+           "local_subreddits", "LOCAL_FORUMS", "METRO_FALLBACK_SUBS"]
 
 # Generic ways anyone asks to hire anyone. These stay — they are real — but they
 # are now a supplement to trade-specific phrasing rather than the whole strategy.
@@ -98,6 +99,76 @@ def canonical_trade(trade: str) -> str:
     return t
 
 
+# ---------------------------------------------------------------------------
+# GEOGRAPHY VOCABULARY
+#
+# WHY THIS EXISTS (measured 2026-08-26, live index, residential IP)
+#   The watcher searched `site:reddit.com "roof leak" Plano`. The index does not
+#   treat a bare city word as a constraint on a site: query, so what came back
+#   was r/Roofing, r/HousingUK, r/centuryhomes, r/DINgore and r/memes — none of
+#   them in Texas — and every one arrived with the title "Link to reddit.com"
+#   and an empty snippet, so there was nothing left to judge. relevance.py then
+#   correctly rejected the lot. Zero kept, and it looked like there was no
+#   demand.
+#
+#   Scoping the SUBREDDIT instead of naming the city turns the same channel on:
+#     site:reddit.com/r/Dallas junk removal recommendation
+#       -> "Junk removal recommendations" x2, "Could you please recommend an
+#          affordable junk/furniture ...", "Local junk/scrap yards??"
+#     site:reddit.com/r/Dallas "get rid of" couch
+#       -> "Easiest way to get rid of couch", "Disposal of Furniture",
+#          "Suggestions for getting rid of heavy furniture?",
+#          "Where to donate or discard old furniture?"
+#     site:reddit.com/r/plano roofer
+#       -> "Reccomended roofer & windows?", "Trustworthy Roofing Company",
+#          "Looking for minor roof repairs?"
+#     site:reddit.com/r/Dallas roofer
+#       -> "Roofer Recommendations", "OK How legit are these hail repair
+#          companies that ...", "PSA: Beware door to door roofers/contractors"
+#   Titles come back INTACT on sub-scoped queries, which is the second win: the
+#   "Link to reddit.com" blanking is a symptom of the unscoped query shape.
+#
+# HARD CONSTRAINT
+#   relevance.py hard-rejects any subreddit it does not recognise as a DFW
+#   community ("subreddit r/X is not a DFW community"). Only subs inside its
+#   _LOCAL_SUBS set may be queried, or every hit is thrown away on arrival.
+#   r/AllenTX and r/FriscoTX exist and are indexed but are NOT in that set, so
+#   they are deliberately absent here and those cities ride the metro fallback.
+#   Verified indexed 2026-08-26: Dallas, plano, FortWorth, McKinney, Arlington,
+#   Richardson, DFW, garland, texas. NOT indexed: frisco, irving, denton.
+METRO_FALLBACK_SUBS = ["Dallas", "DFW"]
+
+LOCAL_FORUMS = {
+    "dallas":     ["Dallas", "DFW"],
+    "fort worth": ["FortWorth", "DFW"],
+    "arlington":  ["Arlington", "DFW"],
+    "plano":      ["plano", "Dallas"],
+    "mckinney":   ["McKinney", "Dallas"],
+    "richardson": ["Richardson", "Dallas"],
+    "garland":    ["garland", "Dallas"],
+    # Indexed community subs exist for these but relevance.py cannot geo-resolve
+    # them, so they run on the metro subs with the city name as a keyword.
+    "frisco":     ["Dallas", "DFW"],
+    "allen":      ["Dallas", "DFW"],
+    "irving":     ["Dallas", "DFW"],
+    "denton":     ["Dallas", "DFW"],
+}
+
+
+def local_subreddits(city: str):
+    """Subreddits to search for `city`, best-first.
+
+    Returns (subs, city_is_named_by_sub). When the second value is False the
+    caller must keep the city word in the query text, because the subreddit
+    alone does not narrow it past the metro.
+    """
+    key = " ".join((city or "").strip().lower().split())
+    subs = LOCAL_FORUMS.get(key)
+    if subs:
+        return list(subs), subs[0].lower() == key.replace(" ", "")
+    return list(METRO_FALLBACK_SUBS), False
+
+
 # Per-trade vocabulary.
 #   asks    — how a normal person writes the request. Quoted so the index treats
 #             them as phrases; these ARE the search, the trade name is optional.
@@ -105,6 +176,20 @@ def canonical_trade(trade: str) -> str:
 #             "need someone to" is not fishing the whole internet.
 #   confirm — words whose presence means the result really is about this trade.
 #             Substring-matched against title + snippet + URL slug.
+#   strong  — a subset of `confirm` that PROVES the trade on its own. "roofer"
+#             or "estate cleanout" cannot mean anything else.
+#   objects — the physical things this trade acts on.
+#
+# WHY strong/objects EXIST (measured 2026-08-26)
+#   `confirm` alone is an OR over a long list, and the useful half of that list
+#   is verbs, not nouns. Verbs are ambiguous. A first pass of the fixed Reddit
+#   queries kept, for Hero's Junk Removal, "Time to get rid of these offramps
+#   from express lanes", "Young the Giant tickets?" and "Selling my SUV for
+#   parts" — all real r/dfw posts, none of them a customer. Every one matched a
+#   bare verb ("get rid of", "pick up", "parts") with nothing behind it.
+#   So: a verb only counts when it is attached to something this trade hauls,
+#   repairs or replaces. That is a tightening, never a loosening — a hit that
+#   passed before and fails now was noise.
 TRADES: dict[str, dict[str, list[str]]] = {
     "junk removal": {
         "asks": [
@@ -116,6 +201,22 @@ TRADES: dict[str, dict[str, list[str]]] = {
             '"hoarder cleanout"', '"foreclosure cleanout"', '"bulk trash pickup"',
             '"cheapest way to dispose of"', '"appliance removal"',
             '"shed demolition"', '"hot tub removal"',
+            # Evidence-backed 2026-08-26. Each phrase below is lifted from the
+            # TITLE of a real r/Dallas post the old queries never reached:
+            #   /comments/12n98e5/junk_removal_recommendations/
+            #   /comments/gii4lg/junk_removal_recommendations/
+            '"junk removal recommendations"',
+            #   /comments/18uyzpg/easiest_way_to_get_rid_of_couch/
+            '"easiest way to get rid of"',
+            #   /comments/1752ab6/disposal_of_furniture/
+            #   /comments/o1gqel/where_to_donate_or_discard_old_furniture/
+            '"disposal of furniture"', '"donate or discard"',
+            #   /comments/1cn6qkn/suggestions_for_getting_rid_of_heavy_furniture/
+            '"getting rid of heavy furniture"', '"getting rid of"',
+            #   /comments/14yt2a8/could_you_please_recommend_an_affordable/
+            '"recommend an affordable"',
+            #   /comments/4s77kf/new_to_area_yard_waste/
+            '"yard waste"', '"bulky item"', '"haul off"',
         ],
         "subject": [
             "old furniture", "old couch", "mattress", "appliances", "garage junk",
@@ -129,6 +230,29 @@ TRADES: dict[str, dict[str, list[str]]] = {
             "sofa", "mattress", "appliance", "dumpster", "scrap", "clear out",
             "pick up", "pickup", "trash", "garbage", "estate sale leftovers",
         ],
+        "strong": [
+            "junk removal", "junk hauler", "junk haul", "haul away", "hauled away",
+            "haul off", "cleanout", "clean out", "clean-out", "cleanouts",
+            "declutter", "decluttering", "dumpster", "bulk trash", "bulky item",
+            "estate sale leftovers", "hoarder", "yard waste", "junk removal service",
+        ],
+        "objects": [
+            "furniture", "couch", "sofa", "sectional", "recliner", "mattress",
+            "bed frame", "appliance", "appliances", "washer", "dryer", "fridge",
+            "refrigerator", "freezer", "stove", "oven", "dishwasher",
+            "water heater", "tv", "television", "junk", "debris", "brush",
+            "tires", "tire", "hot tub", "shed", "piano", "treadmill", "desk",
+            "dresser", "table", "chairs", "garage", "attic", "shed",
+            "storage unit", "estate", "boxes", "carpet", "fence", "playset",
+            "swing set", "grill", "mower", "pallet", "scrap metal", "mulch pile",
+            "yard debris", "construction debris", "old stuff", "clutter",
+            # Loose material is as much of the job as furniture is. "Need
+            # Someone to Haul Dirt" is a real post shape and it has no noun a
+            # furniture list would catch.
+            "dirt", "soil", "gravel", "rock", "rocks", "concrete", "bricks",
+            "trimmings", "branches", "limbs", "wood", "lumber", "drywall",
+            "sod", "leaves", "stump", "stumps", "junk pile", "rubble",
+        ],
     },
     "roofing": {
         "asks": [
@@ -137,6 +261,22 @@ TRADES: dict[str, dict[str, list[str]]] = {
             '"storm damage to my roof"', '"roof inspection"', '"who to call for a roof"',
             '"roofer recommendation"', '"reroof"', '"water stain on my ceiling"',
             '"roof estimate"', '"insurance claim roof"', '"gutter and roof"',
+            # Evidence-backed 2026-08-26, all real post titles:
+            #   r/Dallas /comments/1ckxcso/roofer_recommendations/
+            '"roofer recommendations"',
+            #   r/plano /comments/13o5633/reccomended_roofer_windows/
+            #   (misspelled in the original title; people search that way too)
+            '"recommended roofer"', '"reccomended roofer"',
+            #   r/plano /comments/y22qx5/trustworthy_roofing_company/
+            '"trustworthy roofing"',
+            #   r/plano /comments/1boc5tc/looking_for_minor_roof_repairs/
+            '"minor roof repairs"', '"roof repairs"',
+            #   r/Dallas /comments/142v8wl/ok_how_legit_are_these_hail_repair_companies_that/
+            '"hail repair"', '"how legit are"',
+            #   r/Dallas /comments/4btqj3/psa_beware_door_to_door_rooferscontractors/
+            '"door to door roofers"',
+            #   r/plano /comments/1d8urqi/metal_roof_on_a_house/
+            '"metal roof"',
         ],
         "subject": ["roof", "shingles", "roof leak", "gutters", "hail damage"],
         "confirm": [
@@ -144,6 +284,18 @@ TRADES: dict[str, dict[str, list[str]]] = {
             "re-roof", "gutter", "flashing", "soffit", "fascia", "attic leak",
             "ceiling leak", "hail", "storm damage", "leak", "leaking",
             "tile roof", "metal roof", "underlayment",
+        ],
+        "strong": [
+            "roofer", "roofers", "roofing", "reroof", "re-roof", "shingle",
+            "shingles", "roof leak", "leaking roof", "roof repair", "roof repairs",
+            "roof replacement", "roof inspection", "new roof", "roof damage",
+            "roof estimate", "roof quote", "flashing", "soffit", "fascia",
+            "underlayment", "tile roof", "metal roof", "gable roof",
+        ],
+        "objects": [
+            "roof", "roofs", "shingle", "shingles", "gutter", "gutters",
+            "attic", "ceiling", "decking", "chimney", "skylight", "eaves",
+            "house", "home", "garage", "patio cover", "carport", "flashing",
         ],
     },
     "hvac": {
@@ -327,4 +479,16 @@ def is_relevant(trade: str, title: str = "", body: str = "", url: str = "") -> b
     slug = re.sub(r"[^a-z0-9]+", " ", (url or "").lower())
     blob = f"{title or ''} {body or ''} {slug}".lower()
     blob = re.sub(r"\s+", " ", f" {blob} ")
+
+    voc = TRADES.get(canonical_trade(trade))
+    if voc and voc.get("strong") and voc.get("objects"):
+        # A term that proves the trade by itself is enough.
+        if any(t in blob for t in voc["strong"]):
+            return True
+        # Otherwise the ambiguous half of the vocabulary only counts when it is
+        # attached to something this trade actually works on.
+        weak = [t for t in voc["confirm"] if t not in voc["strong"]]
+        return (any(t in blob for t in weak)
+                and any(o in blob for o in voc["objects"]))
+
     return any(t in blob for t in relevance_terms(trade))

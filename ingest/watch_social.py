@@ -102,6 +102,32 @@ EMPTY_STREAK_FAIL = 12
 MIN_YIELD = 0.5
 YIELD_MIN_QUERIES = 20
 
+# The index's own time filter, or None for no filter.
+#
+# MEASURED 2026-08-26 on a residential IP, same query, same minute:
+#     site:reddit.com/r/Dallas roofer          timelimit='m' -> 0   'y' -> 6
+#     site:reddit.com/r/plano roofer           timelimit='m' -> 0   'y' -> 6
+#     site:reddit.com/r/Dallas junk removal... timelimit='m' -> 0   'y' -> 6
+# Every result those queries returned was a genuine DFW demand post. The filter
+# was not removing stale leads, it was removing the entire answer — the watcher
+# was running with 'm' hardcoded, which is a large part of why "kept 0" was the
+# normal outcome. The index's timelimit is also not trustworthy in the other
+# direction ('y' happily returns 2023 threads), so recency is NOT delegated to
+# it. relevance.py parses a real date when one exists and hard-rejects a dead
+# thread, and _reddit_is_legacy below drops pre-2023 Reddit posts by post-id
+# ordering. Those two are the honest recency gates; this one is off.
+TIMELIMIT = None
+
+# Reddit assigns post ids as monotonically increasing base36, so id LENGTH is a
+# strict ordering fact, not an estimate: every 7-character id was issued after
+# every 6-character id, because the 6-character space had to be exhausted first.
+# Observed cleanly in the 2026-08-26 sample — 6-char ids (37hfy1, 4btqj3, gii4lg,
+# o1gqel, y22qx5) are all old threads, 7-char ids (12n98e5, 1boc5tc, 1ckxcso) are
+# the recent ones. Search results carry no date for us to read, so this ordering
+# is the only recency signal available on a Reddit hit. It is used ONLY to drop
+# clearly-ancient threads and is never reported as a date.
+_REDDIT_ID_RE = re.compile(r"reddit\.com/r/[^/]+/comments/([a-z0-9]+)", re.I)
+
 PLATFORMS = {
     "nextdoor":  "site:nextdoor.com",
     "reddit":    "site:reddit.com",
@@ -197,9 +223,9 @@ def search(q, limit=8, recent=True, tries=3):
     for attempt in range(tries):
         try:
             with DDGS() as d:
-                # timelimit 'm' keeps this to the last month; an old thread is a
-                # dead lead and replying to one looks like a bot.
-                out = list(d.text(q, max_results=limit, timelimit="m" if recent else None))
+                # See TIMELIMIT above for why the index's time filter is off.
+                out = list(d.text(q, max_results=limit,
+                                  timelimit=TIMELIMIT if recent else None))
             time.sleep(SLEEP)
             if out:
                 return "ok", out
@@ -227,6 +253,83 @@ def search(q, limit=8, recent=True, tries=3):
             time.sleep(delay)
             delay *= 2
     return "error", []
+
+
+def reddit_slug_title(url):
+    """The post title Reddit puts in its own URL, or "".
+
+    Sub-scoped queries usually return a real title, but a minority still come
+    back as "Link to reddit.com" with an empty snippet. The slug carries the
+    title verbatim, so recovering it is the difference between a scoreable hit
+    and a blank one — and it stops "Link to reddit.com" being written into the
+    CRM as the name of the lead.
+    """
+    u = url or ""
+    if "/comments/" not in u:
+        return ""
+    parts = [x for x in u.split("/comments/")[-1].split("/") if x]
+    if len(parts) < 2:
+        return ""
+    return re.sub(r"\s+", " ", parts[1].replace("_", " ")).strip()
+
+
+def _reddit_is_legacy(url):
+    """True for a Reddit post whose id predates the 7-character era.
+
+    Ordering fact, not a date. See _REDDIT_ID_RE above.
+    """
+    m = _REDDIT_ID_RE.search(url or "")
+    return bool(m) and len(m.group(1)) < 7
+
+
+def build_queries(plat, phrase, city):
+    """The literal query strings for one (platform, phrase, city).
+
+    Platform shape is not cosmetic. Measured 2026-08-26:
+      site:nextdoor.com/ask-neighbors "roof leak" Plano   -> 0 results, always.
+          That path is not in the index. It was consuming HALF of every
+          Nextdoor query budget and returning nothing, every run.
+      site:reddit.com "roof leak" Plano                   -> 6 results, none in
+          Texas (r/HousingUK, r/centuryhomes, r/memes), all titled
+          "Link to reddit.com". The index ignores a bare city word.
+      site:reddit.com/r/plano roofer                      -> 6 results, all real
+          Plano homeowners asking for a roofer, titles intact.
+    """
+    phrase = (phrase or "").strip()
+    city = (city or "").strip()
+    if plat == "reddit":
+        subs, sub_names_city = trade_vocab.local_subreddits(city)
+        qs = []
+        for sub in subs:
+            # When the sub IS the city, repeating the city word only narrows the
+            # index against itself. When it is the metro sub, the city word is
+            # the only thing separating Frisco from Fort Worth.
+            tail = "" if sub_names_city else f" {city}"
+            qs.append(f"site:reddit.com/r/{sub} {phrase}{tail}".strip())
+        return qs
+    return [f"{PLATFORMS[plat]} {phrase} {city}".strip()]
+
+
+# Which phrase of the trade vocabulary a run starts from. Without this the
+# rotation is a pure function of (city index, phrase count), so every run
+# forever sends the SAME handful of queries out of a 56-to-63 phrase
+# vocabulary — and after the first run every URL they can reach is already in
+# seen_watch_urls.txt, which makes kept=0 structurally guaranteed. The offset
+# advances each run so the tail of the vocabulary actually gets used.
+ROTATION = HERE / "watch_rotation.json"
+
+
+def rotation_offset(bump=0):
+    try:
+        n = int(json.loads(ROTATION.read_text(encoding="utf-8")).get("offset", 0))
+    except Exception:
+        n = 0
+    if bump:
+        try:
+            ROTATION.write_text(json.dumps({"offset": n + bump}), encoding="utf-8")
+        except Exception:
+            pass
+    return n
 
 
 def draft_reply(client_slug, client_name, trade, city, post_title, snippet, urgent):
@@ -347,6 +450,11 @@ def main():
     # than no number, because the OS renders it to Jack as a health signal.
     ledger = []
     health = IndexHealth()
+    # Advance the phrase window so consecutive runs ask DIFFERENT questions.
+    # A dry run must not move it, or a debug run silently steals the next real
+    # run's queries.
+    rot = rotation_offset(bump=0 if args.dry_run else max(1, args.phrases))
+    print(f"phrase rotation offset {rot} (each run advances by --phrases)")
     ran_at = watch_telemetry.utcnow()
     aborted = ""
 
@@ -376,6 +484,21 @@ def main():
             per = dict(queries=0, results=0, kept=0, rejected=0,
                        throttled=0, empty_queries=0, errors=0,
                        unresolved_location=0, supply_side=0)
+            # WHY nothing was kept. "kept 0" with no reason is the failure that
+            # hid every one of the problems this run was written to find: a
+            # channel whose whole indexed corpus is a marketplace, a query shape
+            # the index answers with 0, and a dedupe file that had already eaten
+            # every URL the fixed rotation could reach all read as the same
+            # silent zero. These counters are per-client and per-channel so the
+            # next zero says which of those it is.
+            why_drop = {}
+            by_channel = {}
+
+            def note(reason, plat, n=1):
+                why_drop[reason] = why_drop.get(reason, 0) + n
+                ch = by_channel.setdefault(plat, dict(queries=0, results=0,
+                                                      kept=0, reasons={}))
+                ch["reasons"][reason] = ch["reasons"].get(reason, 0) + n
 
             # The deliberate off-switch is checked FIRST and wins outright.
             # Northcomm has channels='none' AND null niche/cities; reporting it
@@ -412,26 +535,29 @@ def main():
 
             for city in cities:
                 for plat in plats:
-                    op = PLATFORMS[plat]
                     # Trade-specific phrasing. The old generic list searched for
                     # words customers do not use — junk-removal demand reads "need
                     # to get rid of" / "haul away", almost never "junk removal",
                     # which is why that client had produced zero drafts ever.
-                    allp = trade_vocab.intent_queries(trade, city, extra)
+                    #
+                    # NOTE the phrases are built WITHOUT the city. build_queries
+                    # decides where the city belongs per platform: as a keyword
+                    # for Nextdoor, but as a SUBREDDIT for Reddit, where a bare
+                    # city word is ignored by the index entirely.
+                    allp = trade_vocab.intent_queries(trade, "", extra)
                     ci = cities.index(city)
-                    picked = [allp[(ci * args.phrases + k) % len(allp)]
+                    base = rot + ci * args.phrases
+                    picked = [allp[(base + k) % len(allp)]
                               for k in range(min(args.phrases, len(allp)))]
-                    queries = [f"{op} {phrase}".strip() for phrase in picked]
-                    if plat == "nextdoor":
-                        # /ask-neighbors/ threads ARE the recommendation surface, but
-                        # only when paired with a real ask phrase. Measured at 7/7
-                        # genuine demand posts that way, versus 0 for the trade name
-                        # alone, which just returns category and business pages.
-                        for phrase in picked:
-                            queries.insert(0, f"site:nextdoor.com/ask-neighbors {phrase}".strip())
+                    queries = []
+                    for phrase in picked:
+                        queries.extend(build_queries(plat, phrase, city))
                     for q in queries:
                         stats["queries"] += 1
                         per["queries"] += 1
+                        by_channel.setdefault(plat, dict(queries=0, results=0,
+                                                         kept=0, reasons={}))
+                        by_channel[plat]["queries"] += 1
                         status, res = search(q, 6)
                         health.note(status)
                         if args.show_queries:
@@ -439,25 +565,43 @@ def main():
                         if status == "throttled":
                             stats["throttled"] += 1
                             per["throttled"] += 1
+                            note("query throttled by the index", plat)
                             continue
                         if status == "error":
                             stats["errors"] += 1
                             per["errors"] += 1
+                            note("query errored", plat)
                             continue
                         if status == "empty":
                             stats["empty_queries"] += 1
                             per["empty_queries"] += 1
+                            note("query answered with nothing", plat)
                             continue
                         for r in res:
                             stats["results"] += 1
                             per["results"] += 1
+                            by_channel[plat]["results"] += 1
                             u = (r.get("href") or "").split("?")[0]
                             if not u or u in seen:
                                 stats["dup"] += 1
+                                note("already seen in an earlier run", plat)
                                 continue
                             title = r.get("title") or ""
                             body = r.get("body") or ""
+                            # Recover the title Reddit puts in its own URL when
+                            # the index hands back "Link to reddit.com" and an
+                            # empty snippet. Without this the hit is unscoreable
+                            # AND "Link to reddit.com" gets written into the CRM
+                            # as the name of the lead.
+                            slug_text = reddit_slug_title(u)
+                            if slug_text and (not title
+                                              or title.strip().lower().startswith("link to reddit")):
+                                title = slug_text
                             blob = f"{title} {body}"
+                            if _reddit_is_legacy(u):
+                                note("reddit thread predates the 7-char post-id era "
+                                     "(too old to reply to)", plat)
+                                continue
                             # Score before drafting. The old check just required the
                             # trade's first word somewhere in the text, which let
                             # through roofing companies' own business pages — the
@@ -476,12 +620,9 @@ def main():
                             # TX" post got kept for a health & beauty DTC brand.
                             if not trade_vocab.is_relevant(trade, title, body, u):
                                 stats["no_intent"] += 1
+                                note("not about this trade, or marketplace/"
+                                     "platform-marketing noise", plat)
                                 continue
-                            slug_text = ""
-                            if "reddit.com" in u and "/comments/" in u:
-                                parts = [x for x in u.split("/comments/")[-1].split("/") if x]
-                                if len(parts) > 1:
-                                    slug_text = parts[1].replace("_", " ")
                             rel = relevance.score_hit(title or slug_text, body or slug_text,
                                                       u, trade, city,
                                                       trade_vocab.relevance_terms(trade))
@@ -498,6 +639,12 @@ def main():
                                 if rel.get("verdict") == "supply_side":
                                     stats["supply_side"] += 1
                                     per["supply_side"] += 1
+                                    note("supply side: a competitor advertising, "
+                                         "not a customer asking", plat)
+                                else:
+                                    note(f"relevance rejected: "
+                                         f"{(rel.get('reject_reason') or 'no reason given')[:90]}",
+                                         plat)
                                 continue
                             # Strong demand we cannot PLACE. relevance.py caps
                             # these at 0.30, which sits under MIN_RELEVANCE, so
@@ -536,9 +683,13 @@ def main():
                                         "status": "needs_location_check",
                                         "tier": "reply",
                                     })
+                                note("real demand but no resolvable location "
+                                     "(parked for a human to place)", plat)
                                 continue
                             if rel["score"] < MIN_RELEVANCE:
                                 stats["low_score"] += 1
+                                note(f"scored {rel['score']:.2f}, under the "
+                                     f"{MIN_RELEVANCE} bar", plat)
                                 continue
                             seen.add(u)
                             urgent = bool(URGENT.search(blob))
@@ -562,6 +713,7 @@ def main():
                             })
                             stats["kept"] += 1
                             per["kept"] += 1
+                            by_channel[plat]["kept"] += 1
                             print(f"  + [{plat}] {'URGENT ' if urgent else ''}{title[:62]}")
                             if stats["kept"] >= args.limit:
                                 break
@@ -575,6 +727,34 @@ def main():
             print(f"  -- {c['name']}: queries={per['queries']} results={per['results']} "
                   f"kept={per['kept']} rejected={per['rejected']} "
                   f"empty={per['empty_queries']} throttled={per['throttled']}")
+
+            # Per-channel readout. A client can be healthy on one channel and
+            # structurally dead on another, and one blended number hides it.
+            for plat in plats:
+                ch = by_channel.get(plat)
+                if not ch:
+                    continue
+                top = sorted(ch["reasons"].items(), key=lambda kv: -kv[1])[:3]
+                print(f"     [{plat}] {ch['queries']}q -> {ch['results']} results, "
+                      f"{ch['kept']} kept")
+                for reason, n in top:
+                    print(f"        {n:3d} x {reason}")
+                if ch["queries"] and ch["results"] == 0:
+                    print(f"        NOTE: {plat} returned nothing at all for this "
+                          f"client. Either the query shape does not match what "
+                          f"this platform exposes to the index, or the platform "
+                          f"is not publicly indexed.")
+
+            if per["kept"] == 0:
+                # The honest zero. "no demand found" is a valid, useful result,
+                # but only when it says which of the several very different
+                # zeroes it actually is.
+                print(f"  WHY NOTHING WAS KEPT for {c['name']}:")
+                if not why_drop:
+                    print("        nothing came back to judge at all")
+                for reason, n in sorted(why_drop.items(), key=lambda kv: -kv[1]):
+                    print(f"        {n:3d} x {reason}")
+
             flush_client(c, per, "ok", "", ",".join(plats))
     except IndexDown as e:
         aborted = str(e)

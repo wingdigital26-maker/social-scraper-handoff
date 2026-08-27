@@ -1,0 +1,7849 @@
+{
+ "aaa": {
+  "bbox": [
+   41.7636,
+   42.778,
+   -84.4119,
+   -83.0409
+  ],
+  "center": [
+   42.270802,
+   -83.726402
+  ],
+  "cl_area": 172,
+  "cl_host": "annarbor.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Ann-Arbor",
+  "name": "ann arbor, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "abi": {
+  "bbox": [
+   31.9414,
+   32.9558,
+   -100.3339,
+   -99.1317
+  ],
+  "center": [
+   32.448601,
+   -99.732803
+  ],
+  "cl_area": 364,
+  "cl_host": "abilene.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Abilene",
+  "name": "abilene, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "abq": {
+  "bbox": [
+   34.5772,
+   35.5916,
+   -107.2709,
+   -106.0311
+  ],
+  "center": [
+   35.0844,
+   -106.651001
+  ],
+  "cl_area": 50,
+  "cl_host": "albuquerque.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NM/Albuquerque",
+  "name": "albuquerque (NM)",
+  "radius_mi": 35.0,
+  "state": "NM"
+ },
+ "abr": {
+  "bbox": [
+   44.8295,
+   45.8439,
+   -98.3681,
+   -96.9249
+  ],
+  "center": [
+   45.3367,
+   -97.646484
+  ],
+  "cl_area": 682,
+  "cl_host": "nesd.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "northeast SD (SD)",
+  "radius_mi": 35.0,
+  "state": "SD"
+ },
+ "aby": {
+  "bbox": [
+   31.0678,
+   32.0823,
+   -84.7548,
+   -83.564
+  ],
+  "center": [
+   31.575026,
+   -84.159393
+  ],
+  "cl_area": 637,
+  "cl_host": "albanyga.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Albany",
+  "name": "albany, GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "aex": {
+  "bbox": [
+   30.7901,
+   31.8046,
+   -93.0628,
+   -91.8755
+  ],
+  "center": [
+   31.297327,
+   -92.469177
+  ],
+  "cl_area": 644,
+  "cl_host": "cenla.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "central louisiana (LA)",
+  "radius_mi": 35.0,
+  "state": "LA"
+ },
+ "ahn": {
+  "bbox": [
+   33.4536,
+   34.468,
+   -83.9897,
+   -82.7665
+  ],
+  "center": [
+   33.9608,
+   -83.378098
+  ],
+  "cl_area": 258,
+  "cl_host": "athensga.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Athens",
+  "name": "athens, GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "alb": {
+  "bbox": [
+   42.1453,
+   43.1597,
+   -74.4464,
+   -73.067
+  ],
+  "center": [
+   42.6525,
+   -73.756699
+  ],
+  "cl_area": 59,
+  "cl_host": "albany.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Albany",
+  "name": "albany, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "alt": {
+  "bbox": [
+   40.0928,
+   41.1072,
+   -76.1681,
+   -74.8319
+  ],
+  "center": [
+   40.599998,
+   -75.5
+  ],
+  "cl_area": 167,
+  "cl_host": "allentown.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Lehigh-Valley",
+  "name": "lehigh valley (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "ama": {
+  "bbox": [
+   34.7147,
+   35.7291,
+   -102.4519,
+   -101.2101
+  ],
+  "center": [
+   35.221901,
+   -101.831001
+  ],
+  "cl_area": 269,
+  "cl_host": "amarillo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Amarillo",
+  "name": "amarillo, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "ame": {
+  "bbox": [
+   41.5275,
+   42.5419,
+   -94.3026,
+   -92.9368
+  ],
+  "center": [
+   42.034698,
+   -93.619698
+  ],
+  "cl_area": 445,
+  "cl_host": "ames.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Ames",
+  "name": "ames, IA (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "anb": {
+  "bbox": [
+   33.507,
+   34.5214,
+   -86.6187,
+   -85.3947
+  ],
+  "center": [
+   34.014198,
+   -86.006699
+  ],
+  "cl_area": 559,
+  "cl_host": "gadsden.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Anniston",
+  "name": "gadsden-anniston (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "anc": {
+  "bbox": [
+   60.689,
+   61.7034,
+   -150.9388,
+   -148.8332
+  ],
+  "center": [
+   61.196201,
+   -149.886002
+  ],
+  "cl_area": 51,
+  "cl_host": "anchorage.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AK/Anchorage",
+  "name": "anchorage / mat-su (AK)",
+  "radius_mi": 35.0,
+  "state": "AK"
+ },
+ "anp": {
+  "bbox": [
+   38.4711,
+   39.4855,
+   -77.145,
+   -75.84
+  ],
+  "center": [
+   38.978298,
+   -76.4925
+  ],
+  "cl_area": 460,
+  "cl_host": "annapolis.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MD/Annapolis",
+  "name": "annapolis, MD (MD)",
+  "radius_mi": 35.0,
+  "state": "MD"
+ },
+ "aoo": {
+  "bbox": [
+   40.0114,
+   41.0258,
+   -79.0623,
+   -77.7277
+  ],
+  "center": [
+   40.5186,
+   -78.394997
+  ],
+  "cl_area": 355,
+  "cl_host": "altoona.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Altoona",
+  "name": "altoona-johnstown (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "app": {
+  "bbox": [
+   43.7547,
+   44.7691,
+   -89.1236,
+   -87.707
+  ],
+  "center": [
+   44.261902,
+   -88.415298
+  ],
+  "cl_area": 243,
+  "cl_host": "appleton.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/Appleton",
+  "name": "appleton-oshkosh-FDL (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "ash": {
+  "bbox": [
+   35.0936,
+   36.108,
+   -83.178,
+   -81.9304
+  ],
+  "center": [
+   35.6008,
+   -82.554199
+  ],
+  "cl_area": 171,
+  "cl_host": "asheville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NC/Asheville",
+  "name": "asheville, NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "atl": {
+  "bbox": [
+   33.2417,
+   34.2561,
+   -84.9982,
+   -83.778
+  ],
+  "center": [
+   33.748901,
+   -84.3881
+  ],
+  "cl_area": 14,
+  "cl_host": "atlanta.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Atlanta",
+  "name": "atlanta, GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "aub": {
+  "bbox": [
+   32.1025,
+   33.1169,
+   -86.083,
+   -84.8786
+  ],
+  "center": [
+   32.609699,
+   -85.480797
+  ],
+  "cl_area": 372,
+  "cl_host": "auburn.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Auburn",
+  "name": "auburn, AL (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "aug": {
+  "bbox": [
+   32.9636,
+   33.978,
+   -82.5831,
+   -81.3669
+  ],
+  "center": [
+   33.470798,
+   -81.974998
+  ],
+  "cl_area": 256,
+  "cl_host": "augusta.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Augusta",
+  "name": "augusta, GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "aus": {
+  "bbox": [
+   29.7597,
+   30.7741,
+   -98.3301,
+   -97.1555
+  ],
+  "center": [
+   30.266899,
+   -97.742798
+  ],
+  "cl_area": 15,
+  "cl_host": "austin.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Austin",
+  "name": "austin, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "avp": {
+  "bbox": [
+   40.9017,
+   41.9161,
+   -76.3391,
+   -74.9865
+  ],
+  "center": [
+   41.408901,
+   -75.662804
+  ],
+  "cl_area": 276,
+  "cl_host": "scranton.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Scranton-Wilkes-Barre",
+  "name": "scranton / wilkes-barre (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "bak": {
+  "bbox": [
+   34.8661,
+   35.8805,
+   -119.6401,
+   -118.3959
+  ],
+  "center": [
+   35.373299,
+   -119.017998
+  ],
+  "cl_area": 63,
+  "cl_host": "bakersfield.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Bakersfield",
+  "name": "bakersfield, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "bal": {
+  "bbox": [
+   38.8008,
+   39.8152,
+   -77.2726,
+   -75.9614
+  ],
+  "center": [
+   39.307999,
+   -76.616997
+  ],
+  "cl_area": 34,
+  "cl_host": "baltimore.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MD/Baltimore",
+  "name": "baltimore, MD (MD)",
+  "radius_mi": 35.0,
+  "state": "MD"
+ },
+ "bff": {
+  "bbox": [
+   41.3594,
+   42.3738,
+   -104.3481,
+   -102.9859
+  ],
+  "center": [
+   41.8666,
+   -103.667
+  ],
+  "cl_area": 669,
+  "cl_host": "scottsbluff.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NE/Scottsbluff",
+  "name": "scottsbluff / panhandle (NE)",
+  "radius_mi": 35.0,
+  "state": "NE"
+ },
+ "bgm": {
+  "bbox": [
+   41.5914,
+   42.6058,
+   -76.6019,
+   -75.2347
+  ],
+  "center": [
+   42.098598,
+   -75.918297
+  ],
+  "cl_area": 248,
+  "cl_host": "binghamton.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Binghamton",
+  "name": "binghamton, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "bhm": {
+  "bbox": [
+   33.0134,
+   34.0278,
+   -87.4109,
+   -86.1941
+  ],
+  "center": [
+   33.520599,
+   -86.802498
+  ],
+  "cl_area": 127,
+  "cl_host": "bham.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Birmingham",
+  "name": "birmingham, AL (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "bil": {
+  "bbox": [
+   45.2761,
+   46.2905,
+   -109.2284,
+   -107.7736
+  ],
+  "center": [
+   45.783298,
+   -108.500999
+  ],
+  "cl_area": 657,
+  "cl_host": "billings.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MT/Billings",
+  "name": "billings, MT (MT)",
+  "radius_mi": 35.0,
+  "state": "MT"
+ },
+ "bis": {
+  "bbox": [
+   46.3003,
+   47.3148,
+   -101.5187,
+   -100.0365
+  ],
+  "center": [
+   46.807579,
+   -100.777588
+  ],
+  "cl_area": 666,
+  "cl_host": "bismarck.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/ND/Bismarck",
+  "name": "bismarck, ND (ND)",
+  "radius_mi": 35.0,
+  "state": "ND"
+ },
+ "bji": {
+  "bbox": [
+   46.9664,
+   47.9808,
+   -95.6307,
+   -94.1299
+  ],
+  "center": [
+   47.473598,
+   -94.880302
+  ],
+  "cl_area": 663,
+  "cl_host": "bemidji.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MN/Bemidji",
+  "name": "bemidji, MN (MN)",
+  "radius_mi": 35.0,
+  "state": "MN"
+ },
+ "blg": {
+  "bbox": [
+   36.4831,
+   37.4975,
+   -87.0787,
+   -85.8085
+  ],
+  "center": [
+   36.990299,
+   -86.443604
+  ],
+  "cl_area": 342,
+  "cl_host": "bgky.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KY/Bowling-Green",
+  "name": "bowling green, KY (KY)",
+  "radius_mi": 35.0,
+  "state": "KY"
+ },
+ "bli": {
+  "bbox": [
+   48.2525,
+   49.2669,
+   -123.2565,
+   -121.7175
+  ],
+  "center": [
+   48.759701,
+   -122.487
+  ],
+  "cl_area": 217,
+  "cl_host": "bellingham.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WA/Bellingham",
+  "name": "bellingham, WA (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "bln": {
+  "bbox": [
+   39.977,
+   40.9914,
+   -89.6605,
+   -88.3267
+  ],
+  "center": [
+   40.4842,
+   -88.993599
+  ],
+  "cl_area": 344,
+  "cl_host": "bn.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IL/Bloomington-Normal",
+  "name": "bloomington-normal (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "bmg": {
+  "bbox": [
+   38.6581,
+   39.6725,
+   -87.1806,
+   -85.8722
+  ],
+  "center": [
+   39.165298,
+   -86.526398
+  ],
+  "cl_area": 229,
+  "cl_host": "bloomington.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Bloomington",
+  "name": "bloomington, IN (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "bnc": {
+  "bbox": [
+   35.7095,
+   36.7239,
+   -82.3034,
+   -81.046
+  ],
+  "center": [
+   36.216702,
+   -81.674698
+  ],
+  "cl_area": 446,
+  "cl_host": "boone.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NC/Boone",
+  "name": "boone, NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "bnd": {
+  "bbox": [
+   43.5511,
+   44.5655,
+   -122.0199,
+   -120.6082
+  ],
+  "center": [
+   44.0583,
+   -121.314003
+  ],
+  "cl_area": 233,
+  "cl_host": "bend.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OR/Bend",
+  "name": "bend, OR (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "boi": {
+  "bbox": [
+   43.1064,
+   44.1208,
+   -116.9026,
+   -115.5014
+  ],
+  "center": [
+   43.613602,
+   -116.202003
+  ],
+  "cl_area": 52,
+  "cl_host": "boise.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/ID/Boise",
+  "name": "boise, ID (ID)",
+  "radius_mi": 35.0,
+  "state": "ID"
+ },
+ "bos": {
+  "bbox": [
+   41.8511,
+   42.8655,
+   -71.7467,
+   -70.3739
+  ],
+  "center": [
+   42.358299,
+   -71.060303
+  ],
+  "cl_area": 4,
+  "cl_host": "boston.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MA/Boston",
+  "name": "boston (MA)",
+  "radius_mi": 35.0,
+  "state": "MA"
+ },
+ "bou": {
+  "bbox": [
+   39.5078,
+   40.5222,
+   -105.9323,
+   -104.6077
+  ],
+  "center": [
+   40.014999,
+   -105.269997
+  ],
+  "cl_area": 319,
+  "cl_host": "boulder.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CO/Boulder",
+  "name": "boulder, CO (CO)",
+  "radius_mi": 35.0,
+  "state": "CO"
+ },
+ "bpt": {
+  "bbox": [
+   29.569,
+   30.5834,
+   -94.6992,
+   -93.5268
+  ],
+  "center": [
+   30.0762,
+   -94.112999
+  ],
+  "cl_area": 264,
+  "cl_host": "beaumont.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Beaumont-Port-Arthur",
+  "name": "beaumont / port arthur (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "brd": {
+  "bbox": [
+   45.8473,
+   46.8618,
+   -94.9317,
+   -93.4618
+  ],
+  "center": [
+   46.354511,
+   -94.196777
+  ],
+  "cl_area": 664,
+  "cl_host": "brainerd.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MN/Brainerd",
+  "name": "brainerd, MN (MN)",
+  "radius_mi": 35.0,
+  "state": "MN"
+ },
+ "brl": {
+  "bbox": [
+   43.954,
+   44.9684,
+   -73.9044,
+   -72.483
+  ],
+  "center": [
+   44.461201,
+   -73.193703
+  ],
+  "cl_area": 93,
+  "cl_host": "vermont.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "vermont (VT)",
+  "radius_mi": 35.0,
+  "state": "VT"
+ },
+ "bro": {
+  "bbox": [
+   25.3942,
+   26.4086,
+   -98.0611,
+   -96.9333
+  ],
+  "center": [
+   25.9014,
+   -97.4972
+  ],
+  "cl_area": 266,
+  "cl_host": "brownsville.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "brownsville, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "btc": {
+  "bbox": [
+   41.814,
+   42.8284,
+   -85.8657,
+   -84.4937
+  ],
+  "center": [
+   42.321201,
+   -85.179703
+  ],
+  "cl_area": 628,
+  "cl_host": "battlecreek.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Battle-Creek",
+  "name": "battle creek, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "btm": {
+  "bbox": [
+   45.4973,
+   46.5118,
+   -113.2742,
+   -111.8137
+  ],
+  "center": [
+   46.004593,
+   -112.543945
+  ],
+  "cl_area": 661,
+  "cl_host": "butte.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MT/Butte",
+  "name": "butte, MT (MT)",
+  "radius_mi": 35.0,
+  "state": "MT"
+ },
+ "btr": {
+  "bbox": [
+   29.9509,
+   30.9653,
+   -91.7287,
+   -90.5517
+  ],
+  "center": [
+   30.458099,
+   -91.140198
+  ],
+  "cl_area": 199,
+  "cl_host": "batonrouge.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/LA/Baton-Rouge",
+  "name": "baton rouge (LA)",
+  "radius_mi": 35.0,
+  "state": "LA"
+ },
+ "buf": {
+  "bbox": [
+   42.3792,
+   43.3936,
+   -79.5709,
+   -78.1863
+  ],
+  "center": [
+   42.886398,
+   -78.878601
+  ],
+  "cl_area": 40,
+  "cl_host": "buffalo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Buffalo",
+  "name": "buffalo, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "bwk": {
+  "bbox": [
+   30.6425,
+   31.6569,
+   -82.0844,
+   -80.899
+  ],
+  "center": [
+   31.1497,
+   -81.491699
+  ],
+  "cl_area": 570,
+  "cl_host": "brunswick.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Brunswick",
+  "name": "brunswick, GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "bzn": {
+  "bbox": [
+   45.1725,
+   46.1869,
+   -111.765,
+   -110.313
+  ],
+  "center": [
+   45.679699,
+   -111.039001
+  ],
+  "cl_area": 658,
+  "cl_host": "bozeman.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MT/Bozeman",
+  "name": "bozeman, MT (MT)",
+  "radius_mi": 35.0,
+  "state": "MT"
+ },
+ "cae": {
+  "bbox": [
+   33.4934,
+   34.5078,
+   -81.6469,
+   -80.4232
+  ],
+  "center": [
+   34.000599,
+   -81.035004
+  ],
+  "cl_area": 101,
+  "cl_host": "columbia.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/SC/Columbia",
+  "name": "columbia, SC (SC)",
+  "radius_mi": 35.0,
+  "state": "SC"
+ },
+ "cak": {
+  "bbox": [
+   40.5742,
+   41.5886,
+   -82.1921,
+   -80.8463
+  ],
+  "center": [
+   41.081402,
+   -81.519203
+  ],
+  "cl_area": 251,
+  "cl_host": "akroncanton.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Akron",
+  "name": "akron / canton (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "cap": {
+  "bbox": [
+   41.1817,
+   42.1961,
+   -70.9762,
+   -69.6176
+  ],
+  "center": [
+   41.6889,
+   -70.296898
+  ],
+  "cl_area": 239,
+  "cl_host": "capecod.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "cape cod / islands (MA)",
+  "radius_mi": 35.0,
+  "state": "MA"
+ },
+ "cat": {
+  "bbox": [
+   41.4928,
+   42.5072,
+   -75.0659,
+   -73.7007
+  ],
+  "center": [
+   42,
+   -74.383301
+  ],
+  "cl_area": 451,
+  "cl_host": "catskills.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "catskills (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "cbd": {
+  "bbox": [
+   37.22,
+   38.2344,
+   -89.858,
+   -88.5754
+  ],
+  "center": [
+   37.7272,
+   -89.216698
+  ],
+  "cl_area": 345,
+  "cl_host": "carbondale.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southern illinois (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "cbg": {
+  "bbox": [
+   39.4261,
+   40.4405,
+   -78.2948,
+   -76.9718
+  ],
+  "center": [
+   39.9333,
+   -77.633301
+  ],
+  "cl_area": 705,
+  "cl_host": "chambersburg.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "cumberland valley (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "ced": {
+  "bbox": [
+   41.5011,
+   42.5155,
+   -92.3266,
+   -90.9612
+  ],
+  "center": [
+   42.008301,
+   -91.643898
+  ],
+  "cl_area": 340,
+  "cl_host": "cedarrapids.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Cedar-Rapids",
+  "name": "cedar rapids, IA (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "cfl": {
+  "bbox": [
+   27.032,
+   28.0464,
+   -82.082,
+   -80.9378
+  ],
+  "center": [
+   27.5392,
+   -81.509903
+  ],
+  "cl_area": 639,
+  "cl_host": "cfl.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "heartland florida (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "cha": {
+  "bbox": [
+   34.7197,
+   35.7341,
+   -81.4643,
+   -80.2223
+  ],
+  "center": [
+   35.226898,
+   -80.8433
+  ],
+  "cl_area": 41,
+  "cl_host": "charlotte.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NC/Charlotte",
+  "name": "charlotte, NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "chc": {
+  "bbox": [
+   39.2214,
+   40.2358,
+   -122.4955,
+   -121.1764
+  ],
+  "center": [
+   39.7286,
+   -121.835999
+  ],
+  "cl_area": 187,
+  "cl_host": "chico.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Chico",
+  "name": "chico, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "chi": {
+  "bbox": [
+   41.3428,
+   42.3572,
+   -88.331,
+   -86.969
+  ],
+  "center": [
+   41.849998,
+   -87.650002
+  ],
+  "cl_area": 11,
+  "cl_host": "chicago.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IL/Chicago",
+  "name": "chicago (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "chl": {
+  "bbox": [
+   38.8259,
+   39.8403,
+   -83.6382,
+   -82.3266
+  ],
+  "center": [
+   39.333099,
+   -82.982399
+  ],
+  "cl_area": 701,
+  "cl_host": "chillicothe.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Chillicothe",
+  "name": "chillicothe, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "chm": {
+  "bbox": [
+   39.6028,
+   40.6172,
+   -88.9132,
+   -87.5868
+  ],
+  "center": [
+   40.110001,
+   -88.25
+  ],
+  "cl_area": 190,
+  "cl_host": "chambana.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IL/Champaign-Urbana",
+  "name": "champaign urbana (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "chq": {
+  "bbox": [
+   41.7025,
+   42.7169,
+   -80.1515,
+   -78.7819
+  ],
+  "center": [
+   42.209702,
+   -79.466698
+  ],
+  "cl_area": 452,
+  "cl_host": "chautauqua.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "chautauqua, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "chs": {
+  "bbox": [
+   32.2692,
+   33.2836,
+   -80.5344,
+   -79.3278
+  ],
+  "center": [
+   32.776402,
+   -79.931099
+  ],
+  "cl_area": 128,
+  "cl_host": "charleston.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/SC/Charleston",
+  "name": "charleston, SC (SC)",
+  "radius_mi": 35.0,
+  "state": "SC"
+ },
+ "cht": {
+  "bbox": [
+   34.5384,
+   35.5528,
+   -85.9293,
+   -84.6901
+  ],
+  "center": [
+   35.045601,
+   -85.3097
+  ],
+  "cl_area": 220,
+  "cl_host": "chattanooga.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TN/Chattanooga",
+  "name": "chattanooga, TN (TN)",
+  "radius_mi": 35.0,
+  "state": "TN"
+ },
+ "cin": {
+  "bbox": [
+   38.6547,
+   39.6691,
+   -85.1111,
+   -83.8027
+  ],
+  "center": [
+   39.1619,
+   -84.456902
+  ],
+  "cl_area": 35,
+  "cl_host": "cincinnati.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "cincinnati, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "ckv": {
+  "bbox": [
+   36.0225,
+   37.0369,
+   -87.9907,
+   -86.7281
+  ],
+  "center": [
+   36.529701,
+   -87.359398
+  ],
+  "cl_area": 465,
+  "cl_host": "clarksville.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "clarksville, TN (TN)",
+  "radius_mi": 35.0,
+  "state": "TN"
+ },
+ "cle": {
+  "bbox": [
+   40.9922,
+   42.0066,
+   -82.3729,
+   -81.0183
+  ],
+  "center": [
+   41.499401,
+   -81.695602
+  ],
+  "cl_area": 27,
+  "cl_host": "cleveland.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Cleveland",
+  "name": "cleveland, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "cmu": {
+  "bbox": [
+   43.0908,
+   44.1052,
+   -85.4814,
+   -84.0806
+  ],
+  "center": [
+   43.598,
+   -84.780998
+  ],
+  "cl_area": 434,
+  "cl_host": "centralmich.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "central michigan (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "cnj": {
+  "bbox": [
+   39.8559,
+   40.8703,
+   -75.3271,
+   -73.9957
+  ],
+  "center": [
+   40.363098,
+   -74.6614
+  ],
+  "cl_area": 349,
+  "cl_host": "cnj.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NJ/Trenton-Ewing-Central-NJ",
+  "name": "central NJ (NJ)",
+  "radius_mi": 35.0,
+  "state": "NJ"
+ },
+ "col": {
+  "bbox": [
+   39.4539,
+   40.4683,
+   -83.6607,
+   -82.3371
+  ],
+  "center": [
+   39.961102,
+   -82.998901
+  ],
+  "cl_area": 42,
+  "cl_host": "columbus.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Columbus",
+  "name": "columbus, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "coo": {
+  "bbox": [
+   35.6556,
+   36.67,
+   -86.1299,
+   -84.8733
+  ],
+  "center": [
+   36.1628,
+   -85.501602
+  ],
+  "cl_area": 670,
+  "cl_host": "cookeville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TN/Cookeville",
+  "name": "cookeville, TN (TN)",
+  "radius_mi": 35.0,
+  "state": "TN"
+ },
+ "cor": {
+  "bbox": [
+   42.8889,
+   43.9033,
+   -124.8651,
+   -123.4689
+  ],
+  "center": [
+   43.396099,
+   -124.167
+  ],
+  "cl_area": 321,
+  "cl_host": "oregoncoast.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "oregon coast (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "cos": {
+  "bbox": [
+   38.3267,
+   39.3411,
+   -105.4722,
+   -104.1698
+  ],
+  "center": [
+   38.8339,
+   -104.820999
+  ],
+  "cl_area": 210,
+  "cl_host": "cosprings.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CO/Colorado-Springs",
+  "name": "colorado springs (CO)",
+  "radius_mi": 35.0,
+  "state": "CO"
+ },
+ "cou": {
+  "bbox": [
+   38.4445,
+   39.4589,
+   -92.9862,
+   -91.6816
+  ],
+  "center": [
+   38.951698,
+   -92.3339
+  ],
+  "cl_area": 222,
+  "cl_host": "columbiamo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MO/Columbia",
+  "name": "columbia / jeff city (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "crp": {
+  "bbox": [
+   27.2931,
+   28.3075,
+   -97.9695,
+   -96.8227
+  ],
+  "center": [
+   27.800301,
+   -97.396103
+  ],
+  "cl_area": 265,
+  "cl_host": "corpuschristi.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Corpus-Christi",
+  "name": "corpus christi, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "crv": {
+  "bbox": [
+   44.0575,
+   45.0719,
+   -123.973,
+   -122.549
+  ],
+  "center": [
+   44.564701,
+   -123.261002
+  ],
+  "cl_area": 350,
+  "cl_host": "corvallis.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OR/Corvallis",
+  "name": "corvallis/albany (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "crw": {
+  "bbox": [
+   37.8425,
+   38.8569,
+   -82.2796,
+   -80.986
+  ],
+  "center": [
+   38.349701,
+   -81.632797
+  ],
+  "cl_area": 439,
+  "cl_host": "charlestonwv.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WV/Charleston",
+  "name": "charleston, WV (WV)",
+  "radius_mi": 35.0,
+  "state": "WV"
+ },
+ "csd": {
+  "bbox": [
+   44.0441,
+   45.0586,
+   -101.2916,
+   -99.868
+  ],
+  "center": [
+   44.551334,
+   -100.579834
+  ],
+  "cl_area": 681,
+  "cl_host": "csd.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "pierre / central SD (SD)",
+  "radius_mi": 35.0,
+  "state": "SD"
+ },
+ "csg": {
+  "bbox": [
+   31.9536,
+   32.968,
+   -85.589,
+   -84.3866
+  ],
+  "center": [
+   32.4608,
+   -84.987801
+  ],
+  "cl_area": 343,
+  "cl_host": "columbusga.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Columbus",
+  "name": "columbus, GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "cst": {
+  "bbox": [
+   30.1206,
+   31.135,
+   -96.9237,
+   -95.7447
+  ],
+  "center": [
+   30.6278,
+   -96.334198
+  ],
+  "cl_area": 326,
+  "cl_host": "collegestation.craigslist.org",
+  "es_join_score": 0.67,
+  "es_path": null,
+  "name": "college station, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "cvn": {
+  "bbox": [
+   33.8997,
+   34.9142,
+   -103.8149,
+   -102.5853
+  ],
+  "center": [
+   34.40691,
+   -103.200073
+  ],
+  "cl_area": 653,
+  "cl_host": "clovis.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NM/Clovis",
+  "name": "clovis / portales (NM)",
+  "radius_mi": 35.0,
+  "state": "NM"
+ },
+ "dab": {
+  "bbox": [
+   28.7034,
+   29.7178,
+   -81.6043,
+   -80.442
+  ],
+  "center": [
+   29.2106,
+   -81.023102
+  ],
+  "cl_area": 238,
+  "cl_host": "daytona.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Daytona-Beach",
+  "name": "daytona beach (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "dal": {
+  "bbox": [
+   32.2761,
+   33.2905,
+   -97.4033,
+   -96.1967
+  ],
+  "center": [
+   32.783298,
+   -96.800003
+  ],
+  "cl_area": 21,
+  "cl_host": "dallas.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Dallas-Fort-Worth-Arlington",
+  "name": "dallas / fort worth (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "day": {
+  "bbox": [
+   39.2517,
+   40.2661,
+   -84.8515,
+   -83.5319
+  ],
+  "center": [
+   39.7589,
+   -84.191704
+  ],
+  "cl_area": 131,
+  "cl_host": "dayton.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Dayton",
+  "name": "dayton / springfield (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "dbq": {
+  "bbox": [
+   41.9934,
+   43.0078,
+   -91.3524,
+   -89.9764
+  ],
+  "center": [
+   42.500599,
+   -90.664398
+  ],
+  "cl_area": 362,
+  "cl_host": "dubuque.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Dubuque",
+  "name": "dubuque (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "den": {
+  "bbox": [
+   39.232,
+   40.2464,
+   -105.6437,
+   -104.3244
+  ],
+  "center": [
+   39.739201,
+   -104.984001
+  ],
+  "cl_area": 13,
+  "cl_host": "denver.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CO/Denver",
+  "name": "denver, CO (CO)",
+  "radius_mi": 35.0,
+  "state": "CO"
+ },
+ "det": {
+  "bbox": [
+   41.8242,
+   42.8386,
+   -83.732,
+   -82.3596
+  ],
+  "center": [
+   42.331402,
+   -83.045799
+  ],
+  "cl_area": 22,
+  "cl_host": "detroit.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Detroit",
+  "name": "detroit metro (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "dhn": {
+  "bbox": [
+   30.7159,
+   31.7303,
+   -85.9838,
+   -84.7974
+  ],
+  "center": [
+   31.223101,
+   -85.390602
+  ],
+  "cl_area": 467,
+  "cl_host": "dothan.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Dothan",
+  "name": "dothan, AL (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "dil": {
+  "bbox": [
+   39.3331,
+   40.3475,
+   -89.6153,
+   -88.2941
+  ],
+  "center": [
+   39.840302,
+   -88.954697
+  ],
+  "cl_area": 569,
+  "cl_host": "decatur.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IL/Decatur",
+  "name": "decatur, IL (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "dlh": {
+  "bbox": [
+   46.2761,
+   47.2905,
+   -92.8472,
+   -91.3656
+  ],
+  "center": [
+   46.783298,
+   -92.1064
+  ],
+  "cl_area": 255,
+  "cl_host": "duluth.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MN/Duluth",
+  "name": "duluth / superior (MN)",
+  "radius_mi": 35.0,
+  "state": "MN"
+ },
+ "dlw": {
+  "bbox": [
+   38.6385,
+   39.6529,
+   -76.1376,
+   -74.8294
+  ],
+  "center": [
+   39.145699,
+   -75.483498
+  ],
+  "cl_area": 193,
+  "cl_host": "delaware.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "delaware (DE)",
+  "radius_mi": 35.0,
+  "state": "DE"
+ },
+ "dnv": {
+  "bbox": [
+   36.08,
+   37.0944,
+   -80.0361,
+   -78.7727
+  ],
+  "center": [
+   36.5872,
+   -79.404404
+  ],
+  "cl_area": 367,
+  "cl_host": "danville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/VA/Danville",
+  "name": "danville (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "drt": {
+  "bbox": [
+   28.8654,
+   29.8798,
+   -101.4805,
+   -100.3164
+  ],
+  "center": [
+   29.372601,
+   -100.898438
+  ],
+  "cl_area": 647,
+  "cl_host": "delrio.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Del-Rio",
+  "name": "del rio / eagle pass (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "dsm": {
+  "bbox": [
+   41.0934,
+   42.1078,
+   -94.2872,
+   -92.9306
+  ],
+  "center": [
+   41.600601,
+   -93.608902
+  ],
+  "cl_area": 98,
+  "cl_host": "desmoines.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Des-Moines",
+  "name": "des moines, IA (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "eau": {
+  "bbox": [
+   44.3042,
+   45.3186,
+   -92.2133,
+   -90.7833
+  ],
+  "center": [
+   44.811401,
+   -91.498299
+  ],
+  "cl_area": 242,
+  "cl_host": "eauclaire.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/Eau-Claire",
+  "name": "eau claire, WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "eco": {
+  "bbox": [
+   38.725,
+   39.7395,
+   -103.4869,
+   -102.1772
+  ],
+  "center": [
+   39.232254,
+   -102.832031
+  ],
+  "cl_area": 713,
+  "cl_host": "eastco.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "eastern CO (CO)",
+  "radius_mi": 35.0,
+  "state": "CO"
+ },
+ "eid": {
+  "bbox": [
+   42.9457,
+   43.9601,
+   -113.4817,
+   -112.0843
+  ],
+  "center": [
+   43.4529,
+   -112.782997
+  ],
+  "cl_area": 424,
+  "cl_host": "eastidaho.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/ID/Idaho-Falls",
+  "name": "east idaho (ID)",
+  "radius_mi": 35.0,
+  "state": "ID"
+ },
+ "eky": {
+  "bbox": [
+   37.0098,
+   38.0242,
+   -83.4455,
+   -82.1665
+  ],
+  "center": [
+   37.516998,
+   -82.806
+  ],
+  "cl_area": 674,
+  "cl_host": "eastky.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "eastern kentucky (KY)",
+  "radius_mi": 35.0,
+  "state": "KY"
+ },
+ "elk": {
+  "bbox": [
+   40.3252,
+   41.3396,
+   -116.4334,
+   -115.0926
+  ],
+  "center": [
+   40.832401,
+   -115.763
+  ],
+  "cl_area": 652,
+  "cl_host": "elko.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NV/Elko",
+  "name": "elko, NV (NV)",
+  "radius_mi": 35.0,
+  "state": "NV"
+ },
+ "elm": {
+  "bbox": [
+   41.5825,
+   42.5969,
+   -77.4916,
+   -76.1246
+  ],
+  "center": [
+   42.089699,
+   -76.808098
+  ],
+  "cl_area": 453,
+  "cl_host": "elmira.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Elmira",
+  "name": "elmira-corning (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "elp": {
+  "bbox": [
+   31.2514,
+   32.2658,
+   -107.0826,
+   -105.8894
+  ],
+  "center": [
+   31.7586,
+   -106.486
+  ],
+  "cl_area": 132,
+  "cl_host": "elpaso.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/El-Paso",
+  "name": "el paso, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "ena": {
+  "bbox": [
+   60.0472,
+   61.0616,
+   -152.2898,
+   -150.2262
+  ],
+  "center": [
+   60.554401,
+   -151.257996
+  ],
+  "cl_area": 678,
+  "cl_host": "kenai.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "kenai peninsula (AK)",
+  "radius_mi": 35.0,
+  "state": "AK"
+ },
+ "enc": {
+  "bbox": [
+   35.0778,
+   36.0922,
+   -77.9962,
+   -76.7488
+  ],
+  "center": [
+   35.584999,
+   -77.372498
+  ],
+  "cl_area": 335,
+  "cl_host": "eastnc.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "eastern NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "end": {
+  "bbox": [
+   35.9245,
+   36.9389,
+   -98.5258,
+   -97.2648
+  ],
+  "center": [
+   36.431702,
+   -97.895302
+  ],
+  "cl_area": 650,
+  "cl_host": "enid.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "northwest OK (OK)",
+  "radius_mi": 35.0,
+  "state": "OK"
+ },
+ "eor": {
+  "bbox": [
+   44.2493,
+   45.2637,
+   -118.5683,
+   -117.1397
+  ],
+  "center": [
+   44.7565,
+   -117.853996
+  ],
+  "cl_area": 322,
+  "cl_host": "eastoregon.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "east oregon (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "eri": {
+  "bbox": [
+   41.622,
+   42.6364,
+   -80.7693,
+   -79.4013
+  ],
+  "center": [
+   42.1292,
+   -80.085297
+  ],
+  "cl_area": 275,
+  "cl_host": "erie.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Erie",
+  "name": "erie, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "esh": {
+  "bbox": [
+   38.2629,
+   39.2773,
+   -76.7227,
+   -75.4215
+  ],
+  "center": [
+   38.7701,
+   -76.072098
+  ],
+  "cl_area": 328,
+  "cl_host": "easternshore.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MD/Eastern-Shore",
+  "name": "eastern shore (MD)",
+  "radius_mi": 35.0,
+  "state": "MD"
+ },
+ "etx": {
+  "bbox": [
+   31.8439,
+   32.8583,
+   -95.9012,
+   -94.7004
+  ],
+  "center": [
+   32.351101,
+   -95.300797
+  ],
+  "cl_area": 308,
+  "cl_host": "easttexas.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Tyler",
+  "name": "tyler / east TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "eug": {
+  "bbox": [
+   43.545,
+   44.5594,
+   -123.7918,
+   -122.3802
+  ],
+  "center": [
+   44.0522,
+   -123.085999
+  ],
+  "cl_area": 94,
+  "cl_host": "eugene.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OR/Eugene",
+  "name": "eugene, OR (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "evv": {
+  "bbox": [
+   37.4675,
+   38.4819,
+   -88.1993,
+   -86.9123
+  ],
+  "center": [
+   37.974701,
+   -87.555801
+  ],
+  "cl_area": 227,
+  "cl_host": "evansville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Evansville",
+  "name": "evansville, IN (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "ewv": {
+  "bbox": [
+   38.9489,
+   39.9633,
+   -78.6212,
+   -77.3072
+  ],
+  "center": [
+   39.4561,
+   -77.964203
+  ],
+  "cl_area": 444,
+  "cl_host": "martinsburg.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "eastern panhandle (WV)",
+  "radius_mi": 35.0,
+  "state": "WV"
+ },
+ "ezf": {
+  "bbox": [
+   37.7946,
+   38.809,
+   -78.1172,
+   -76.8244
+  ],
+  "center": [
+   38.3018,
+   -77.470802
+  ],
+  "cl_area": 457,
+  "cl_host": "fredericksburg.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "fredericksburg, VA (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "fai": {
+  "bbox": [
+   64.3306,
+   65.345,
+   -148.909,
+   -146.523
+  ],
+  "center": [
+   64.837799,
+   -147.716003
+  ],
+  "cl_area": 677,
+  "cl_host": "fairbanks.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AK/Fairbanks",
+  "name": "fairbanks, AK (AK)",
+  "radius_mi": 35.0,
+  "state": "AK"
+ },
+ "far": {
+  "bbox": [
+   46.37,
+   47.3844,
+   -97.5315,
+   -96.0473
+  ],
+  "center": [
+   46.877201,
+   -96.789398
+  ],
+  "cl_area": 435,
+  "cl_host": "fargo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/ND/Fargo",
+  "name": "fargo / moorhead (ND)",
+  "radius_mi": 35.0,
+  "state": "ND"
+ },
+ "fay": {
+  "bbox": [
+   34.5453,
+   35.5597,
+   -79.4982,
+   -78.259
+  ],
+  "center": [
+   35.052502,
+   -78.878601
+  ],
+  "cl_area": 273,
+  "cl_host": "fayetteville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NC/Fayetteville",
+  "name": "fayetteville, NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "fca": {
+  "bbox": [
+   47.6886,
+   48.703,
+   -115.074,
+   -113.552
+  ],
+  "center": [
+   48.195801,
+   -114.313004
+  ],
+  "cl_area": 662,
+  "cl_host": "kalispell.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MT/Kalispell",
+  "name": "kalispell, MT (MT)",
+  "radius_mi": 35.0,
+  "state": "MT"
+ },
+ "fdk": {
+  "bbox": [
+   38.9071,
+   39.9215,
+   -78.0671,
+   -76.7539
+  ],
+  "center": [
+   39.414299,
+   -77.4105
+  ],
+  "cl_area": 633,
+  "cl_host": "frederick.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MD/Frederick",
+  "name": "frederick, MD (MD)",
+  "radius_mi": 35.0,
+  "state": "MD"
+ },
+ "fgl": {
+  "bbox": [
+   42.0094,
+   43.0239,
+   -77.5046,
+   -76.1282
+  ],
+  "center": [
+   42.516651,
+   -76.816406
+  ],
+  "cl_area": 685,
+  "cl_host": "fingerlakes.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "finger lakes, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "fhu": {
+  "bbox": [
+   31.0472,
+   32.0616,
+   -110.8983,
+   -109.7077
+  ],
+  "center": [
+   31.554399,
+   -110.303001
+  ],
+  "cl_area": 468,
+  "cl_host": "sierravista.craigslist.org",
+  "es_join_score": 0.67,
+  "es_path": null,
+  "name": "sierra vista, AZ (AZ)",
+  "radius_mi": 35.0,
+  "state": "AZ"
+ },
+ "flg": {
+  "bbox": [
+   34.6909,
+   35.7053,
+   -112.2717,
+   -111.0303
+  ],
+  "center": [
+   35.198101,
+   -111.651001
+  ],
+  "cl_area": 244,
+  "cl_host": "flagstaff.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AZ/Flagstaff",
+  "name": "flagstaff / sedona (AZ)",
+  "radius_mi": 35.0,
+  "state": "AZ"
+ },
+ "flo": {
+  "bbox": [
+   33.6881,
+   34.7025,
+   -80.3761,
+   -79.1495
+  ],
+  "center": [
+   34.195301,
+   -79.762802
+  ],
+  "cl_area": 464,
+  "cl_host": "florencesc.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/SC/Florence",
+  "name": "florence, SC (SC)",
+  "radius_mi": 35.0,
+  "state": "SC"
+ },
+ "fmy": {
+  "bbox": [
+   26.1228,
+   27.1372,
+   -82.4174,
+   -81.2826
+  ],
+  "center": [
+   26.629999,
+   -81.849998
+  ],
+  "cl_area": 125,
+  "cl_host": "fortmyers.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "ft myers / SW florida (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "fnm": {
+  "bbox": [
+   36.2209,
+   37.2353,
+   -108.8509,
+   -107.5851
+  ],
+  "center": [
+   36.7281,
+   -108.218002
+  ],
+  "cl_area": 568,
+  "cl_host": "farmington.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NM/Farmington",
+  "name": "farmington, NM (NM)",
+  "radius_mi": 35.0,
+  "state": "NM"
+ },
+ "fnt": {
+  "bbox": [
+   42.5053,
+   43.5197,
+   -84.3812,
+   -82.9938
+  ],
+  "center": [
+   43.012501,
+   -83.6875
+  ],
+  "cl_area": 259,
+  "cl_host": "flint.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Flint",
+  "name": "flint, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "fre": {
+  "bbox": [
+   36.2406,
+   37.255,
+   -120.4041,
+   -119.138
+  ],
+  "center": [
+   36.747799,
+   -119.771004
+  ],
+  "cl_area": 43,
+  "cl_host": "fresno.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Fresno",
+  "name": "fresno / madera (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "fsd": {
+  "bbox": [
+   43.0428,
+   44.0572,
+   -97.4002,
+   -96.0004
+  ],
+  "center": [
+   43.549999,
+   -96.700302
+  ],
+  "cl_area": 679,
+  "cl_host": "siouxfalls.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/SD/Sioux-Falls",
+  "name": "sioux falls / SE SD (SD)",
+  "radius_mi": 35.0,
+  "state": "SD"
+ },
+ "fsm": {
+  "bbox": [
+   34.8786,
+   35.893,
+   -95.0205,
+   -93.7761
+  ],
+  "center": [
+   35.385799,
+   -94.3983
+  ],
+  "cl_area": 358,
+  "cl_host": "fortsmith.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AR/Fort-Smith",
+  "name": "fort smith, AR (AR)",
+  "radius_mi": 35.0,
+  "state": "AR"
+ },
+ "ftc": {
+  "bbox": [
+   40.0781,
+   41.0925,
+   -105.7519,
+   -104.4161
+  ],
+  "center": [
+   40.5853,
+   -105.084
+  ],
+  "cl_area": 287,
+  "cl_host": "fortcollins.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CO/Fort-Collins",
+  "name": "fort collins / north CO (CO)",
+  "radius_mi": 35.0,
+  "state": "CO"
+ },
+ "ftd": {
+  "bbox": [
+   41.9903,
+   43.0047,
+   -94.856,
+   -93.48
+  ],
+  "center": [
+   42.497501,
+   -94.167999
+  ],
+  "cl_area": 693,
+  "cl_host": "fortdodge.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Fort-Dodge",
+  "name": "fort dodge, IA (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "fwa": {
+  "bbox": [
+   40.6234,
+   41.6378,
+   -85.8023,
+   -84.4555
+  ],
+  "center": [
+   41.1306,
+   -85.128899
+  ],
+  "cl_area": 226,
+  "cl_host": "fortwayne.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Fort-Wayne",
+  "name": "fort wayne, IN (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "fyv": {
+  "bbox": [
+   35.5553,
+   36.5697,
+   -94.7847,
+   -93.5297
+  ],
+  "center": [
+   36.0625,
+   -94.157204
+  ],
+  "cl_area": 293,
+  "cl_host": "fayar.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "fayetteville, AR (AR)",
+  "radius_mi": 35.0,
+  "state": "AR"
+ },
+ "gbo": {
+  "bbox": [
+   35.5653,
+   36.5797,
+   -80.4198,
+   -79.1646
+  ],
+  "center": [
+   36.072498,
+   -79.792198
+  ],
+  "cl_area": 61,
+  "cl_host": "greensboro.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "greensboro, NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "gfk": {
+  "bbox": [
+   47.4181,
+   48.4325,
+   -97.7899,
+   -96.2759
+  ],
+  "center": [
+   47.925301,
+   -97.032898
+  ],
+  "cl_area": 667,
+  "cl_host": "grandforks.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/ND/Grand-Forks",
+  "name": "grand forks (ND)",
+  "radius_mi": 35.0,
+  "state": "ND"
+ },
+ "gfl": {
+  "bbox": [
+   42.8023,
+   43.8167,
+   -74.3411,
+   -72.9469
+  ],
+  "center": [
+   43.309502,
+   -73.643997
+  ],
+  "cl_area": 686,
+  "cl_host": "glensfalls.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Glens-Falls",
+  "name": "glens falls, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "gil": {
+  "bbox": [
+   40.4178,
+   41.4322,
+   -99.013,
+   -97.6704
+  ],
+  "center": [
+   40.924999,
+   -98.341698
+  ],
+  "cl_area": 432,
+  "cl_host": "grandisland.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NE/Grand-Island",
+  "name": "grand island, NE (NE)",
+  "radius_mi": 35.0,
+  "state": "NE"
+ },
+ "gjt": {
+  "bbox": [
+   38.5632,
+   39.5776,
+   -109.2054,
+   -107.8986
+  ],
+  "center": [
+   39.0704,
+   -108.552002
+  ],
+  "cl_area": 320,
+  "cl_host": "westslope.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "western slope (CO)",
+  "radius_mi": 35.0,
+  "state": "CO"
+ },
+ "gld": {
+  "bbox": [
+   38.2253,
+   39.2397,
+   -121.4513,
+   -120.1508
+  ],
+  "center": [
+   38.732498,
+   -120.801003
+  ],
+  "cl_area": 373,
+  "cl_host": "goldcountry.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "gold country (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "gls": {
+  "bbox": [
+   28.7739,
+   29.7883,
+   -95.4073,
+   -94.2442
+  ],
+  "center": [
+   29.281099,
+   -94.825798
+  ],
+  "cl_area": 470,
+  "cl_host": "galveston.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "galveston, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "gnv": {
+  "bbox": [
+   29.1442,
+   30.1586,
+   -82.9087,
+   -81.7413
+  ],
+  "center": [
+   29.6514,
+   -82.324997
+  ],
+  "cl_area": 219,
+  "cl_host": "gainesville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Gainesville",
+  "name": "gainesville, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "gpt": {
+  "bbox": [
+   29.86,
+   30.8744,
+   -89.6807,
+   -88.5049
+  ],
+  "center": [
+   30.367201,
+   -89.092796
+  ],
+  "cl_area": 230,
+  "cl_host": "gulfport.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MS/Biloxi",
+  "name": "gulfport / biloxi (MS)",
+  "radius_mi": 35.0,
+  "state": "MS"
+ },
+ "grb": {
+  "bbox": [
+   44.012,
+   45.0264,
+   -88.7311,
+   -87.3083
+  ],
+  "center": [
+   44.519199,
+   -88.019699
+  ],
+  "cl_area": 241,
+  "cl_host": "greenbay.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/Green-Bay",
+  "name": "green bay, WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "grk": {
+  "bbox": [
+   30.6097,
+   31.6241,
+   -98.32,
+   -97.135
+  ],
+  "center": [
+   31.116899,
+   -97.727501
+  ],
+  "cl_area": 327,
+  "cl_host": "killeen.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Killeen-Temple-Fort-Hood",
+  "name": "killeen / temple / ft hood (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "grr": {
+  "bbox": [
+   42.4561,
+   43.4705,
+   -86.3613,
+   -84.9749
+  ],
+  "center": [
+   42.963299,
+   -85.668098
+  ],
+  "cl_area": 129,
+  "cl_host": "grandrapids.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Grand-Rapids",
+  "name": "grand rapids, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "gsp": {
+  "bbox": [
+   34.3453,
+   35.3597,
+   -83.0123,
+   -81.7761
+  ],
+  "center": [
+   34.852501,
+   -82.394203
+  ],
+  "cl_area": 253,
+  "cl_host": "greenville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/SC/Greenville",
+  "name": "greenville / upstate (SC)",
+  "radius_mi": 35.0,
+  "state": "SC"
+ },
+ "gtf": {
+  "bbox": [
+   46.993,
+   48.0074,
+   -112.0518,
+   -110.5502
+  ],
+  "center": [
+   47.500198,
+   -111.301003
+  ],
+  "cl_area": 660,
+  "cl_host": "greatfalls.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MT/Great-Falls",
+  "name": "great falls, MT (MT)",
+  "radius_mi": 35.0,
+  "state": "MT"
+ },
+ "hez": {
+  "bbox": [
+   31.047,
+   32.0614,
+   -91.9828,
+   -90.7922
+  ],
+  "center": [
+   31.554199,
+   -91.387497
+  ],
+  "cl_area": 642,
+  "cl_host": "natchez.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southwest MS (MS)",
+  "radius_mi": 35.0,
+  "state": "MS"
+ },
+ "hhi": {
+  "bbox": [
+   31.6845,
+   32.6989,
+   -81.3427,
+   -80.1439
+  ],
+  "center": [
+   32.1917,
+   -80.743301
+  ],
+  "cl_area": 353,
+  "cl_host": "hiltonhead.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/SC/Hilton-Head-Island-Beaufort",
+  "name": "hilton head (SC)",
+  "radius_mi": 35.0,
+  "state": "SC"
+ },
+ "hky": {
+  "bbox": [
+   35.2259,
+   36.2403,
+   -81.9663,
+   -80.7165
+  ],
+  "center": [
+   35.733101,
+   -81.3414
+  ],
+  "cl_area": 462,
+  "cl_host": "hickory.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "hickory / lenoir (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "hld": {
+  "bbox": [
+   42.2803,
+   43.2947,
+   -86.8001,
+   -85.4177
+  ],
+  "center": [
+   42.787498,
+   -86.108902
+  ],
+  "cl_area": 630,
+  "cl_host": "holland.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "holland, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "hln": {
+  "bbox": [
+   46.0856,
+   47.1001,
+   -112.7603,
+   -111.2839
+  ],
+  "center": [
+   46.592842,
+   -112.022095
+  ],
+  "cl_area": 659,
+  "cl_host": "helena.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MT/Helena",
+  "name": "helena, MT (MT)",
+  "radius_mi": 35.0,
+  "state": "MT"
+ },
+ "hmb": {
+  "bbox": [
+   40.2402,
+   41.2546,
+   -124.6575,
+   -123.3185
+  ],
+  "center": [
+   40.747398,
+   -123.987999
+  ],
+  "cl_area": 189,
+  "cl_host": "humboldt.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "humboldt county (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "hnf": {
+  "bbox": [
+   35.8202,
+   36.8346,
+   -120.2756,
+   -119.0164
+  ],
+  "center": [
+   36.3274,
+   -119.646004
+  ],
+  "cl_area": 709,
+  "cl_host": "hanford.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Hanford-Corcoran",
+  "name": "hanford-corcoran (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "hnl": {
+  "bbox": [
+   20.8042,
+   21.8186,
+   -158.3405,
+   -157.2515
+  ],
+  "center": [
+   21.311399,
+   -157.796005
+  ],
+  "cl_area": 28,
+  "cl_host": "honolulu.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "hawaii (HI)",
+  "radius_mi": 35.0,
+  "state": "HI"
+ },
+ "hou": {
+  "bbox": [
+   29.2559,
+   30.2703,
+   -95.9474,
+   -94.7788
+  ],
+  "center": [
+   29.7631,
+   -95.363098
+  ],
+  "cl_area": 23,
+  "cl_host": "houston.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Houston",
+  "name": "houston, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "hrs": {
+  "bbox": [
+   39.7664,
+   40.7808,
+   -77.5495,
+   -76.2199
+  ],
+  "center": [
+   40.273602,
+   -76.884697
+  ],
+  "cl_area": 166,
+  "cl_host": "harrisburg.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Harrisburg",
+  "name": "harrisburg, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "hsv": {
+  "bbox": [
+   34.2231,
+   35.2375,
+   -87.2033,
+   -85.9689
+  ],
+  "center": [
+   34.730301,
+   -86.586098
+  ],
+  "cl_area": 231,
+  "cl_host": "huntsville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Decatur",
+  "name": "huntsville / decatur (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "htf": {
+  "bbox": [
+   41.2564,
+   42.2708,
+   -73.3656,
+   -72.0056
+  ],
+  "center": [
+   41.763599,
+   -72.6856
+  ],
+  "cl_area": 44,
+  "cl_host": "hartford.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CT/Hartford",
+  "name": "hartford, CT (CT)",
+  "radius_mi": 35.0,
+  "state": "CT"
+ },
+ "hts": {
+  "bbox": [
+   37.912,
+   38.9264,
+   -83.0927,
+   -81.7979
+  ],
+  "center": [
+   38.419201,
+   -82.445297
+  ],
+  "cl_area": 442,
+  "cl_host": "huntington.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "huntington-ashland (WV)",
+  "radius_mi": 35.0,
+  "state": "WV"
+ },
+ "hud": {
+  "bbox": [
+   41.0695,
+   42.0839,
+   -74.4815,
+   -73.1253
+  ],
+  "center": [
+   41.576698,
+   -73.803398
+  ],
+  "cl_area": 249,
+  "cl_host": "hudsonvalley.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Hudson",
+  "name": "hudson valley, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "hum": {
+  "bbox": [
+   29.0886,
+   30.103,
+   -91.3029,
+   -90.1361
+  ],
+  "center": [
+   29.5958,
+   -90.719498
+  ],
+  "cl_area": 643,
+  "cl_host": "houma.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/LA/Houma",
+  "name": "houma, LA (LA)",
+  "radius_mi": 35.0,
+  "state": "LA"
+ },
+ "hvn": {
+  "bbox": [
+   40.8009,
+   41.8153,
+   -73.6039,
+   -72.2533
+  ],
+  "center": [
+   41.308102,
+   -72.928596
+  ],
+  "cl_area": 168,
+  "cl_host": "newhaven.craigslist.org",
+  "es_join_score": 0.67,
+  "es_path": null,
+  "name": "new haven, CT (CT)",
+  "radius_mi": 35.0,
+  "state": "CT"
+ },
+ "iac": {
+  "bbox": [
+   41.1539,
+   42.1683,
+   -92.209,
+   -90.851
+  ],
+  "center": [
+   41.661098,
+   -91.529999
+  ],
+  "cl_area": 339,
+  "cl_host": "iowacity.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Iowa-City",
+  "name": "iowa city, IA (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "imp": {
+  "bbox": [
+   32.4559,
+   33.4703,
+   -116.0926,
+   -114.8834
+  ],
+  "center": [
+   32.9631,
+   -115.487999
+  ],
+  "cl_area": 455,
+  "cl_host": "imperial.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "imperial county (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "ind": {
+  "bbox": [
+   39.2611,
+   40.2755,
+   -86.818,
+   -85.4982
+  ],
+  "center": [
+   39.768299,
+   -86.158096
+  ],
+  "cl_area": 45,
+  "cl_host": "indianapolis.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Indianapolis",
+  "name": "indianapolis (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "inl": {
+  "bbox": [
+   33.5456,
+   34.56,
+   -118.2402,
+   -117.0158
+  ],
+  "center": [
+   34.052799,
+   -117.627998
+  ],
+  "cl_area": 104,
+  "cl_host": "inlandempire.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "inland empire, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "isp": {
+  "bbox": [
+   40.3149,
+   41.3293,
+   -73.82,
+   -72.4794
+  ],
+  "center": [
+   40.822102,
+   -73.149696
+  ],
+  "cl_area": 250,
+  "cl_host": "longisland.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "long island, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "ith": {
+  "bbox": [
+   41.9334,
+   42.9478,
+   -77.1842,
+   -75.8096
+  ],
+  "center": [
+   42.440601,
+   -76.496902
+  ],
+  "cl_area": 201,
+  "cl_host": "ithaca.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Ithaca",
+  "name": "ithaca, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "jan": {
+  "bbox": [
+   31.7914,
+   32.8058,
+   -90.7848,
+   -89.5846
+  ],
+  "center": [
+   32.298599,
+   -90.1847
+  ],
+  "cl_area": 134,
+  "cl_host": "jackson.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MS/Jackson",
+  "name": "jackson, MS (MS)",
+  "radius_mi": 35.0,
+  "state": "MS"
+ },
+ "jax": {
+  "bbox": [
+   29.8247,
+   30.8391,
+   -82.2435,
+   -81.0681
+  ],
+  "center": [
+   30.3319,
+   -81.6558
+  ],
+  "cl_area": 80,
+  "cl_host": "jacksonville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Jacksonville",
+  "name": "jacksonville, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "jbr": {
+  "bbox": [
+   35.335,
+   36.3494,
+   -91.3299,
+   -90.0785
+  ],
+  "center": [
+   35.842201,
+   -90.704201
+  ],
+  "cl_area": 425,
+  "cl_host": "jonesboro.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AR/Jonesboro",
+  "name": "jonesboro, AR (AR)",
+  "radius_mi": 35.0,
+  "state": "AR"
+ },
+ "jfn": {
+  "bbox": [
+   41.3579,
+   42.3723,
+   -81.4709,
+   -80.1087
+  ],
+  "center": [
+   41.865101,
+   -80.789803
+  ],
+  "cl_area": 700,
+  "cl_host": "ashtabula.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Ashtabula",
+  "name": "ashtabula, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "jln": {
+  "bbox": [
+   36.577,
+   37.5914,
+   -95.1489,
+   -93.8773
+  ],
+  "center": [
+   37.084202,
+   -94.5131
+  ],
+  "cl_area": 423,
+  "cl_host": "joplin.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MO/Joplin",
+  "name": "joplin, MO (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "jnu": {
+  "bbox": [
+   57.8484,
+   58.8629,
+   -135.5384,
+   -133.6047
+  ],
+  "center": [
+   58.355629,
+   -134.571533
+  ],
+  "cl_area": 676,
+  "cl_host": "juneau.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southeast alaska (AK)",
+  "radius_mi": 35.0,
+  "state": "AK"
+ },
+ "jvl": {
+  "bbox": [
+   42.1756,
+   43.19,
+   -89.7086,
+   -88.3286
+  ],
+  "center": [
+   42.6828,
+   -89.0186
+  ],
+  "cl_area": 553,
+  "cl_host": "janesville.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "janesville, WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "jxn": {
+  "bbox": [
+   41.7386,
+   42.753,
+   -85.0866,
+   -83.7162
+  ],
+  "center": [
+   42.2458,
+   -84.401398
+  ],
+  "cl_area": 426,
+  "cl_host": "jxn.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Jackson",
+  "name": "jackson, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "jxt": {
+  "bbox": [
+   35.1072,
+   36.1216,
+   -89.4379,
+   -88.1899
+  ],
+  "center": [
+   35.614399,
+   -88.813904
+  ],
+  "cl_area": 558,
+  "cl_host": "jacksontn.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TN/Jackson",
+  "name": "jackson, TN (TN)",
+  "radius_mi": 35.0,
+  "state": "TN"
+ },
+ "jys": {
+  "bbox": [
+   39.7153,
+   40.7297,
+   -74.6765,
+   -73.3479
+  ],
+  "center": [
+   40.2225,
+   -74.012199
+  ],
+  "cl_area": 561,
+  "cl_host": "jerseyshore.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "jersey shore (NJ)",
+  "radius_mi": 35.0,
+  "state": "NJ"
+ },
+ "key": {
+  "bbox": [
+   24.1597,
+   25.1741,
+   -82.1024,
+   -80.986
+  ],
+  "center": [
+   24.666901,
+   -81.544197
+  ],
+  "cl_area": 330,
+  "cl_host": "keys.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "florida keys (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "klf": {
+  "bbox": [
+   41.7177,
+   42.7321,
+   -122.467,
+   -121.097
+  ],
+  "center": [
+   42.224899,
+   -121.781998
+  ],
+  "cl_area": 675,
+  "cl_host": "klamath.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OR/Klamath-Falls",
+  "name": "klamath falls, OR (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "knx": {
+  "bbox": [
+   35.4534,
+   36.4678,
+   -84.5475,
+   -83.2941
+  ],
+  "center": [
+   35.960602,
+   -83.920799
+  ],
+  "cl_area": 202,
+  "cl_host": "knoxville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TN/Knoxville",
+  "name": "knoxville, TN (TN)",
+  "radius_mi": 35.0,
+  "state": "TN"
+ },
+ "kpr": {
+  "bbox": [
+   45.7042,
+   46.7186,
+   -119.869,
+   -118.403
+  ],
+  "center": [
+   46.211399,
+   -119.136002
+  ],
+  "cl_area": 324,
+  "cl_host": "kpr.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WA/Richland-Kennewick-Pasco",
+  "name": "kennewick-pasco-richland (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "krk": {
+  "bbox": [
+   39.6876,
+   40.702,
+   -93.2474,
+   -91.9192
+  ],
+  "center": [
+   40.194801,
+   -92.583298
+  ],
+  "cl_area": 696,
+  "cl_host": "kirksville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MO/Kirksville",
+  "name": "kirksville, MO (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "ksc": {
+  "bbox": [
+   38.5925,
+   39.6069,
+   -95.2319,
+   -93.9247
+  ],
+  "center": [
+   39.099701,
+   -94.5783
+  ],
+  "cl_area": 30,
+  "cl_host": "kansascity.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "kansas city, MO (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "kzo": {
+  "bbox": [
+   41.7845,
+   42.7989,
+   -86.2729,
+   -84.9015
+  ],
+  "center": [
+   42.291698,
+   -85.587196
+  ],
+  "cl_area": 261,
+  "cl_host": "kalamazoo.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "kalamazoo, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "laf": {
+  "bbox": [
+   39.9095,
+   40.9239,
+   -87.5415,
+   -86.2091
+  ],
+  "center": [
+   40.416698,
+   -86.875298
+  ],
+  "cl_area": 360,
+  "cl_host": "tippecanoe.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Lafayette",
+  "name": "lafayette / west lafayette (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "lal": {
+  "bbox": [
+   27.532,
+   28.5464,
+   -82.5247,
+   -81.3753
+  ],
+  "center": [
+   28.0392,
+   -81.949997
+  ],
+  "cl_area": 376,
+  "cl_host": "lakeland.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "lakeland, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "lan": {
+  "bbox": [
+   42.2253,
+   43.2397,
+   -85.2462,
+   -83.865
+  ],
+  "center": [
+   42.732498,
+   -84.555603
+  ],
+  "cl_area": 212,
+  "cl_host": "lansing.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Lansing",
+  "name": "lansing, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "law": {
+  "bbox": [
+   34.1014,
+   35.1158,
+   -99.0063,
+   -97.7737
+  ],
+  "center": [
+   34.608601,
+   -98.389999
+  ],
+  "cl_area": 422,
+  "cl_host": "lawton.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OK/Lawton",
+  "name": "lawton, OK (OK)",
+  "radius_mi": 35.0,
+  "state": "OK"
+ },
+ "lax": {
+  "bbox": [
+   33.545,
+   34.5594,
+   -118.8552,
+   -117.6308
+  ],
+  "center": [
+   34.0522,
+   -118.242996
+  ],
+  "cl_area": 7,
+  "cl_host": "losangeles.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Los-Angeles-Orange-County",
+  "name": "los angeles (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "lbb": {
+  "bbox": [
+   33.0706,
+   34.085,
+   -102.4638,
+   -101.2462
+  ],
+  "center": [
+   33.577801,
+   -101.855003
+  ],
+  "cl_area": 267,
+  "cl_host": "lubbock.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Lubbock",
+  "name": "lubbock, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "lbf": {
+  "bbox": [
+   40.6167,
+   41.6311,
+   -101.4384,
+   -100.0916
+  ],
+  "center": [
+   41.123901,
+   -100.764999
+  ],
+  "cl_area": 668,
+  "cl_host": "northplatte.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NE/North-Platte",
+  "name": "north platte, NE (NE)",
+  "radius_mi": 35.0,
+  "state": "NE"
+ },
+ "lcq": {
+  "bbox": [
+   29.682,
+   30.6964,
+   -83.2263,
+   -82.0527
+  ],
+  "center": [
+   30.189199,
+   -82.639503
+  ],
+  "cl_area": 638,
+  "cl_host": "lakecity.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "north central FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "lcr": {
+  "bbox": [
+   31.8125,
+   32.8269,
+   -107.3652,
+   -106.1648
+  ],
+  "center": [
+   32.319698,
+   -106.764999
+  ],
+  "cl_area": 334,
+  "cl_host": "lascruces.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NM/Las-Cruces",
+  "name": "las cruces, NM (NM)",
+  "radius_mi": 35.0,
+  "state": "NM"
+ },
+ "lex": {
+  "bbox": [
+   37.4815,
+   38.4959,
+   -85.1213,
+   -83.8341
+  ],
+  "center": [
+   37.988701,
+   -84.477699
+  ],
+  "cl_area": 133,
+  "cl_host": "lexington.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KY/Lexington",
+  "name": "lexington, KY (KY)",
+  "radius_mi": 35.0,
+  "state": "KY"
+ },
+ "lft": {
+  "bbox": [
+   29.7067,
+   30.7211,
+   -92.6164,
+   -91.4424
+  ],
+  "center": [
+   30.2139,
+   -92.029404
+  ],
+  "cl_area": 283,
+  "cl_host": "lafayette.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/LA/Lafayette",
+  "name": "lafayette, LA (LA)",
+  "radius_mi": 35.0,
+  "state": "LA"
+ },
+ "lgu": {
+  "bbox": [
+   41.2284,
+   42.2428,
+   -112.5138,
+   -111.1542
+  ],
+  "center": [
+   41.7356,
+   -111.834
+  ],
+  "cl_area": 448,
+  "cl_host": "logan.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/UT/Logan",
+  "name": "logan, UT (UT)",
+  "radius_mi": 35.0,
+  "state": "UT"
+ },
+ "lit": {
+  "bbox": [
+   34.2392,
+   35.2536,
+   -92.9067,
+   -91.6721
+  ],
+  "center": [
+   34.746399,
+   -92.289398
+  ],
+  "cl_area": 100,
+  "cl_host": "littlerock.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AR/Little-Rock",
+  "name": "little rock (AR)",
+  "radius_mi": 35.0,
+  "state": "AR"
+ },
+ "lkc": {
+  "bbox": [
+   29.7075,
+   30.7219,
+   -93.7956,
+   -92.6216
+  ],
+  "center": [
+   30.214701,
+   -93.208603
+  ],
+  "cl_area": 284,
+  "cl_host": "lakecharles.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/LA/Lake-Charles",
+  "name": "lake charles, LA (LA)",
+  "radius_mi": 35.0,
+  "state": "LA"
+ },
+ "lma": {
+  "bbox": [
+   40.2353,
+   41.2497,
+   -84.7748,
+   -83.4358
+  ],
+  "center": [
+   40.7425,
+   -84.105301
+  ],
+  "cl_area": 437,
+  "cl_host": "limaohio.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Lima",
+  "name": "lima / findlay (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "lnk": {
+  "bbox": [
+   40.2928,
+   41.3072,
+   -97.3368,
+   -95.9966
+  ],
+  "center": [
+   40.799999,
+   -96.666702
+  ],
+  "cl_area": 282,
+  "cl_host": "lincoln.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NE/Lincoln",
+  "name": "lincoln, NE (NE)",
+  "radius_mi": 35.0,
+  "state": "NE"
+ },
+ "lns": {
+  "bbox": [
+   39.5306,
+   40.545,
+   -76.9683,
+   -75.6433
+  ],
+  "center": [
+   40.0378,
+   -76.305801
+  ],
+  "cl_area": 279,
+  "cl_host": "lancaster.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Lancaster",
+  "name": "lancaster, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "lou": {
+  "bbox": [
+   37.747,
+   38.7614,
+   -86.4053,
+   -85.1134
+  ],
+  "center": [
+   38.2542,
+   -85.759399
+  ],
+  "cl_area": 58,
+  "cl_host": "louisville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KY/Louisville",
+  "name": "louisville, KY (KY)",
+  "radius_mi": 35.0,
+  "state": "KY"
+ },
+ "loz": {
+  "bbox": [
+   37.6953,
+   38.7097,
+   -93.2718,
+   -91.9808
+  ],
+  "center": [
+   38.202499,
+   -92.626297
+  ],
+  "cl_area": 695,
+  "cl_host": "loz.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "lake of the ozarks (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "lrd": {
+  "bbox": [
+   26.9989,
+   28.0133,
+   -100.0791,
+   -98.9353
+  ],
+  "center": [
+   27.5061,
+   -99.507202
+  ],
+  "cl_area": 271,
+  "cl_host": "laredo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Laredo",
+  "name": "laredo, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "lse": {
+  "bbox": [
+   43.2942,
+   44.3086,
+   -91.9422,
+   -90.5366
+  ],
+  "center": [
+   43.801399,
+   -91.239403
+  ],
+  "cl_area": 363,
+  "cl_host": "lacrosse.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/La-Crosse",
+  "name": "la crosse, WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "lsl": {
+  "bbox": [
+   40.8304,
+   41.8449,
+   -89.7582,
+   -88.4071
+  ],
+  "center": [
+   41.337639,
+   -89.082642
+  ],
+  "cl_area": 698,
+  "cl_host": "lasalle.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "la salle co (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "lvg": {
+  "bbox": [
+   35.6678,
+   36.6822,
+   -115.7644,
+   -114.5076
+  ],
+  "center": [
+   36.174999,
+   -115.136002
+  ],
+  "cl_area": 26,
+  "cl_host": "lasvegas.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NV/Las-Vegas",
+  "name": "las vegas (NV)",
+  "radius_mi": 35.0,
+  "state": "NV"
+ },
+ "lwr": {
+  "bbox": [
+   38.4645,
+   39.4789,
+   -95.8874,
+   -94.5826
+  ],
+  "center": [
+   38.971699,
+   -95.235001
+  ],
+  "cl_area": 347,
+  "cl_host": "lawrence.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KS/Lawrence",
+  "name": "lawrence, KS (KS)",
+  "radius_mi": 35.0,
+  "state": "KS"
+ },
+ "lws": {
+  "bbox": [
+   45.8852,
+   46.8996,
+   -117.7284,
+   -116.2576
+  ],
+  "center": [
+   46.392399,
+   -116.992996
+  ],
+  "cl_area": 654,
+  "cl_host": "lewiston.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/ID/Lewiston",
+  "name": "lewiston / clarkston (ID)",
+  "radius_mi": 35.0,
+  "state": "ID"
+ },
+ "lyn": {
+  "bbox": [
+   36.8965,
+   37.9109,
+   -79.8087,
+   -78.5316
+  ],
+  "center": [
+   37.403702,
+   -79.170197
+  ],
+  "cl_area": 366,
+  "cl_host": "lynchburg.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/VA/Lynchburg",
+  "name": "lynchburg, VA (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "mad": {
+  "bbox": [
+   42.5659,
+   43.5803,
+   -90.0955,
+   -88.7067
+  ],
+  "center": [
+   43.073101,
+   -89.4011
+  ],
+  "cl_area": 165,
+  "cl_host": "madison.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/Madison",
+  "name": "madison, WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "mbs": {
+  "bbox": [
+   42.9122,
+   43.9266,
+   -84.6492,
+   -83.2524
+  ],
+  "center": [
+   43.419399,
+   -83.950798
+  ],
+  "cl_area": 260,
+  "cl_host": "saginaw.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Midland",
+  "name": "saginaw-midland-baycity (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "mca": {
+  "bbox": [
+   25.6959,
+   26.7103,
+   -98.795,
+   -97.6644
+  ],
+  "center": [
+   26.2031,
+   -98.229698
+  ],
+  "cl_area": 263,
+  "cl_host": "mcallen.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/McAllen-Edinburg-Mission",
+  "name": "mcallen / edinburg (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "mcn": {
+  "bbox": [
+   32.3334,
+   33.3478,
+   -84.2362,
+   -83.0288
+  ],
+  "center": [
+   32.840599,
+   -83.6325
+  ],
+  "cl_area": 257,
+  "cl_host": "macon.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Macon",
+  "name": "macon / warner robins (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "mdo": {
+  "bbox": [
+   38.8559,
+   39.8703,
+   -124.0861,
+   -122.7739
+  ],
+  "center": [
+   39.363098,
+   -123.43
+  ],
+  "cl_area": 454,
+  "cl_host": "mendocino.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "mendocino county (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "mdv": {
+  "bbox": [
+   41.1342,
+   42.1486,
+   -80.8303,
+   -79.4727
+  ],
+  "center": [
+   41.641399,
+   -80.151497
+  ],
+  "cl_area": 706,
+  "cl_host": "meadville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Meadville",
+  "name": "meadville, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "mei": {
+  "bbox": [
+   31.8571,
+   32.8715,
+   -89.3042,
+   -88.1032
+  ],
+  "center": [
+   32.3643,
+   -88.703697
+  ],
+  "cl_area": 641,
+  "cl_host": "meridian.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MS/Meridian",
+  "name": "meridian, MS (MS)",
+  "radius_mi": 35.0,
+  "state": "MS"
+ },
+ "mem": {
+  "bbox": [
+   34.6422,
+   35.6566,
+   -90.6693,
+   -89.4285
+  ],
+  "center": [
+   35.149399,
+   -90.048897
+  ],
+  "cl_area": 46,
+  "cl_host": "memphis.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TN/Memphis",
+  "name": "memphis, TN (TN)",
+  "radius_mi": 35.0,
+  "state": "TN"
+ },
+ "mer": {
+  "bbox": [
+   36.795,
+   37.8094,
+   -121.1197,
+   -119.8443
+  ],
+  "center": [
+   37.3022,
+   -120.482002
+  ],
+  "cl_area": 285,
+  "cl_host": "merced.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Merced",
+  "name": "merced, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "mfd": {
+  "bbox": [
+   40.2511,
+   41.2655,
+   -83.1853,
+   -81.8459
+  ],
+  "center": [
+   40.758301,
+   -82.515602
+  ],
+  "cl_area": 436,
+  "cl_host": "mansfield.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Mansfield",
+  "name": "mansfield, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "mfr": {
+  "bbox": [
+   41.8195,
+   42.8339,
+   -123.5601,
+   -122.1879
+  ],
+  "center": [
+   42.326698,
+   -122.874001
+  ],
+  "cl_area": 216,
+  "cl_host": "medford.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OR/Medford-Ashland",
+  "name": "medford-ashland (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "mgm": {
+  "bbox": [
+   31.8595,
+   32.8739,
+   -86.9006,
+   -85.6995
+  ],
+  "center": [
+   32.366699,
+   -86.300003
+  ],
+  "cl_area": 207,
+  "cl_host": "montgomery.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Montgomery",
+  "name": "montgomery, AL (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "mhk": {
+  "bbox": [
+   38.6764,
+   39.6908,
+   -97.2258,
+   -95.917
+  ],
+  "center": [
+   39.183601,
+   -96.571404
+  ],
+  "cl_area": 428,
+  "cl_host": "ksu.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KS/Manhattan",
+  "name": "manhattan, KS (KS)",
+  "radius_mi": 35.0,
+  "state": "KS"
+ },
+ "mhv": {
+  "bbox": [
+   34.7788,
+   35.7932,
+   -114.7044,
+   -113.4616
+  ],
+  "center": [
+   35.285999,
+   -114.083
+  ],
+  "cl_area": 565,
+  "cl_host": "mohave.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "mohave county (AZ)",
+  "radius_mi": 35.0,
+  "state": "AZ"
+ },
+ "mia": {
+  "bbox": [
+   25.2667,
+   26.2811,
+   -80.7572,
+   -79.6306
+  ],
+  "center": [
+   25.773899,
+   -80.193901
+  ],
+  "cl_area": 20,
+  "cl_host": "miami.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "south florida (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "mil": {
+  "bbox": [
+   42.5317,
+   43.5461,
+   -88.6004,
+   -87.2124
+  ],
+  "center": [
+   43.038898,
+   -87.906403
+  ],
+  "cl_area": 47,
+  "cl_host": "milwaukee.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/Milwaukee",
+  "name": "milwaukee, WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "min": {
+  "bbox": [
+   44.4728,
+   45.4872,
+   -93.9807,
+   -92.5465
+  ],
+  "center": [
+   44.98,
+   -93.263603
+  ],
+  "cl_area": 19,
+  "cl_host": "minneapolis.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MN/Minneapolis-St-Paul",
+  "name": "minneapolis / st paul (MN)",
+  "radius_mi": 35.0,
+  "state": "MN"
+ },
+ "mkg": {
+  "bbox": [
+   42.727,
+   43.7414,
+   -86.9445,
+   -85.5521
+  ],
+  "center": [
+   43.2342,
+   -86.248299
+  ],
+  "cl_area": 554,
+  "cl_host": "muskegon.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "muskegon, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "mkt": {
+  "bbox": [
+   43.6564,
+   44.6708,
+   -94.7063,
+   -93.2921
+  ],
+  "center": [
+   44.163601,
+   -93.999199
+  ],
+  "cl_area": 421,
+  "cl_host": "mankato.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MN/Mankato",
+  "name": "mankato, MN (MN)",
+  "radius_mi": 35.0,
+  "state": "MN"
+ },
+ "mlb": {
+  "bbox": [
+   28.1063,
+   29.1207,
+   -81.271,
+   -80.1154
+  ],
+  "center": [
+   28.613501,
+   -80.693199
+  ],
+  "cl_area": 331,
+  "cl_host": "spacecoast.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "space coast, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "mli": {
+  "bbox": [
+   41.0041,
+   42.0185,
+   -91.2718,
+   -89.917
+  ],
+  "center": [
+   41.511299,
+   -90.594398
+  ],
+  "cl_area": 307,
+  "cl_host": "quadcities.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "quad cities, IA/IL (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "mlk": {
+  "bbox": [
+   46.6229,
+   47.6373,
+   -120.0236,
+   -118.5324
+  ],
+  "center": [
+   47.1301,
+   -119.278
+  ],
+  "cl_area": 655,
+  "cl_host": "moseslake.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WA/Moses-Lake",
+  "name": "moses lake, WA (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "mlu": {
+  "bbox": [
+   32.0031,
+   33.0175,
+   -92.6965,
+   -91.4935
+  ],
+  "center": [
+   32.5103,
+   -92.095001
+  ],
+  "cl_area": 563,
+  "cl_host": "monroe.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/LA/Monroe",
+  "name": "monroe, LA (LA)",
+  "radius_mi": 35.0,
+  "state": "LA"
+ },
+ "mml": {
+  "bbox": [
+   43.94,
+   44.9544,
+   -96.4983,
+   -95.0773
+  ],
+  "center": [
+   44.447201,
+   -95.787804
+  ],
+  "cl_area": 665,
+  "cl_host": "marshall.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southwest MN (MN)",
+  "radius_mi": 35.0,
+  "state": "MN"
+ },
+ "mne": {
+  "bbox": [
+   44.186,
+   45.2004,
+   -70.0481,
+   -68.6211
+  ],
+  "center": [
+   44.693199,
+   -69.334602
+  ],
+  "cl_area": 169,
+  "cl_host": "maine.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "maine (ME)",
+  "radius_mi": 35.0,
+  "state": "ME"
+ },
+ "mnr": {
+  "bbox": [
+   41.4088,
+   42.4232,
+   -84.0794,
+   -82.716
+  ],
+  "center": [
+   41.916,
+   -83.397697
+  ],
+  "cl_area": 629,
+  "cl_host": "monroemi.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Monroe",
+  "name": "monroe, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "mnt": {
+  "bbox": [
+   46.5928,
+   47.6072,
+   -105.4452,
+   -103.9548
+  ],
+  "center": [
+   47.1,
+   -104.7
+  ],
+  "cl_area": 192,
+  "cl_host": "montana.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "eastern montana (MT)",
+  "radius_mi": 35.0,
+  "state": "MT"
+ },
+ "mob": {
+  "bbox": [
+   30.187,
+   31.2014,
+   -88.633,
+   -87.4532
+  ],
+  "center": [
+   30.694201,
+   -88.043098
+  ],
+  "cl_area": 200,
+  "cl_host": "mobile.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Mobile",
+  "name": "mobile, AL (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "mod": {
+  "bbox": [
+   37.132,
+   38.1464,
+   -121.6366,
+   -120.3554
+  ],
+  "center": [
+   37.639198,
+   -120.996002
+  ],
+  "cl_area": 96,
+  "cl_host": "modesto.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Modesto",
+  "name": "modesto, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "msc": {
+  "bbox": [
+   42.6464,
+   43.6608,
+   -93.8963,
+   -92.5057
+  ],
+  "center": [
+   43.153599,
+   -93.200996
+  ],
+  "cl_area": 692,
+  "cl_host": "masoncity.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Mason-City",
+  "name": "mason city, IA (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "msl": {
+  "bbox": [
+   34.2925,
+   35.3069,
+   -88.2949,
+   -87.0595
+  ],
+  "center": [
+   34.799702,
+   -87.6772
+  ],
+  "cl_area": 560,
+  "cl_host": "shoals.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Florence",
+  "name": "florence / muscle shoals (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "mso": {
+  "bbox": [
+   46.3649,
+   47.3793,
+   -114.736,
+   -113.252
+  ],
+  "center": [
+   46.872101,
+   -113.994003
+  ],
+  "cl_area": 656,
+  "cl_host": "missoula.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MT/Missoula",
+  "name": "missoula, MT (MT)",
+  "radius_mi": 35.0,
+  "state": "MT"
+ },
+ "mtb": {
+  "bbox": [
+   36.0931,
+   37.1075,
+   -122.5258,
+   -121.2622
+  ],
+  "center": [
+   36.6003,
+   -121.893997
+  ],
+  "cl_area": 102,
+  "cl_host": "monterey.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "monterey bay (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "mto": {
+  "bbox": [
+   38.9759,
+   39.9903,
+   -89.03,
+   -87.7156
+  ],
+  "center": [
+   39.483101,
+   -88.372803
+  ],
+  "cl_area": 699,
+  "cl_host": "mattoon.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IL/Charleston-Mattoon",
+  "name": "mattoon-charleston (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "mun": {
+  "bbox": [
+   39.6861,
+   40.7005,
+   -86.0504,
+   -84.7224
+  ],
+  "center": [
+   40.193298,
+   -85.386398
+  ],
+  "cl_area": 361,
+  "cl_host": "muncie.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Anderson",
+  "name": "muncie / anderson (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "mvw": {
+  "bbox": [
+   47.8773,
+   48.8917,
+   -123.1208,
+   -121.5932
+  ],
+  "center": [
+   48.384499,
+   -122.357002
+  ],
+  "cl_area": 461,
+  "cl_host": "skagit.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "skagit / island / SJI (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "myr": {
+  "bbox": [
+   33.1817,
+   34.1961,
+   -79.4965,
+   -78.2773
+  ],
+  "center": [
+   33.6889,
+   -78.886902
+  ],
+  "cl_area": 254,
+  "cl_host": "myrtlebeach.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/SC/Myrtle-Beach",
+  "name": "myrtle beach, SC (SC)",
+  "radius_mi": 35.0,
+  "state": "SC"
+ },
+ "nct": {
+  "bbox": [
+   41.4073,
+   42.4217,
+   -73.9578,
+   -72.5944
+  ],
+  "center": [
+   41.914501,
+   -73.2761
+  ],
+  "cl_area": 354,
+  "cl_host": "nwct.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "northwest CT (CT)",
+  "radius_mi": 35.0,
+  "state": "CT"
+ },
+ "ndk": {
+  "bbox": [
+   46.9928,
+   48.0072,
+   -101.2508,
+   -99.7492
+  ],
+  "center": [
+   47.5,
+   -100.5
+  ],
+  "cl_area": 196,
+  "cl_host": "nd.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "north dakota (ND)",
+  "radius_mi": 35.0,
+  "state": "ND"
+ },
+ "nfk": {
+  "bbox": [
+   36.3328,
+   37.3472,
+   -76.9038,
+   -75.6362
+  ],
+  "center": [
+   36.84,
+   -76.269997
+  ],
+  "cl_area": 48,
+  "cl_host": "norfolk.craigslist.org",
+  "es_join_score": 0.33,
+  "es_path": null,
+  "name": "norfolk / hampton roads (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "nhm": {
+  "bbox": [
+   43.1469,
+   44.1613,
+   -72.2653,
+   -70.8631
+  ],
+  "center": [
+   43.654099,
+   -71.564201
+  ],
+  "cl_area": 198,
+  "cl_host": "nh.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "new hampshire (NH)",
+  "radius_mi": 35.0,
+  "state": "NH"
+ },
+ "njy": {
+  "bbox": [
+   40.4028,
+   41.4172,
+   -74.8442,
+   -73.5018
+  ],
+  "center": [
+   40.91,
+   -74.172997
+  ],
+  "cl_area": 170,
+  "cl_host": "newjersey.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NJ/Northern-New-Jersey",
+  "name": "north jersey (NJ)",
+  "radius_mi": 35.0,
+  "state": "NJ"
+ },
+ "nlo": {
+  "bbox": [
+   40.8369,
+   41.8513,
+   -72.7792,
+   -71.428
+  ],
+  "center": [
+   41.344101,
+   -72.1036
+  ],
+  "cl_area": 281,
+  "cl_host": "newlondon.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "eastern CT (CT)",
+  "radius_mi": 35.0,
+  "state": "CT"
+ },
+ "nmi": {
+  "bbox": [
+   43.9521,
+   44.9665,
+   -85.5252,
+   -84.1038
+  ],
+  "center": [
+   44.459301,
+   -84.814499
+  ],
+  "cl_area": 309,
+  "cl_host": "nmi.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "northern michigan (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "nms": {
+  "bbox": [
+   33.8516,
+   34.866,
+   -90.1406,
+   -88.9116
+  ],
+  "center": [
+   34.358799,
+   -89.5261
+  ],
+  "cl_area": 375,
+  "cl_host": "northmiss.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "north mississippi (MS)",
+  "radius_mi": 35.0,
+  "state": "MS"
+ },
+ "nor": {
+  "bbox": [
+   29.4656,
+   30.48,
+   -90.6446,
+   -89.4734
+  ],
+  "center": [
+   29.972799,
+   -90.058998
+  ],
+  "cl_area": 31,
+  "cl_host": "neworleans.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/LA/New-Orleans",
+  "name": "new orleans (LA)",
+  "radius_mi": 35.0,
+  "state": "LA"
+ },
+ "nph": {
+  "bbox": [
+   39.9429,
+   40.9573,
+   -82.1331,
+   -80.7999
+  ],
+  "center": [
+   40.4501,
+   -81.466499
+  ],
+  "cl_area": 703,
+  "cl_host": "tuscarawas.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "tuscarawas co (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "nsh": {
+  "bbox": [
+   35.6586,
+   36.673,
+   -87.4127,
+   -86.1561
+  ],
+  "center": [
+   36.165798,
+   -86.784401
+  ],
+  "cl_area": 32,
+  "cl_host": "nashville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TN/Nashville",
+  "name": "nashville, TN (TN)",
+  "radius_mi": 35.0,
+  "state": "TN"
+ },
+ "nwg": {
+  "bbox": [
+   33.9928,
+   35.0072,
+   -85.5575,
+   -84.3265
+  ],
+  "center": [
+   34.5,
+   -84.942001
+  ],
+  "cl_area": 636,
+  "cl_host": "nwga.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "northwest GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "nwi": {
+  "bbox": [
+   45.1317,
+   46.1461,
+   -90.138,
+   -88.687
+  ],
+  "center": [
+   45.638901,
+   -89.412498
+  ],
+  "cl_area": 631,
+  "cl_host": "northernwi.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "northern WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "nwk": {
+  "bbox": [
+   38.5887,
+   39.6032,
+   -101.1565,
+   -99.8493
+  ],
+  "center": [
+   39.095963,
+   -100.50293
+  ],
+  "cl_area": 688,
+  "cl_host": "nwks.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "northwest KS (KS)",
+  "radius_mi": 35.0,
+  "state": "KS"
+ },
+ "nyc": {
+  "bbox": [
+   40.207,
+   41.2214,
+   -74.6756,
+   -73.3372
+  ],
+  "center": [
+   40.714199,
+   -74.006401
+  ],
+  "cl_area": 3,
+  "cl_host": "newyork.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/New-York",
+  "name": "new york city (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "oaj": {
+  "bbox": [
+   34.2516,
+   35.266,
+   -78.0418,
+   -76.807
+  ],
+  "center": [
+   34.758801,
+   -77.4244
+  ],
+  "cl_area": 634,
+  "cl_host": "onslow.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NC/Jacksonville",
+  "name": "jacksonville, NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "obx": {
+  "bbox": [
+   35.5247,
+   36.5391,
+   -76.3038,
+   -75.0494
+  ],
+  "center": [
+   36.031898,
+   -75.676598
+  ],
+  "cl_area": 336,
+  "cl_host": "outerbanks.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "outer banks (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "oca": {
+  "bbox": [
+   28.6797,
+   29.6941,
+   -82.7213,
+   -81.5593
+  ],
+  "center": [
+   29.186899,
+   -82.140297
+  ],
+  "cl_area": 333,
+  "cl_host": "ocala.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Ocala",
+  "name": "ocala, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "och": {
+  "bbox": [
+   31.097,
+   32.1115,
+   -95.2497,
+   -94.0585
+  ],
+  "center": [
+   31.604271,
+   -94.654083
+  ],
+  "cl_area": 645,
+  "cl_host": "nacogdoches.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "deep east texas (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "odm": {
+  "bbox": [
+   31.3384,
+   32.3528,
+   -102.9641,
+   -101.7699
+  ],
+  "center": [
+   31.8456,
+   -102.366997
+  ],
+  "cl_area": 268,
+  "cl_host": "odessa.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Midland",
+  "name": "odessa / midland (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "ogd": {
+  "bbox": [
+   40.7159,
+   41.7303,
+   -112.6474,
+   -111.2986
+  ],
+  "center": [
+   41.223099,
+   -111.973
+  ],
+  "cl_area": 351,
+  "cl_host": "ogden.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/UT/Ogden-Clearfield",
+  "name": "ogden-clearfield (UT)",
+  "radius_mi": 35.0,
+  "state": "UT"
+ },
+ "ohu": {
+  "bbox": [
+   38.822,
+   39.8364,
+   -82.7572,
+   -81.4456
+  ],
+  "center": [
+   39.329201,
+   -82.101402
+  ],
+  "cl_area": 438,
+  "cl_host": "athensohio.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Athens",
+  "name": "athens, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "okc": {
+  "bbox": [
+   34.9603,
+   35.9747,
+   -98.1389,
+   -96.8933
+  ],
+  "center": [
+   35.467499,
+   -97.516098
+  ],
+  "cl_area": 54,
+  "cl_host": "oklahomacity.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OK/Oklahoma-City",
+  "name": "oklahoma city (OK)",
+  "radius_mi": 35.0,
+  "state": "OK"
+ },
+ "okk": {
+  "bbox": [
+   39.9792,
+   40.9936,
+   -86.8005,
+   -85.4667
+  ],
+  "center": [
+   40.486401,
+   -86.133598
+  ],
+  "cl_area": 672,
+  "cl_host": "kokomo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Kokomo",
+  "name": "kokomo, IN (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "okv": {
+  "bbox": [
+   38.6711,
+   39.6855,
+   -78.821,
+   -77.5122
+  ],
+  "center": [
+   39.178299,
+   -78.166603
+  ],
+  "cl_area": 711,
+  "cl_host": "winchester.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/VA/Winchester",
+  "name": "winchester, VA (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "olp": {
+  "bbox": [
+   47.2911,
+   48.3055,
+   -124.3731,
+   -122.8629
+  ],
+  "center": [
+   47.798302,
+   -123.617996
+  ],
+  "cl_area": 466,
+  "cl_host": "olympic.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "olympic peninsula (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "oma": {
+  "bbox": [
+   40.7514,
+   41.7658,
+   -96.6123,
+   -95.2627
+  ],
+  "center": [
+   41.258598,
+   -95.9375
+  ],
+  "cl_area": 55,
+  "cl_host": "omaha.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "omaha / council bluffs (NE)",
+  "radius_mi": 35.0,
+  "state": "NE"
+ },
+ "onh": {
+  "bbox": [
+   41.9405,
+   42.955,
+   -75.757,
+   -74.3822
+  ],
+  "center": [
+   42.447781,
+   -75.06958
+  ],
+  "cl_area": 684,
+  "cl_host": "oneonta.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Oneonta",
+  "name": "oneonta, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "orc": {
+  "bbox": [
+   33.2243,
+   34.2387,
+   -118.4719,
+   -117.2521
+  ],
+  "center": [
+   33.731499,
+   -117.862
+  ],
+  "cl_area": 103,
+  "cl_host": "orangecounty.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "orange county, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "orl": {
+  "bbox": [
+   28.0309,
+   29.0453,
+   -81.9568,
+   -80.802
+  ],
+  "center": [
+   28.538099,
+   -81.379402
+  ],
+  "cl_area": 39,
+  "cl_host": "orlando.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Orlando",
+  "name": "orlando, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "osu": {
+  "bbox": [
+   35.6084,
+   36.6228,
+   -97.686,
+   -96.4302
+  ],
+  "center": [
+   36.115601,
+   -97.058098
+  ],
+  "cl_area": 433,
+  "cl_host": "stillwater.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OK/Stillwater",
+  "name": "stillwater, OK (OK)",
+  "radius_mi": 35.0,
+  "state": "OK"
+ },
+ "otu": {
+  "bbox": [
+   40.5003,
+   41.5147,
+   -93.081,
+   -91.7366
+  ],
+  "center": [
+   41.0075,
+   -92.408798
+  ],
+  "cl_area": 691,
+  "cl_host": "ottumwa.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southeast IA (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "owb": {
+  "bbox": [
+   37.267,
+   38.2814,
+   -87.755,
+   -86.4716
+  ],
+  "center": [
+   37.7742,
+   -87.113297
+  ],
+  "cl_area": 673,
+  "cl_host": "owensboro.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KY/Owensboro",
+  "name": "owensboro, KY (KY)",
+  "radius_mi": 35.0,
+  "state": "KY"
+ },
+ "oxr": {
+  "bbox": [
+   33.7698,
+   34.7842,
+   -119.6589,
+   -118.4311
+  ],
+  "center": [
+   34.277,
+   -119.044998
+  ],
+  "cl_area": 208,
+  "cl_host": "ventura.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Ventura",
+  "name": "ventura county (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "pdx": {
+  "bbox": [
+   45.0164,
+   46.0308,
+   -123.399,
+   -121.951
+  ],
+  "center": [
+   45.523602,
+   -122.675003
+  ],
+  "cl_area": 9,
+  "cl_host": "portland.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "portland, OR (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "pfn": {
+  "bbox": [
+   29.6514,
+   30.6658,
+   -86.247,
+   -85.0736
+  ],
+  "center": [
+   30.1586,
+   -85.660301
+  ],
+  "cl_area": 562,
+  "cl_host": "panamacity.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Panama-City",
+  "name": "panama city, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "phi": {
+  "bbox": [
+   39.445,
+   40.4594,
+   -75.8259,
+   -74.5025
+  ],
+  "center": [
+   39.952202,
+   -75.1642
+  ],
+  "cl_area": 17,
+  "cl_host": "philadelphia.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Philadelphia",
+  "name": "philadelphia (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "phn": {
+  "bbox": [
+   42.4636,
+   43.478,
+   -83.1182,
+   -81.7318
+  ],
+  "center": [
+   42.970798,
+   -82.425003
+  ],
+  "cl_area": 555,
+  "cl_host": "porthuron.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MI/Port-Huron",
+  "name": "port huron, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "phx": {
+  "bbox": [
+   32.9411,
+   33.9555,
+   -112.6809,
+   -111.4651
+  ],
+  "center": [
+   33.448299,
+   -112.072998
+  ],
+  "cl_area": 18,
+  "cl_host": "phoenix.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AZ/Phoenix",
+  "name": "phoenix, AZ (AZ)",
+  "radius_mi": 35.0,
+  "state": "AZ"
+ },
+ "pia": {
+  "bbox": [
+   40.1864,
+   41.2008,
+   -90.2579,
+   -88.9199
+  ],
+  "center": [
+   40.6936,
+   -89.588898
+  ],
+  "cl_area": 224,
+  "cl_host": "peoria.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IL/Peoria",
+  "name": "peoria, IL (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "pit": {
+  "bbox": [
+   39.9334,
+   40.9478,
+   -80.6626,
+   -79.3296
+  ],
+  "center": [
+   40.440601,
+   -79.996101
+  ],
+  "cl_area": 33,
+  "cl_host": "pittsburgh.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Pittsburgh",
+  "name": "pittsburgh, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "pkb": {
+  "bbox": [
+   38.7595,
+   39.7739,
+   -82.2169,
+   -80.9065
+  ],
+  "center": [
+   39.266701,
+   -81.561699
+  ],
+  "cl_area": 441,
+  "cl_host": "parkersburg.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WV/Parkersburg",
+  "name": "parkersburg-marietta (WV)",
+  "radius_mi": 35.0,
+  "state": "WV"
+ },
+ "plb": {
+  "bbox": [
+   44.1922,
+   45.2066,
+   -74.1669,
+   -72.7397
+  ],
+  "center": [
+   44.699402,
+   -73.4533
+  ],
+  "cl_area": 338,
+  "cl_host": "plattsburgh.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Plattsburgh",
+  "name": "plattsburgh-adirondacks (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "plm": {
+  "bbox": [
+   46.2253,
+   47.2397,
+   -117.9121,
+   -116.4319
+  ],
+  "center": [
+   46.732498,
+   -117.171997
+  ],
+  "cl_area": 368,
+  "cl_host": "pullman.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WA/Pullman",
+  "name": "pullman / moscow (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "pns": {
+  "bbox": [
+   29.9139,
+   30.9283,
+   -87.8051,
+   -86.6287
+  ],
+  "center": [
+   30.421101,
+   -87.216904
+  ],
+  "cl_area": 203,
+  "cl_host": "pensacola.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Pensacola",
+  "name": "pensacola, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "poc": {
+  "bbox": [
+   40.7414,
+   41.7559,
+   -75.9233,
+   -74.574
+  ],
+  "center": [
+   41.248611,
+   -75.248611
+  ],
+  "cl_area": 356,
+  "cl_host": "poconos.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "poconos (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "prc": {
+  "bbox": [
+   34.0328,
+   35.0472,
+   -113.0838,
+   -111.8522
+  ],
+  "center": [
+   34.540001,
+   -112.468002
+  ],
+  "cl_area": 419,
+  "cl_host": "prescott.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AZ/Prescott",
+  "name": "prescott, AZ (AZ)",
+  "radius_mi": 35.0,
+  "state": "AZ"
+ },
+ "prv": {
+  "bbox": [
+   41.323,
+   42.3374,
+   -72.0899,
+   -70.7283
+  ],
+  "center": [
+   41.8302,
+   -71.409103
+  ],
+  "cl_area": 38,
+  "cl_host": "providence.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "rhode island (RI)",
+  "radius_mi": 35.0,
+  "state": "RI"
+ },
+ "psl": {
+  "bbox": [
+   26.7236,
+   27.738,
+   -80.7968,
+   -79.6558
+  ],
+  "center": [
+   27.230801,
+   -80.226303
+  ],
+  "cl_area": 332,
+  "cl_host": "treasure.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "treasure coast, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "psp": {
+  "bbox": [
+   33.3231,
+   34.3375,
+   -117.1546,
+   -115.9334
+  ],
+  "center": [
+   33.830299,
+   -116.543999
+  ],
+  "cl_area": 209,
+  "cl_host": "palmsprings.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Palm-Springs",
+  "name": "palm springs, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "psu": {
+  "bbox": [
+   40.2861,
+   41.3005,
+   -78.5303,
+   -77.1903
+  ],
+  "center": [
+   40.793301,
+   -77.860298
+  ],
+  "cl_area": 277,
+  "cl_host": "pennstate.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/State-College",
+  "name": "state college, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "ptd": {
+  "bbox": [
+   44.1614,
+   45.1759,
+   -75.7114,
+   -74.2849
+  ],
+  "center": [
+   44.668652,
+   -74.998169
+  ],
+  "cl_area": 683,
+  "cl_host": "potsdam.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "potsdam-canton-massena (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "pub": {
+  "bbox": [
+   37.7472,
+   38.7616,
+   -105.255,
+   -103.963
+  ],
+  "center": [
+   38.254398,
+   -104.609001
+  ],
+  "cl_area": 315,
+  "cl_host": "pueblo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CO/Pueblo",
+  "name": "pueblo, CO (CO)",
+  "radius_mi": 35.0,
+  "state": "CO"
+ },
+ "pvu": {
+  "bbox": [
+   39.7267,
+   40.7411,
+   -112.3224,
+   -110.9936
+  ],
+  "center": [
+   40.233898,
+   -111.657997
+  ],
+  "cl_area": 292,
+  "cl_host": "provo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/UT/Provo-Orem",
+  "name": "provo / orem (UT)",
+  "radius_mi": 35.0,
+  "state": "UT"
+ },
+ "qcy": {
+  "bbox": [
+   39.4278,
+   40.4423,
+   -92.0513,
+   -90.7282
+  ],
+  "center": [
+   39.935013,
+   -91.389771
+  ],
+  "cl_area": 697,
+  "cl_host": "quincy.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "western IL (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "rac": {
+  "bbox": [
+   42.0775,
+   43.0919,
+   -88.51,
+   -87.1322
+  ],
+  "center": [
+   42.584702,
+   -87.821098
+  ],
+  "cl_area": 552,
+  "cl_host": "racine.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/Kenosha",
+  "name": "kenosha-racine (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "ral": {
+  "bbox": [
+   35.2647,
+   36.2791,
+   -79.2641,
+   -78.0137
+  ],
+  "center": [
+   35.7719,
+   -78.638901
+  ],
+  "cl_area": 36,
+  "cl_host": "raleigh.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NC/Raleigh",
+  "name": "raleigh / durham / CH (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "rap": {
+  "bbox": [
+   43.5733,
+   44.5877,
+   -103.9371,
+   -102.5249
+  ],
+  "center": [
+   44.080502,
+   -103.231003
+  ],
+  "cl_area": 680,
+  "cl_host": "rapidcity.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/SD/Rapid-City",
+  "name": "rapid city / west SD (SD)",
+  "radius_mi": 35.0,
+  "state": "SD"
+ },
+ "rbg": {
+  "bbox": [
+   42.7095,
+   43.7239,
+   -124.037,
+   -122.645
+  ],
+  "center": [
+   43.216702,
+   -123.341003
+  ],
+  "cl_area": 459,
+  "cl_host": "roseburg.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OR/Roseburg",
+  "name": "roseburg, OR (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "rck": {
+  "bbox": [
+   38.6845,
+   39.6989,
+   -107.4792,
+   -106.1702
+  ],
+  "center": [
+   39.1917,
+   -106.824699
+  ],
+  "cl_area": 288,
+  "cl_host": "rockies.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "high rockies (CO)",
+  "radius_mi": 35.0,
+  "state": "CO"
+ },
+ "rcs": {
+  "bbox": [
+   42.6475,
+   43.6619,
+   -78.3111,
+   -76.9205
+  ],
+  "center": [
+   43.154701,
+   -77.615799
+  ],
+  "cl_area": 126,
+  "cl_host": "rochester.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Rochester",
+  "name": "rochester, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "rdd": {
+  "bbox": [
+   40.0795,
+   41.0939,
+   -123.0589,
+   -121.7231
+  ],
+  "center": [
+   40.5867,
+   -122.390999
+  ],
+  "cl_area": 188,
+  "cl_host": "redding.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Redding",
+  "name": "redding, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "rea": {
+  "bbox": [
+   39.8284,
+   40.8428,
+   -76.5926,
+   -75.2618
+  ],
+  "center": [
+   40.335602,
+   -75.9272
+  ],
+  "cl_area": 278,
+  "cl_host": "reading.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Reading",
+  "name": "reading, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "rfd": {
+  "bbox": [
+   41.7639,
+   42.7783,
+   -89.7794,
+   -88.4084
+  ],
+  "center": [
+   42.271099,
+   -89.093903
+  ],
+  "cl_area": 223,
+  "cl_host": "rockford.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IL/Rockford",
+  "name": "rockford, IL (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "ric": {
+  "bbox": [
+   37.0311,
+   38.0455,
+   -78.1012,
+   -76.8218
+  ],
+  "center": [
+   37.5383,
+   -77.461502
+  ],
+  "cl_area": 60,
+  "cl_host": "richmond.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/VA/Richmond",
+  "name": "richmond, VA (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "rin": {
+  "bbox": [
+   39.3224,
+   40.3369,
+   -85.5512,
+   -84.2302
+  ],
+  "center": [
+   39.829632,
+   -84.890671
+  ],
+  "cl_area": 671,
+  "cl_host": "richmondin.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Richmond",
+  "name": "richmond, IN (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "rmn": {
+  "bbox": [
+   43.5145,
+   44.5289,
+   -93.1751,
+   -91.7643
+  ],
+  "center": [
+   44.021702,
+   -92.469704
+  ],
+  "cl_area": 316,
+  "cl_host": "rmn.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MN/Rochester",
+  "name": "rochester, MN (MN)",
+  "radius_mi": 35.0,
+  "state": "MN"
+ },
+ "rno": {
+  "bbox": [
+   39.0225,
+   40.0369,
+   -120.4707,
+   -119.1553
+  ],
+  "center": [
+   39.529701,
+   -119.813004
+  ],
+  "cl_area": 92,
+  "cl_host": "reno.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NV/Reno",
+  "name": "reno / tahoe (NV)",
+  "radius_mi": 35.0,
+  "state": "NV"
+ },
+ "roa": {
+  "bbox": [
+   36.7669,
+   37.7813,
+   -80.5794,
+   -79.3046
+  ],
+  "center": [
+   37.274101,
+   -79.942001
+  ],
+  "cl_area": 289,
+  "cl_host": "roanoke.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/VA/Roanoke",
+  "name": "roanoke, VA (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "row": {
+  "bbox": [
+   32.887,
+   33.9014,
+   -105.1296,
+   -103.9145
+  ],
+  "center": [
+   33.394199,
+   -104.522003
+  ],
+  "cl_area": 420,
+  "cl_host": "roswell.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NM/Roswell",
+  "name": "roswell / carlsbad (NM)",
+  "radius_mi": 35.0,
+  "state": "NM"
+ },
+ "sac": {
+  "bbox": [
+   38.0745,
+   39.0889,
+   -122.1419,
+   -120.8441
+  ],
+  "center": [
+   38.581699,
+   -121.492996
+  ],
+  "cl_area": 12,
+  "cl_host": "sacramento.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Sacramento",
+  "name": "sacramento (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "saf": {
+  "bbox": [
+   35.1797,
+   36.1941,
+   -106.5615,
+   -105.3125
+  ],
+  "center": [
+   35.686901,
+   -105.936996
+  ],
+  "cl_area": 218,
+  "cl_host": "santafe.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NM/Santa-Fe",
+  "name": "santa fe / taos (NM)",
+  "radius_mi": 35.0,
+  "state": "NM"
+ },
+ "sat": {
+  "bbox": [
+   28.9167,
+   29.9311,
+   -99.0757,
+   -97.9109
+  ],
+  "center": [
+   29.423901,
+   -98.493301
+  ],
+  "cl_area": 53,
+  "cl_host": "sanantonio.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/San-Antonio",
+  "name": "san antonio (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "sav": {
+  "bbox": [
+   31.5435,
+   32.5579,
+   -81.7023,
+   -80.5053
+  ],
+  "center": [
+   32.050701,
+   -81.103798
+  ],
+  "cl_area": 205,
+  "cl_host": "savannah.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Savannah",
+  "name": "savannah / hinesville (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "sba": {
+  "bbox": [
+   33.9136,
+   34.928,
+   -120.3119,
+   -119.0821
+  ],
+  "center": [
+   34.420799,
+   -119.696999
+  ],
+  "cl_area": 62,
+  "cl_host": "santabarbara.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Santa-Barbara",
+  "name": "santa barbara (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "sbm": {
+  "bbox": [
+   43.2436,
+   44.258,
+   -88.4166,
+   -87.0122
+  ],
+  "center": [
+   43.750801,
+   -87.714401
+  ],
+  "cl_area": 571,
+  "cl_host": "sheboygan.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/Sheboygan",
+  "name": "sheboygan, WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "sbn": {
+  "bbox": [
+   41.1761,
+   42.1905,
+   -86.9292,
+   -85.5708
+  ],
+  "center": [
+   41.6833,
+   -86.25
+  ],
+  "cl_area": 228,
+  "cl_host": "southbend.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/South-Bend",
+  "name": "south bend / michiana (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "sdk": {
+  "bbox": [
+   43.7889,
+   44.8033,
+   -99.9454,
+   -98.528
+  ],
+  "center": [
+   44.296101,
+   -99.236702
+  ],
+  "cl_area": 195,
+  "cl_host": "sd.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "south dakota (SD)",
+  "radius_mi": 35.0,
+  "state": "SD"
+ },
+ "sdo": {
+  "bbox": [
+   32.2081,
+   33.2225,
+   -117.7589,
+   -116.5531
+  ],
+  "center": [
+   32.715302,
+   -117.155998
+  ],
+  "cl_area": 8,
+  "cl_host": "sandiego.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/San-Diego",
+  "name": "san diego (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "sea": {
+  "bbox": [
+   47.0992,
+   48.1136,
+   -123.0833,
+   -121.5787
+  ],
+  "center": [
+   47.6064,
+   -122.331001
+  ],
+  "cl_area": 2,
+  "cl_host": "seattle.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WA/Seattle-Tacoma-Bellevue",
+  "name": "seattle-tacoma (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "sek": {
+  "bbox": [
+   36.7231,
+   37.7376,
+   -96.3555,
+   -95.0813
+  ],
+  "center": [
+   37.230328,
+   -95.718384
+  ],
+  "cl_area": 689,
+  "cl_host": "seks.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southeast KS (KS)",
+  "radius_mi": 35.0,
+  "state": "KS"
+ },
+ "sfo": {
+  "bbox": [
+   36.9928,
+   38.0072,
+   -122.8894,
+   -121.6106
+  ],
+  "center": [
+   37.5,
+   -122.25
+  ],
+  "cl_area": 1,
+  "cl_host": "sfbay.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "SF bay area (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "sgf": {
+  "bbox": [
+   36.7081,
+   37.7225,
+   -93.9351,
+   -92.6612
+  ],
+  "center": [
+   37.215302,
+   -93.298103
+  ],
+  "cl_area": 221,
+  "cl_host": "springfield.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MO/Springfield",
+  "name": "springfield, MO (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "shd": {
+  "bbox": [
+   37.9361,
+   38.9505,
+   -79.5204,
+   -78.2252
+  ],
+  "center": [
+   38.443298,
+   -78.872803
+  ],
+  "cl_area": 447,
+  "cl_host": "harrisonburg.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/VA/Harrisonburg",
+  "name": "harrisonburg, VA (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "shv": {
+  "bbox": [
+   31.9609,
+   32.9753,
+   -94.3723,
+   -93.1699
+  ],
+  "center": [
+   32.468102,
+   -93.771103
+  ],
+  "cl_area": 206,
+  "cl_host": "shreveport.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/LA/Shreveport",
+  "name": "shreveport, LA (LA)",
+  "radius_mi": 35.0,
+  "state": "LA"
+ },
+ "sjt": {
+  "bbox": [
+   30.9458,
+   31.9602,
+   -101.0471,
+   -99.8579
+  ],
+  "center": [
+   31.452999,
+   -100.452499
+  ],
+  "cl_area": 646,
+  "cl_host": "sanangelo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/San-Angelo",
+  "name": "san angelo, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "sky": {
+  "bbox": [
+   40.9417,
+   41.9561,
+   -83.3848,
+   -82.0314
+  ],
+  "center": [
+   41.448898,
+   -82.708099
+  ],
+  "cl_area": 573,
+  "cl_host": "sandusky.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Sandusky",
+  "name": "sandusky, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "slc": {
+  "bbox": [
+   40.2536,
+   41.268,
+   -112.5597,
+   -111.2203
+  ],
+  "center": [
+   40.760799,
+   -111.889999
+  ],
+  "cl_area": 56,
+  "cl_host": "saltlakecity.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/UT/Salt-Lake-City",
+  "name": "salt lake city (UT)",
+  "radius_mi": 35.0,
+  "state": "UT"
+ },
+ "sle": {
+  "bbox": [
+   44.4359,
+   45.4503,
+   -123.7506,
+   -122.3174
+  ],
+  "center": [
+   44.9431,
+   -123.033997
+  ],
+  "cl_area": 232,
+  "cl_host": "salem.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OR/Salem",
+  "name": "salem, OR (OR)",
+  "radius_mi": 35.0,
+  "state": "OR"
+ },
+ "slo": {
+  "bbox": [
+   34.7756,
+   35.79,
+   -121.2804,
+   -120.0376
+  ],
+  "center": [
+   35.282799,
+   -120.658997
+  ],
+  "cl_area": 191,
+  "cl_host": "slo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/San-Luis-Obispo",
+  "name": "san luis obispo (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "sma": {
+  "bbox": [
+   41.1313,
+   42.1457,
+   -71.7273,
+   -70.3699
+  ],
+  "center": [
+   41.6385,
+   -71.048599
+  ],
+  "cl_area": 378,
+  "cl_host": "southcoast.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "south coast, MA (MA)",
+  "radius_mi": 35.0,
+  "state": "MA"
+ },
+ "smd": {
+  "bbox": [
+   38.027,
+   39.0414,
+   -77.4319,
+   -76.1349
+  ],
+  "center": [
+   38.534199,
+   -76.783401
+  ],
+  "cl_area": 556,
+  "cl_host": "smd.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MD/Southern-Maryland",
+  "name": "southern maryland (MD)",
+  "radius_mi": 35.0,
+  "state": "MD"
+ },
+ "smo": {
+  "bbox": [
+   36.3724,
+   37.3868,
+   -90.2221,
+   -88.9539
+  ],
+  "center": [
+   36.879601,
+   -89.587997
+  ],
+  "cl_area": 566,
+  "cl_host": "semo.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southeast missouri (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "smx": {
+  "bbox": [
+   34.4566,
+   35.471,
+   -121.0523,
+   -119.8143
+  ],
+  "center": [
+   34.963799,
+   -120.433296
+  ],
+  "cl_area": 710,
+  "cl_host": "santamaria.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "santa maria, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "snj": {
+  "bbox": [
+   38.9731,
+   39.9875,
+   -75.6711,
+   -74.3567
+  ],
+  "center": [
+   39.480301,
+   -75.013901
+  ],
+  "cl_area": 286,
+  "cl_host": "southjersey.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NJ/Northern-New-Jersey",
+  "name": "south jersey (NJ)",
+  "radius_mi": 35.0,
+  "state": "NJ"
+ },
+ "sns": {
+  "bbox": [
+   38.3178,
+   39.3322,
+   -98.2586,
+   -96.9564
+  ],
+  "center": [
+   38.825001,
+   -97.607498
+  ],
+  "cl_area": 690,
+  "cl_host": "salina.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KS/Salina",
+  "name": "salina, KS (KS)",
+  "radius_mi": 35.0,
+  "state": "KS"
+ },
+ "sow": {
+  "bbox": [
+   33.747,
+   34.7614,
+   -110.6437,
+   -109.4163
+  ],
+  "center": [
+   34.2542,
+   -110.029999
+  ],
+  "cl_area": 651,
+  "cl_host": "showlow.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AZ/Show-Low",
+  "name": "show low, AZ (AZ)",
+  "radius_mi": 35.0,
+  "state": "AZ"
+ },
+ "spi": {
+  "bbox": [
+   39.2945,
+   40.3089,
+   -90.3038,
+   -88.9834
+  ],
+  "center": [
+   39.801701,
+   -89.6436
+  ],
+  "cl_area": 225,
+  "cl_host": "springfieldil.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IL/Springfield",
+  "name": "springfield, IL (IL)",
+  "radius_mi": 35.0,
+  "state": "IL"
+ },
+ "spk": {
+  "bbox": [
+   47.1517,
+   48.1661,
+   -118.1781,
+   -116.6719
+  ],
+  "center": [
+   47.658901,
+   -117.425003
+  ],
+  "cl_area": 95,
+  "cl_host": "spokane.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WA/Spokane",
+  "name": "spokane / coeur d'alene (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "srq": {
+  "bbox": [
+   26.8289,
+   27.8433,
+   -83.1018,
+   -81.9598
+  ],
+  "center": [
+   27.3361,
+   -82.5308
+  ],
+  "cl_area": 237,
+  "cl_host": "sarasota.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Sarasota-Bradenton",
+  "name": "sarasota-bradenton (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "ssk": {
+  "bbox": [
+   40.701,
+   41.7154,
+   -122.9462,
+   -121.5978
+  ],
+  "center": [
+   41.208199,
+   -122.272003
+  ],
+  "cl_area": 708,
+  "cl_host": "siskiyou.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "siskiyou county (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "ssn": {
+  "bbox": [
+   39.9091,
+   40.9235,
+   -121.3192,
+   -119.9868
+  ],
+  "center": [
+   40.416302,
+   -120.653
+  ],
+  "cl_area": 707,
+  "cl_host": "susanville.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "susanville, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "stc": {
+  "bbox": [
+   45.0536,
+   46.068,
+   -94.8867,
+   -93.4377
+  ],
+  "center": [
+   45.560799,
+   -94.162201
+  ],
+  "cl_area": 369,
+  "cl_host": "stcloud.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MN/St-Cloud",
+  "name": "st cloud, MN (MN)",
+  "radius_mi": 35.0,
+  "state": "MN"
+ },
+ "stg": {
+  "bbox": [
+   36.5881,
+   37.6025,
+   -114.2139,
+   -112.9421
+  ],
+  "center": [
+   37.095299,
+   -113.578003
+  ],
+  "cl_area": 352,
+  "cl_host": "stgeorge.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/UT/St-George",
+  "name": "st george, UT (UT)",
+  "radius_mi": 35.0,
+  "state": "UT"
+ },
+ "stj": {
+  "bbox": [
+   39.2614,
+   40.2758,
+   -95.5065,
+   -94.1867
+  ],
+  "center": [
+   39.7686,
+   -94.846603
+  ],
+  "cl_area": 694,
+  "cl_host": "stjoseph.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MO/St-Joseph",
+  "name": "st joseph (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "stk": {
+  "bbox": [
+   37.4506,
+   38.465,
+   -121.9333,
+   -120.6467
+  ],
+  "center": [
+   37.957802,
+   -121.290001
+  ],
+  "cl_area": 97,
+  "cl_host": "stockton.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Stockton",
+  "name": "stockton, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "stl": {
+  "bbox": [
+   38.1205,
+   39.1349,
+   -90.8921,
+   -89.5935
+  ],
+  "center": [
+   38.627701,
+   -90.242798
+  ],
+  "cl_area": 29,
+  "cl_host": "stlouis.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MO/St-Louis",
+  "name": "st louis, MO (MO)",
+  "radius_mi": 35.0,
+  "state": "MO"
+ },
+ "sux": {
+  "bbox": [
+   41.9928,
+   43.0072,
+   -97.088,
+   -95.712
+  ],
+  "center": [
+   42.5,
+   -96.400002
+  ],
+  "cl_area": 341,
+  "cl_host": "siouxcity.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Sioux-City",
+  "name": "sioux city, IA (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "swk": {
+  "bbox": [
+   36.5392,
+   37.5537,
+   -101.5669,
+   -100.2959
+  ],
+  "center": [
+   37.04641,
+   -100.931396
+  ],
+  "cl_area": 687,
+  "cl_host": "swks.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southwest KS (KS)",
+  "radius_mi": 35.0,
+  "state": "KS"
+ },
+ "swm": {
+  "bbox": [
+   41.4768,
+   42.4912,
+   -86.7493,
+   -85.3845
+  ],
+  "center": [
+   41.984001,
+   -86.066902
+  ],
+  "cl_area": 572,
+  "cl_host": "swmi.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southwest michigan (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "swv": {
+  "bbox": [
+   37.2723,
+   38.2867,
+   -81.8251,
+   -80.5415
+  ],
+  "center": [
+   37.779499,
+   -81.183296
+  ],
+  "cl_area": 632,
+  "cl_host": "swv.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southern WV (WV)",
+  "radius_mi": 35.0,
+  "state": "WV"
+ },
+ "syr": {
+  "bbox": [
+   42.5409,
+   43.5553,
+   -76.8419,
+   -75.4537
+  ],
+  "center": [
+   43.0481,
+   -76.147797
+  ],
+  "cl_area": 130,
+  "cl_host": "syracuse.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Syracuse",
+  "name": "syracuse, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "tal": {
+  "bbox": [
+   29.9309,
+   30.9453,
+   -84.8691,
+   -83.6925
+  ],
+  "center": [
+   30.438101,
+   -84.2808
+  ],
+  "cl_area": 186,
+  "cl_host": "tallahassee.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/FL/Tallahassee",
+  "name": "tallahassee (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "tbr": {
+  "bbox": [
+   31.9416,
+   32.956,
+   -82.3843,
+   -81.1821
+  ],
+  "center": [
+   32.448799,
+   -81.783203
+  ],
+  "cl_area": 635,
+  "cl_host": "statesboro.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Statesboro",
+  "name": "statesboro, GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "tha": {
+  "bbox": [
+   38.9595,
+   39.9739,
+   -88.071,
+   -86.7568
+  ],
+  "center": [
+   39.466702,
+   -87.413902
+  ],
+  "cl_area": 348,
+  "cl_host": "terrehaute.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IN/Terre-Haute",
+  "name": "terre haute, IN (IN)",
+  "radius_mi": 35.0,
+  "state": "IN"
+ },
+ "thb": {
+  "bbox": [
+   42.9098,
+   43.9243,
+   -83.7907,
+   -82.394
+  ],
+  "center": [
+   43.417019,
+   -83.092346
+  ],
+  "cl_area": 627,
+  "cl_host": "thumb.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "the thumb, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "tol": {
+  "bbox": [
+   41.1567,
+   42.1711,
+   -84.2343,
+   -82.8763
+  ],
+  "center": [
+   41.663898,
+   -83.555298
+  ],
+  "cl_area": 204,
+  "cl_host": "toledo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Toledo",
+  "name": "toledo, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "tpa": {
+  "bbox": [
+   27.4928,
+   28.5072,
+   -83.0245,
+   -81.8755
+  ],
+  "center": [
+   28,
+   -82.449997
+  ],
+  "cl_area": 37,
+  "cl_host": "tampa.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "tampa bay area (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "tpk": {
+  "bbox": [
+   38.5411,
+   39.5555,
+   -96.331,
+   -95.0247
+  ],
+  "center": [
+   39.048302,
+   -95.677803
+  ],
+  "cl_area": 280,
+  "cl_host": "topeka.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KS/Topeka",
+  "name": "topeka, KS (KS)",
+  "radius_mi": 35.0,
+  "state": "KS"
+ },
+ "tri": {
+  "bbox": [
+   35.9102,
+   36.9246,
+   -83.071,
+   -81.8104
+  ],
+  "center": [
+   36.4174,
+   -82.440697
+  ],
+  "cl_area": 323,
+  "cl_host": "tricities.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "tri-cities, TN (TN)",
+  "radius_mi": 35.0,
+  "state": "TN"
+ },
+ "tsc": {
+  "bbox": [
+   32.7025,
+   33.7169,
+   -88.1755,
+   -86.9629
+  ],
+  "center": [
+   33.209702,
+   -87.569199
+  ],
+  "cl_area": 371,
+  "cl_host": "tuscaloosa.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AL/Tuscaloosa",
+  "name": "tuscaloosa (AL)",
+  "radius_mi": 35.0,
+  "state": "AL"
+ },
+ "tsu": {
+  "bbox": [
+   29.3759,
+   30.3903,
+   -98.5261,
+   -97.3561
+  ],
+  "center": [
+   29.883101,
+   -97.941101
+  ],
+  "cl_area": 449,
+  "cl_host": "sanmarcos.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "san marcos, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "tts": {
+  "bbox": [
+   41.3681,
+   42.3825,
+   -79.5562,
+   -78.1938
+  ],
+  "center": [
+   41.875301,
+   -78.875
+  ],
+  "cl_area": 704,
+  "cl_host": "twintiers.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "twin tiers NY/PA (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "tul": {
+  "bbox": [
+   35.6467,
+   36.6611,
+   -96.6207,
+   -95.3643
+  ],
+  "center": [
+   36.1539,
+   -95.9925
+  ],
+  "cl_area": 70,
+  "cl_host": "tulsa.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OK/Tulsa",
+  "name": "tulsa, OK (OK)",
+  "radius_mi": 35.0,
+  "state": "OK"
+ },
+ "tus": {
+  "bbox": [
+   31.7145,
+   32.7289,
+   -111.5256,
+   -110.3264
+  ],
+  "center": [
+   32.221699,
+   -110.926003
+  ],
+  "cl_area": 57,
+  "cl_host": "tucson.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AZ/Tucson",
+  "name": "tucson, AZ (AZ)",
+  "radius_mi": 35.0,
+  "state": "AZ"
+ },
+ "twf": {
+  "bbox": [
+   42.0559,
+   43.0703,
+   -115.1487,
+   -113.7713
+  ],
+  "center": [
+   42.563099,
+   -114.459999
+  ],
+  "cl_area": 469,
+  "cl_host": "twinfalls.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/ID/Twin-Falls",
+  "name": "twin falls, ID (ID)",
+  "radius_mi": 35.0,
+  "state": "ID"
+ },
+ "txk": {
+  "bbox": [
+   32.9178,
+   33.9322,
+   -94.6553,
+   -93.4397
+  ],
+  "center": [
+   33.424999,
+   -94.047501
+  ],
+  "cl_area": 359,
+  "cl_host": "texarkana.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "texarkana (AR)",
+  "radius_mi": 35.0,
+  "state": "AR"
+ },
+ "txm": {
+  "bbox": [
+   33.3248,
+   34.3392,
+   -97.1817,
+   -95.9605
+  ],
+  "center": [
+   33.832001,
+   -96.571098
+  ],
+  "cl_area": 649,
+  "cl_host": "texoma.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "texoma (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "usm": {
+  "bbox": [
+   30.8197,
+   31.8341,
+   -89.8841,
+   -88.6965
+  ],
+  "center": [
+   31.3269,
+   -89.290298
+  ],
+  "cl_area": 374,
+  "cl_host": "hattiesburg.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MS/Hattiesburg",
+  "name": "hattiesburg, MS (MS)",
+  "radius_mi": 35.0,
+  "state": "MS"
+ },
+ "ust": {
+  "bbox": [
+   29.3872,
+   30.4016,
+   -81.8998,
+   -80.7296
+  ],
+  "center": [
+   29.8944,
+   -81.314697
+  ],
+  "cl_area": 557,
+  "cl_host": "staugustine.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "st augustine, FL (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "uti": {
+  "bbox": [
+   42.5936,
+   43.608,
+   -75.9278,
+   -74.5384
+  ],
+  "center": [
+   43.1008,
+   -75.233101
+  ],
+  "cl_area": 247,
+  "cl_host": "utica.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NY/Utica-Rome",
+  "name": "utica-rome-oneida (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "uva": {
+  "bbox": [
+   37.5273,
+   38.5417,
+   -79.1305,
+   -77.8425
+  ],
+  "center": [
+   38.0345,
+   -78.486504
+  ],
+  "cl_area": 290,
+  "cl_host": "charlottesville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/VA/Charlottesville",
+  "name": "charlottesville, VA (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "vaw": {
+  "bbox": [
+   36.3856,
+   37.4,
+   -82.7186,
+   -81.4501
+  ],
+  "center": [
+   36.892803,
+   -82.084351
+  ],
+  "cl_area": 712,
+  "cl_host": "swva.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southwest VA (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "vis": {
+  "bbox": [
+   35.8231,
+   36.8375,
+   -119.9206,
+   -118.6614
+  ],
+  "center": [
+   36.330299,
+   -119.291
+  ],
+  "cl_area": 346,
+  "cl_host": "visalia.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Visalia-Tulare-Porterville",
+  "name": "visalia-tulare (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "vld": {
+  "bbox": [
+   30.3253,
+   31.3397,
+   -83.8693,
+   -82.6879
+  ],
+  "center": [
+   30.8325,
+   -83.278603
+  ],
+  "cl_area": 427,
+  "cl_host": "valdosta.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/GA/Valdosta",
+  "name": "valdosta, GA (GA)",
+  "radius_mi": 35.0,
+  "state": "GA"
+ },
+ "vpi": {
+  "bbox": [
+   36.7222,
+   37.7366,
+   -81.0513,
+   -79.7771
+  ],
+  "center": [
+   37.229401,
+   -80.4142
+  ],
+  "cl_area": 291,
+  "cl_host": "blacksburg.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "new river valley (VA)",
+  "radius_mi": 35.0,
+  "state": "VA"
+ },
+ "vps": {
+  "bbox": [
+   30.2549,
+   31.2693,
+   -87.1608,
+   -85.9802
+  ],
+  "center": [
+   30.7621,
+   -86.570503
+  ],
+  "cl_area": 640,
+  "cl_host": "okaloosa.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "okaloosa / walton (FL)",
+  "radius_mi": 35.0,
+  "state": "FL"
+ },
+ "vtx": {
+  "bbox": [
+   28.2978,
+   29.3122,
+   -97.5822,
+   -96.4244
+  ],
+  "center": [
+   28.805,
+   -97.003304
+  ],
+  "cl_area": 564,
+  "cl_host": "victoriatx.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Victoria",
+  "name": "victoria, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "wau": {
+  "bbox": [
+   44.452,
+   45.4664,
+   -90.3468,
+   -88.9132
+  ],
+  "center": [
+   44.959202,
+   -89.629997
+  ],
+  "cl_area": 458,
+  "cl_host": "wausau.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WI/Wausau",
+  "name": "wausau, WI (WI)",
+  "radius_mi": 35.0,
+  "state": "WI"
+ },
+ "wco": {
+  "bbox": [
+   31.042,
+   32.0564,
+   -97.7416,
+   -96.5512
+  ],
+  "center": [
+   31.5492,
+   -97.1464
+  ],
+  "cl_area": 270,
+  "cl_host": "waco.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Waco",
+  "name": "waco, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "wdc": {
+  "bbox": [
+   38.3828,
+   39.3972,
+   -77.6817,
+   -76.3783
+  ],
+  "center": [
+   38.889999,
+   -77.029999
+  ],
+  "cl_area": 10,
+  "cl_host": "washingtondc.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "washington, DC (DC)",
+  "radius_mi": 35.0,
+  "state": "DC"
+ },
+ "wen": {
+  "bbox": [
+   46.9164,
+   47.9308,
+   -121.0587,
+   -119.5593
+  ],
+  "center": [
+   47.423599,
+   -120.308998
+  ],
+  "cl_area": 325,
+  "cl_host": "wenatchee.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WA/Wenatchee",
+  "name": "wenatchee, WA (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "whl": {
+  "bbox": [
+   39.5567,
+   40.5711,
+   -81.3839,
+   -80.0583
+  ],
+  "center": [
+   40.0639,
+   -80.7211
+  ],
+  "cl_area": 443,
+  "cl_host": "wheeling.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "northern panhandle (WV)",
+  "radius_mi": 35.0,
+  "state": "WV"
+ },
+ "wic": {
+  "bbox": [
+   37.185,
+   38.1994,
+   -97.9782,
+   -96.6962
+  ],
+  "center": [
+   37.6922,
+   -97.337196
+  ],
+  "cl_area": 99,
+  "cl_host": "wichita.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/KS/Wichita",
+  "name": "wichita, KS (KS)",
+  "radius_mi": 35.0,
+  "state": "KS"
+ },
+ "wky": {
+  "bbox": [
+   36.5742,
+   37.5887,
+   -88.7132,
+   -87.4416
+  ],
+  "center": [
+   37.081474,
+   -88.077393
+  ],
+  "cl_area": 377,
+  "cl_host": "westky.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "western KY (KY)",
+  "radius_mi": 35.0,
+  "state": "KY"
+ },
+ "wlo": {
+  "bbox": [
+   41.9853,
+   42.9997,
+   -93.0337,
+   -91.6579
+  ],
+  "center": [
+   42.4925,
+   -92.345802
+  ],
+  "cl_area": 567,
+  "cl_host": "waterloo.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/IA/Waterloo",
+  "name": "waterloo / cedar falls (IA)",
+  "radius_mi": 35.0,
+  "state": "IA"
+ },
+ "wma": {
+  "bbox": [
+   41.8428,
+   42.8572,
+   -73.6864,
+   -72.3136
+  ],
+  "center": [
+   42.349998,
+   -73
+  ],
+  "cl_area": 173,
+  "cl_host": "westernmass.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "western massachusetts (MA)",
+  "radius_mi": 35.0,
+  "state": "MA"
+ },
+ "wmd": {
+  "bbox": [
+   39.1445,
+   40.1589,
+   -79.4246,
+   -78.107
+  ],
+  "center": [
+   39.651699,
+   -78.7658
+  ],
+  "cl_area": 329,
+  "cl_host": "westmd.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MD/Western-Maryland",
+  "name": "western maryland (MD)",
+  "radius_mi": 35.0,
+  "state": "MD"
+ },
+ "wnc": {
+  "bbox": [
+   33.7184,
+   34.7328,
+   -78.5585,
+   -77.3315
+  ],
+  "center": [
+   34.225601,
+   -77.945
+  ],
+  "cl_area": 274,
+  "cl_host": "wilmington.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NC/Wilmington",
+  "name": "wilmington, NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "wor": {
+  "bbox": [
+   41.7553,
+   42.7697,
+   -72.4882,
+   -71.1174
+  ],
+  "center": [
+   42.262501,
+   -71.802803
+  ],
+  "cl_area": 240,
+  "cl_host": "worcester.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/MA/Worcester",
+  "name": "worcester / central MA (MA)",
+  "radius_mi": 35.0,
+  "state": "MA"
+ },
+ "wpt": {
+  "bbox": [
+   40.7339,
+   41.7483,
+   -77.676,
+   -76.3268
+  ],
+  "center": [
+   41.2411,
+   -77.001404
+  ],
+  "cl_area": 463,
+  "cl_host": "williamsport.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/Williamsport",
+  "name": "williamsport, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "wsl": {
+  "bbox": [
+   35.5925,
+   36.6069,
+   -80.8722,
+   -79.6166
+  ],
+  "center": [
+   36.099701,
+   -80.2444
+  ],
+  "cl_area": 272,
+  "cl_host": "winstonsalem.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/NC/Winston-Salem",
+  "name": "winston-salem, NC (NC)",
+  "radius_mi": 35.0,
+  "state": "NC"
+ },
+ "wtf": {
+  "bbox": [
+   33.4064,
+   34.4208,
+   -99.1043,
+   -97.8819
+  ],
+  "center": [
+   33.913601,
+   -98.493103
+  ],
+  "cl_area": 365,
+  "cl_host": "wichitafalls.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/TX/Wichita-Falls",
+  "name": "wichita falls, TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "wtn": {
+  "bbox": [
+   43.4675,
+   44.4819,
+   -76.616,
+   -75.2062
+  ],
+  "center": [
+   43.974701,
+   -75.911102
+  ],
+  "cl_area": 337,
+  "cl_host": "watertown.craigslist.org",
+  "es_join_score": 0.5,
+  "es_path": null,
+  "name": "watertown, NY (NY)",
+  "radius_mi": 35.0,
+  "state": "NY"
+ },
+ "wtx": {
+  "bbox": [
+   28.6929,
+   29.7074,
+   -103.8745,
+   -102.7124
+  ],
+  "center": [
+   29.200123,
+   -103.293457
+  ],
+  "cl_area": 648,
+  "cl_host": "bigbend.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "southwest TX (TX)",
+  "radius_mi": 35.0,
+  "state": "TX"
+ },
+ "wva": {
+  "bbox": [
+   38.2028,
+   39.2172,
+   -81.3101,
+   -80.01
+  ],
+  "center": [
+   38.709999,
+   -80.660004
+  ],
+  "cl_area": 194,
+  "cl_host": "wv.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "west virginia (old) (WV)",
+  "radius_mi": 35.0,
+  "state": "WV"
+ },
+ "wvu": {
+  "bbox": [
+   39.1222,
+   40.1366,
+   -80.6147,
+   -79.2975
+  ],
+  "center": [
+   39.629398,
+   -79.9561
+  ],
+  "cl_area": 440,
+  "cl_host": "morgantown.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WV/Morgantown",
+  "name": "morgantown, WV (WV)",
+  "radius_mi": 35.0,
+  "state": "WV"
+ },
+ "wyo": {
+  "bbox": [
+   42.4968,
+   43.5112,
+   -108.8476,
+   -107.4604
+  ],
+  "center": [
+   43.004002,
+   -108.153999
+  ],
+  "cl_area": 197,
+  "cl_host": "wyoming.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "wyoming (WY)",
+  "radius_mi": 35.0,
+  "state": "WY"
+ },
+ "yak": {
+  "bbox": [
+   46.095,
+   47.1094,
+   -121.2433,
+   -119.7667
+  ],
+  "center": [
+   46.6022,
+   -120.504997
+  ],
+  "cl_area": 246,
+  "cl_host": "yakima.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/WA/Yakima",
+  "name": "yakima, WA (WA)",
+  "radius_mi": 35.0,
+  "state": "WA"
+ },
+ "ybs": {
+  "bbox": [
+   38.6372,
+   39.6516,
+   -122.301,
+   -120.993
+  ],
+  "center": [
+   39.144402,
+   -121.647003
+  ],
+  "cl_area": 456,
+  "cl_host": "yubasutter.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/CA/Yuba-City",
+  "name": "yuba-sutter, CA (CA)",
+  "radius_mi": 35.0,
+  "state": "CA"
+ },
+ "yng": {
+  "bbox": [
+   40.5925,
+   41.6069,
+   -81.3228,
+   -79.9766
+  ],
+  "center": [
+   41.099701,
+   -80.649696
+  ],
+  "cl_area": 252,
+  "cl_host": "youngstown.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "youngstown, OH (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ },
+ "yrk": {
+  "bbox": [
+   39.4553,
+   40.4697,
+   -77.3899,
+   -76.0663
+  ],
+  "center": [
+   39.962502,
+   -76.728104
+  ],
+  "cl_area": 357,
+  "cl_host": "york.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/PA/York",
+  "name": "york, PA (PA)",
+  "radius_mi": 35.0,
+  "state": "PA"
+ },
+ "yum": {
+  "bbox": [
+   32.2181,
+   33.2325,
+   -115.227,
+   -114.021
+  ],
+  "center": [
+   32.7253,
+   -114.624001
+  ],
+  "cl_area": 370,
+  "cl_host": "yuma.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/AZ/Yuma",
+  "name": "yuma, AZ (AZ)",
+  "radius_mi": 35.0,
+  "state": "AZ"
+ },
+ "yup": {
+  "bbox": [
+   46.0429,
+   47.0573,
+   -88.1459,
+   -86.6707
+  ],
+  "center": [
+   46.550098,
+   -87.408302
+  ],
+  "cl_area": 262,
+  "cl_host": "up.craigslist.org",
+  "es_join_score": 0.0,
+  "es_path": null,
+  "name": "upper peninsula, MI (MI)",
+  "radius_mi": 35.0,
+  "state": "MI"
+ },
+ "zvl": {
+  "bbox": [
+   39.4331,
+   40.4475,
+   -82.6748,
+   -81.3516
+  ],
+  "center": [
+   39.9403,
+   -82.013199
+  ],
+  "cl_area": 702,
+  "cl_host": "zanesville.craigslist.org",
+  "es_join_score": 1.0,
+  "es_path": "/OH/Cambridge",
+  "name": "zanesville / cambridge (OH)",
+  "radius_mi": 35.0,
+  "state": "OH"
+ }
+}

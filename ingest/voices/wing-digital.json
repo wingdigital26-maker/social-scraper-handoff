@@ -1,0 +1,55 @@
+{
+  "slug": "wing-digital",
+  "display_name": "Wing Digital",
+  "trade": "local SEO and websites",
+  "default_city": "Dallas",
+  "service_area": ["Dallas", "Fort Worth", "Plano", "Frisco", "Arlington"],
+  "voice_note_label": "Wing's own B2B outreach: one observation, plain, no pitch",
+  "style_notes": [
+    "Write like one person noticing one thing, not like an agency.",
+    "Short sentences. Contractions. No adjectives about their business.",
+    "Never claim to have looked at anything except what the fact says.",
+    "End on a question that is easy to ignore."
+  ],
+  "banned_phrases": [
+    "leverage",
+    "solutions",
+    "digital marketing agency",
+    "grow your business",
+    "take your business to the next level",
+    "we specialize",
+    "our team of experts",
+    "boost your rankings",
+    "guaranteed results",
+    "dominate",
+    "crush it",
+    "circle back",
+    "touch base",
+    "quick call",
+    "hop on a call",
+    "i hope this email finds you well",
+    "reaching out to see"
+  ],
+  "templates": [
+    "Was reading your site and one thing stood out. Not a big deal on its own, but it is the kind of thing a customer would hit before you ever hear about it.",
+    "Small observation from your website. Figured you would rather know than not.",
+    "Noticed something on your site that is probably a five minute fix. Happy to point at it and leave you alone after that."
+  ],
+  "urgent_templates": [
+    "This one is worth checking sooner rather than later.",
+    "Flagging this because it is live on your site right now."
+  ],
+  "fallback_frames": [
+    "{fact} That is the kind of thing that quietly costs a business calls. Worth a look?",
+    "Was reading your site. {fact} Small thing to fix, easy thing to miss. Want me to point at it?",
+    "{fact} Not a crisis, but it is the sort of detail that adds up. Happy to show you where.",
+    "Noticed this while reading your site. {fact} Would it help to see what I would change first?",
+    "{fact} Most people never see that from their own side of the screen. Want the short version?",
+    "Quick one. {fact} Worth thirty seconds of your time to check.",
+    "{fact} If that is deliberate, ignore me. If it is not, it is a quick fix.",
+    "{fact} I only mention it because it is the first thing a customer would run into too.",
+    "{fact} Figured you would rather hear it from me than not hear it at all.",
+    "One thing from your site. {fact} Want me to send over what I would do about it?"
+  ],
+  "signoff": ""
+}

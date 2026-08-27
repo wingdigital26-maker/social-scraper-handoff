@@ -85,6 +85,7 @@ import json
 import pathlib
 import re
 import sys
+import threading
 import time
 import urllib.parse
 import xml.etree.ElementTree as ET
@@ -106,6 +107,63 @@ BROWSER_UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                             "AppleWebKit/537.36 (KHTML, like Gecko) "
                             "Chrome/126.0.0.0 Safari/537.36"}
 BLOCK_CODES = {401, 403, 405, 406, 418, 429, 503}
+
+# ===========================================================================
+# Rate limiting. Added 2026-08-27 after a MEASURED failure, not preemptively.
+#
+# This module shipped with no pacing at all, which was invisible at 15 brands
+# and catastrophic at 79: a run over a 79-brand pool answered
+#     store            79 tried, 17 ok, 59 BLOCKED
+#     shipping_policy  99 tried, 17 ok, 59 BLOCKED
+#     careers         176 tried,  1 ok, 60 BLOCKED
+# with the block detail reading "HTTP 429" against six different brand domains.
+# Those brands are all Shopify tenants, so every request lands on the SAME edge
+# and a per-host limiter would have been no limiter at all. A separate module
+# walking the same population at a global 90 requests/minute took 560 requests
+# in the same session and was blocked ZERO times. The rate was the whole
+# difference; the "careers is dry on small brands" conclusion was partly a
+# throttle in disguise.
+#
+# So: one global bucket, default 90/min, halving on any block code.
+# ===========================================================================
+GLOBAL_RPM = 90.0
+_rate_lock = threading.Lock()
+_rate_state = {"interval": 60.0 / GLOBAL_RPM, "base": 60.0 / GLOBAL_RPM,
+               "next_ok": 0.0, "slept": 0.0, "blocks": 0}
+
+
+def set_global_rpm(rpm: float):
+    with _rate_lock:
+        _rate_state["base"] = _rate_state["interval"] = 60.0 / max(0.1, rpm)
+
+
+def _pace():
+    with _rate_lock:
+        now = time.monotonic()
+        delay = max(0.0, _rate_state["next_ok"] - now)
+        _rate_state["next_ok"] = max(now, _rate_state["next_ok"]) + _rate_state["interval"]
+        _rate_state["slept"] += delay
+    if delay > 0:
+        time.sleep(delay)
+
+
+def _pace_saw(status):
+    with _rate_lock:
+        if status in BLOCK_CODES:
+            _rate_state["blocks"] += 1
+            _rate_state["interval"] = min(20.0, _rate_state["interval"] * 2.0)
+            _rate_state["next_ok"] = max(_rate_state["next_ok"],
+                                         time.monotonic() + _rate_state["interval"])
+        else:
+            _rate_state["interval"] = max(_rate_state["base"],
+                                          _rate_state["interval"] * 0.9)
+
+
+def rate_report() -> dict:
+    return {"global_rpm_base": round(60.0 / _rate_state["base"], 1),
+            "global_rpm_final": round(60.0 / _rate_state["interval"], 1),
+            "block_responses": _rate_state["blocks"],
+            "throttle_sleep_s": round(_rate_state["slept"], 1)}
 
 
 # ===========================================================================
@@ -311,7 +369,12 @@ class ChannelStat:
             return "SKIPPED"
         if self.yielded:
             return "LIVE"
-        if self.block_rate >= 0.5:
+        # 0.30, not 0.50. A live run answered 60 blocks out of 176 careers
+        # probes (0.34) and reported DRY, which sent the reader looking for a
+        # demand explanation for what was actually a rate limit. If a third of
+        # your probes are being refused you do not know whether the source is
+        # dry, and saying "DRY" claims you do.
+        if self.block_rate >= 0.30:
             return "BLOCKED"
         if self.errors >= self.attempted:
             return "ERROR"
@@ -346,12 +409,14 @@ def fetch(run: Run, channel: str, url: str, *, params=None, browser=False,
     purpose — see the module docstring."""
     st = run.stat(channel)
     st.attempted += 1
+    _pace()
     try:
         r = requests.get(url, headers=BROWSER_UA if browser else UA,
                          params=params, timeout=timeout)
     except Exception as e:
         st.errors += 1
         return None, f"error:{e.__class__.__name__}"
+    _pace_saw(r.status_code)
     if r.status_code in BLOCK_CODES:
         st.blocked += 1
         st.block_detail.append(f"HTTP {r.status_code} {url[:90]}")
@@ -727,6 +792,10 @@ def main() -> int:
                     help="comma list of channels to force-empty, to prove the "
                          "hard failure fires (testing only)")
     ap.add_argument("--limit", type=int, default=25, help="brands from the seed pool")
+    ap.add_argument("--rpm", type=float, default=GLOBAL_RPM,
+                    help="GLOBAL request cap across every host. These prospects "
+                         "are mostly Shopify tenants sharing one edge, so this "
+                         "is global on purpose, not per-host.")
     ap.add_argument("--news-days", type=int, default=180)
     ap.add_argument("--news-per-query", type=int, default=25)
     ap.add_argument("--out", type=pathlib.Path,
@@ -735,6 +804,8 @@ def main() -> int:
     ap.add_argument("--explain-regex", action="store_true",
                     help="print repr() of every pattern and exit")
     args = ap.parse_args()
+
+    set_global_rpm(args.rpm)
 
     if args.explain_regex:
         for n, rx in [("VOLUME_EVENT", VOLUME_EVENT), ("NOT_A_SHIPPER", NOT_A_SHIPPER),
@@ -847,6 +918,7 @@ def main() -> int:
     for st in run.stats.values():
         print(f"{st.name:18} {st.verdict():12} {st.attempted:>6} {st.ok:>5} "
               f"{st.blocked:>8} {st.errors:>5} {st.yielded:>6}")
+    print("\nRATE: " + json.dumps(rate_report()))
     for st in run.stats.values():
         if st.verdict() in ("DRY", "BLOCKED", "UNAVAILABLE") and (
                 st.empty_queries or st.block_detail):

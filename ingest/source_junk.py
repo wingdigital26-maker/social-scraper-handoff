@@ -600,7 +600,14 @@ def provider_craigslist(market: dict, max_detail: int = 90, delay: float = 0.35)
         except ValueError:
             h.transport_errors += 1
             continue
-        items = _cl_parse(data, places=data.get("decode", {}).get("locationDescriptions"))
+        # `data.decode` is normally an object carrying locationDescriptions, but
+        # not always: the brownsville area (cl_area 63) answered with
+        # "decode": <int> on 2026-08-27, which crashed a 27-market sweep at
+        # market 5. A shape assumption that holds for three markets and breaks
+        # on the fifth is exactly the class of bug that only volume finds.
+        decode = data.get("decode")
+        places = decode.get("locationDescriptions") if isinstance(decode, dict) else None
+        items = _cl_parse(data, places=places)
         h.raw_results += len(items)
 
         for it in items:

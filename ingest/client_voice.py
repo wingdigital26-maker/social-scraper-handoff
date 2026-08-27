@@ -80,7 +80,11 @@ PRICING_PATTERNS = [
     r"\b\d+\s*(?:dollars|bucks)\b",
     r"\b\d+\s*%\s*off\b",
     r"\bpercent off\b",
-    r"\bfree (?:estimate|quote|inspection|consultation|haul|pickup)\b",
+    # "free audit" was missed here until 2026-08-27: the list was written for
+    # trade clients, and Wing's own B2B outreach gives away a different noun.
+    r"\bfree (?:estimate|quote|inspection|consultation|haul|pickup|audit|"
+    r"review|report|trial|sample|month|mockup|demo|teardown|analysis)\b",
+    r"\b(?:on the house|at no charge|my treat)\b",
     r"\bno cost\b",
     r"\bcheapest\b",
     r"\blowest price\b",
