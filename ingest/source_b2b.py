@@ -124,12 +124,43 @@ BLOCK_CODES = {401, 403, 405, 406, 418, 429, 503}
 # difference; the "careers is dry on small brands" conclusion was partly a
 # throttle in disguise.
 #
-# So: one global bucket, default 90/min, halving on any block code.
+# Measured progression over the SAME 79-brand pool, same session:
+#     no pacing                store  17 ok / 59 blocked, 2 candidates
+#     global 120/min           store  64 ok / 12 blocked, 3 candidates
+#     global + per-host 1.5s   store  76 ok /  0 blocked, 5 candidates
+# Three times the usable reads and two and a half times the leads, from pacing
+# alone. Nothing about the gates changed. This is worth writing down because the
+# obvious reading of the first run was "these brands block scrapers" and the
+# correct reading was "we were the problem".
+#
+# It also retired a wrong conclusion: the careers channel previously reported
+# DRY with six HTTP 429s as its evidence. Paced, it reports DRY with "no careers
+# page at 6 standard paths" — same verdict, but now it is actually true.
+#
+# So: one global bucket, default 90/min, plus a per-host floor.
 # ===========================================================================
+# Only these drive the GLOBAL brake. BLOCK_CODES is wider (it includes 401,
+# 403, 405, 406, 418) because those are legitimate per-channel verdicts — a
+# brand answering 403 for /pages/careers is telling you that path does not
+# exist for it, not that we are going too fast. Braking the whole run on those
+# was measured to be worse than not braking: a 79-brand run stretched past 25
+# minutes because ordinary per-site 403s kept doubling the global interval.
+RATE_BLOCK_CODES = {429, 503}
 GLOBAL_RPM = 90.0
+
+# A SECOND, per-host floor, and it is the one that actually matters here.
+# A global cap alone was measured (2026-08-27, 79 brands at 120/min global) to
+# still collect 36 rate-block responses, because this module probes SIX shipping
+# paths and SIX careers paths against the same shop back to back. Shopify meters
+# per shop, so twelve requests fired at one storefront inside ten seconds trips
+# it no matter how leisurely the run looks in aggregate. 1.5s between two
+# requests to the SAME host, on top of the global cap.
+PER_HOST_MIN_INTERVAL = 1.5
+
 _rate_lock = threading.Lock()
 _rate_state = {"interval": 60.0 / GLOBAL_RPM, "base": 60.0 / GLOBAL_RPM,
                "next_ok": 0.0, "slept": 0.0, "blocks": 0}
+_host_next_ok: dict[str, float] = {}
 
 
 def set_global_rpm(rpm: float):
@@ -137,11 +168,16 @@ def set_global_rpm(rpm: float):
         _rate_state["base"] = _rate_state["interval"] = 60.0 / max(0.1, rpm)
 
 
-def _pace():
+def _pace(url: str = ""):
+    host = urllib.parse.urlsplit(url).hostname or ""
     with _rate_lock:
         now = time.monotonic()
-        delay = max(0.0, _rate_state["next_ok"] - now)
-        _rate_state["next_ok"] = max(now, _rate_state["next_ok"]) + _rate_state["interval"]
+        due = max(_rate_state["next_ok"], _host_next_ok.get(host, 0.0))
+        delay = max(0.0, due - now)
+        start = max(now, due)
+        _rate_state["next_ok"] = start + _rate_state["interval"]
+        if host:
+            _host_next_ok[host] = start + PER_HOST_MIN_INTERVAL
         _rate_state["slept"] += delay
     if delay > 0:
         time.sleep(delay)
@@ -149,7 +185,7 @@ def _pace():
 
 def _pace_saw(status):
     with _rate_lock:
-        if status in BLOCK_CODES:
+        if status in RATE_BLOCK_CODES:
             _rate_state["blocks"] += 1
             _rate_state["interval"] = min(20.0, _rate_state["interval"] * 2.0)
             _rate_state["next_ok"] = max(_rate_state["next_ok"],
@@ -409,7 +445,7 @@ def fetch(run: Run, channel: str, url: str, *, params=None, browser=False,
     purpose — see the module docstring."""
     st = run.stat(channel)
     st.attempted += 1
-    _pace()
+    _pace(url)
     try:
         r = requests.get(url, headers=BROWSER_UA if browser else UA,
                          params=params, timeout=timeout)

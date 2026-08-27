@@ -316,6 +316,18 @@ def build_lexicon(fact: str, profile: dict, recipient: Optional[dict] = None,
 # ---------------------------------------------------------------------------
 
 
+# Suffixes that mark a word as ordinary English rather than a name. Used ONLY
+# at a sentence start, where capitalization carries no information.
+ORDINARY_SUFFIXES = ("ing", "ed", "ly", "es", "s", "er", "est", "tion", "ment",
+                     "ness", "able", "ible", "ful", "less", "ive", "ous")
+
+
+def _looks_like_ordinary_word(low: str) -> bool:
+    if len(low) <= 4:
+        return True
+    return low.endswith(ORDINARY_SUFFIXES)
+
+
 def _norm_for_quote(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", (s or "").lower())
 
@@ -382,15 +394,13 @@ def verify_draft(text: str, lexicon: dict, client_slug: Optional[str] = None,
             continue
         if bare and (bare in COMMON_CAPS or bare in lexicon["words"]):
             continue
-        if m.start() in sentence_starts and len(low) <= 12:
-            # Sentence-initial capital of a word that is otherwise unremarkable.
-            # Still policed if it looks like a name (see below), but a common
-            # verb starting a sentence is not a fabrication.
-            if low.isalpha() and low not in NUMBER_WORDS:
-                # Only let it pass if it is lowercase-plausible English, i.e.
-                # it also appears lowercased elsewhere or is short and common.
-                if low in COMMON_CAPS:
-                    continue
+        if m.start() in sentence_starts and _looks_like_ordinary_word(low):
+            # Every sentence starts with a capital, so position alone proves
+            # nothing. Only let through words whose SHAPE is ordinary English
+            # ("Adding", "Customers", "Really"). A bare name shape at a
+            # sentence start ("Amarillo customers won't find that") is still
+            # flagged, because that is how a fabricated place gets in.
+            continue
         problems.append(f"proper noun not in the source fact or client profile: {tok}")
 
     # --- 4. links ---------------------------------------------------------
@@ -410,8 +420,15 @@ def verify_draft(text: str, lexicon: dict, client_slug: Optional[str] = None,
         w for w in _tokens(lexicon["fact"])
         if len(w) > 3 and w not in COMMON_CAPS
     }
-    if fact_content and not (fact_content & _tokens(stripped)):
-        problems.append("draft does not carry any content word from the fact")
+    # One shared word is not personalization: a draft saying only "your site"
+    # would pass that. Require a real share of the fact to survive.
+    if fact_content:
+        overlap = fact_content & _tokens(stripped)
+        need = max(2, int(0.30 * len(fact_content))) if len(fact_content) > 2 else 1
+        if len(overlap) < need:
+            problems.append(
+                f"draft carries only {len(overlap)} of {len(fact_content)} content "
+                f"words from the fact (needs {need}); it is not personalized")
 
     # --- 7. the existing voice gate --------------------------------------
     problems.extend(client_voice.check_voice(stripped, client_slug))
@@ -594,9 +611,10 @@ def draft_message(fact: str, source_url: str, client_slug: str,
         if gen is not None:
             system = build_system_prompt(profile)
             user = build_user_prompt(fact, recipient, profile, ask)
+            this_user = user
             for attempt in range(attempts):
                 try:
-                    res = gen(MODEL_ALIAS, user, system=system,
+                    res = gen(MODEL_ALIAS, this_user, system=system,
                               temperature=TEMPERATURE + 0.1 * attempt,
                               max_tokens=MAX_TOKENS)
                 except Exception as e:
@@ -628,6 +646,20 @@ def draft_message(fact: str, source_url: str, client_slug: str,
                 result["rejected"].append({"attempt": attempt + 1,
                                            "text": candidate,
                                            "violations": problems})
+                # Re-ask, naming the exact violations. Same move intel_propose
+                # makes when a quote fails verification. The instruction is
+                # always DELETE, never "find a better fact" -- a model told to
+                # fix a fabrication will happily fabricate a replacement.
+                this_user = (
+                    user
+                    + "\n\nYour previous attempt was REJECTED. What you wrote:\n"
+                    + candidate
+                    + "\n\nReasons it was rejected:\n"
+                    + "\n".join(f"  - {p}" for p in problems)
+                    + "\n\nWrite it again with those parts DELETED. Do not "
+                      "replace them with anything. Shorter is fine. Say only "
+                      "what the fact says."
+                )
             else:
                 result["reason"] = (
                     f"all {attempts} model drafts failed verification"

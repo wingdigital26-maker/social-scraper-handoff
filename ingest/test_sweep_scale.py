@@ -92,6 +92,28 @@ def main() -> int:
     check("a lead with no coordinates still fingerprints",
           len(sweep_scale.content_key(no_geo)), 40)
 
+    section("\nresume must not swallow a market's own interrupted leads")
+    tmp = HERE / ".test_forget.sqlite"
+    if tmp.exists():
+        tmp.unlink()
+    dd = sweep_scale.Dedupe(tmp)
+    lead = {"source": "craigslist", "source_id": "X1", "title": "Free hot tub",
+            "lat": 32.0, "lng": -96.0}
+    check("first pass accepts", dd.accept(lead, "abc"), True)
+    check("a naive re-run would swallow it", dd.accept(lead, "abc"), False)
+    n = dd.forget_market("abc")
+    check("forget_market withdraws both keys", n, 2)
+    check("after withdrawal the re-run keeps it", dd.accept(lead, "abc"), True)
+    other = {"source": "craigslist", "source_id": "Y9", "title": "Free piano",
+             "lat": 30.0, "lng": -97.0}
+    dd.accept(other, "xyz")
+    dd.forget_market("abc")
+    check("forgetting one market leaves another alone",
+          dd.accept(other, "xyz"), False)
+    dd.commit()
+    dd.db.close()
+    tmp.unlink()
+
     section("\nresume semantics")
     cp = sweep_scale.Checkpoint("__test_resume__")
     cp.data["markets"] = {}

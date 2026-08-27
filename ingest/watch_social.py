@@ -128,6 +128,43 @@ TIMELIMIT = None
 # clearly-ancient threads and is never reported as a date.
 _REDDIT_ID_RE = re.compile(r"reddit\.com/r/[^/]+/comments/([a-z0-9]+)", re.I)
 
+# Which subreddit a hit actually landed in. site:reddit.com/r/plano in the
+# query does not guarantee the index only answers from r/plano -- measured
+# 2026-08-27, a Dallas junk-removal run got back an r/okc post and a Dallas
+# roofing run got back r/PPC, neither of which the query text should have
+# been able to reach. This is the hard backstop: whatever subreddit the
+# result URL actually names has to be one this CLIENT's own cities resolve
+# to, or it is rejected before it can ever become a candidate.
+_SUBREDDIT_RE = re.compile(r"reddit\.com/r/([^/]+)/", re.I)
+
+
+def allowed_subreddits(cities):
+    """The union of subreddits that count as 'in this client's metro'.
+
+    Built from the client's own scrape_cities via trade_vocab.local_subreddits,
+    never hardcoded to one client -- a Dallas client and an Oklahoma City
+    client would each get their own set from their own configured cities.
+    """
+    subs = set()
+    for city in cities:
+        subs.update(s.lower() for s in trade_vocab.local_subreddits(city)[0])
+    return subs
+
+
+def geo_gate_reddit(url, allowed_subs):
+    """(ok, subreddit, reason). Reddit-only geographic gate on the result URL
+    itself, independent of what the query asked for."""
+    m = _SUBREDDIT_RE.search(url or "")
+    sub = m.group(1).lower() if m else ""
+    if not sub:
+        return False, "", "no subreddit could be read from the result URL"
+    if sub not in allowed_subs:
+        return False, sub, (
+            f"subreddit r/{sub} is not in this client's configured metro "
+            f"(allowed: {', '.join(sorted(allowed_subs)) or 'none configured'})"
+        )
+    return True, sub, ""
+
 PLATFORMS = {
     "nextdoor":  "site:nextdoor.com",
     "reddit":    "site:reddit.com",
@@ -444,7 +481,7 @@ def main():
     drafts, parked_location = [], []
     stats = dict(queries=0, results=0, kept=0, dup=0, no_intent=0, throttled=0,
                  rejected=0, low_score=0, unresolved_location=0, empty_queries=0,
-                 errors=0, off_by_choice=0, misconfigured=0, supply_side=0)
+                 errors=0, off_by_choice=0, misconfigured=0, supply_side=0, no_draft=0)
     # Per-client counters are summed at the end and checked against these
     # totals. A telemetry number that disagrees with the run summary is worse
     # than no number, because the OS renders it to Jack as a health signal.
@@ -483,7 +520,7 @@ def main():
         for c in clients:
             per = dict(queries=0, results=0, kept=0, rejected=0,
                        throttled=0, empty_queries=0, errors=0,
-                       unresolved_location=0, supply_side=0)
+                       unresolved_location=0, supply_side=0, no_draft=0)
             # WHY nothing was kept. "kept 0" with no reason is the failure that
             # hid every one of the problems this run was written to find: a
             # channel whose whole indexed corpus is a marketplace, a query shape
@@ -530,8 +567,12 @@ def main():
             trade = c["scrape_niche"].strip()
             cities = _csv(c.get("scrape_cities"))
             extra = _csv(c.get("scrape_terms"))
+            allowed_subs = allowed_subreddits(cities)
             print(f"\n=== {c['name']} — {trade} in {', '.join(cities)} "
                   f"[{','.join(plats)}]")
+            if "reddit" in plats:
+                print(f"    reddit geo gate: allowed subs = "
+                      f"{', '.join(sorted(allowed_subs)) or '(none, misconfigured)'}")
 
             for city in cities:
                 for plat in plats:
@@ -598,6 +639,13 @@ def main():
                                               or title.strip().lower().startswith("link to reddit")):
                                 title = slug_text
                             blob = f"{title} {body}"
+                            if plat == "reddit":
+                                geo_ok, sub, geo_reason = geo_gate_reddit(u, allowed_subs)
+                                if not geo_ok:
+                                    stats["rejected"] += 1
+                                    per["rejected"] += 1
+                                    note(f"GEO REJECT: {geo_reason}", plat)
+                                    continue
                             if _reddit_is_legacy(u):
                                 note("reddit thread predates the 7-char post-id era "
                                      "(too old to reply to)", plat)
@@ -691,11 +739,23 @@ def main():
                                 note(f"scored {rel['score']:.2f}, under the "
                                      f"{MIN_RELEVANCE} bar", plat)
                                 continue
-                            seen.add(u)
                             urgent = bool(URGENT.search(blob))
                             _body, _voice = draft_reply(
                                 c.get("slug") or "", c["name"], trade,
                                 city, u or title, body, urgent)
+                            if _body is None:
+                                # client_voice refused: no real detail to
+                                # reference, or the post fails its own
+                                # buying-intent gate. A legitimate funnel
+                                # stage, not an error -- log and skip, do NOT
+                                # write an empty draft row to Supabase.
+                                stats["no_draft"] += 1
+                                per["no_draft"] += 1
+                                seen.add(u)
+                                note(f"NO DRAFT WRITTEN: {(_voice or 'no reason given')[:100]}",
+                                     plat)
+                                continue
+                            seen.add(u)
                             drafts.append({
                                 "client": c["name"],
                                 "channel": plat,
@@ -716,6 +776,9 @@ def main():
                             by_channel[plat]["kept"] += 1
                             print(f"  + [{plat}] {'URGENT ' if urgent else ''}{title[:62]}")
                             if stats["kept"] >= args.limit:
+                                print(f"  CAPPED at --limit {args.limit} drafts for this "
+                                      f"run; remaining queries/results this run were not "
+                                      f"evaluated (not rejected, just not reached).")
                                 break
                         if stats["kept"] >= args.limit:
                             break
@@ -726,6 +789,7 @@ def main():
 
             print(f"  -- {c['name']}: queries={per['queries']} results={per['results']} "
                   f"kept={per['kept']} rejected={per['rejected']} "
+                  f"no_draft={per['no_draft']} "
                   f"empty={per['empty_queries']} throttled={per['throttled']}")
 
             # Per-channel readout. A client can be healthy on one channel and

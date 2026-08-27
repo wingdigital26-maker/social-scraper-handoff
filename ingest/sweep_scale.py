@@ -55,6 +55,21 @@ MEASURED RATE LIMITS  (this machine, residential IP, 2026-08-27)
   below sit under every one of them. The ceiling is where you get banned; the
   default is where you stay welcome. Override per host with --rate host=rpm.
 
+MEASURED VOLUME  (full Texas sweep, 2026-08-27, this machine)
+  27 markets, both providers, 1,675 HTTP requests, 973 seconds of wall clock.
+  174 new leads. Zero blocks on any of the three hosts, with the limiter
+  reporting final_rpm == base_rpm, i.e. backoff never had to fire.
+  Sustained 103 requests/minute and ~644 new leads/hour.
+  Dedupe caught 7 cross-market collisions, concentrated exactly where the
+  geography predicts: austin -> san marcos (3), san antonio -> san marcos (1),
+  galveston -> houston (1). Overlapping metros collide; the sqlite index is
+  what stops that becoming duplicate rows in the CRM.
+  Two markets came back DRY (deep east texas, southwest TX) and are reported
+  dry, with their attempt counts, rather than padded.
+  Per-market cost is dominated by detail-page fetches, so a big metro is
+  ~100-150s and a rural one is ~15-30s. Extrapolated: all 413 US markets is
+  roughly 10-14 hours of wall clock in one pass.
+
 PC-BOUND
   These endpoints answer a residential IP normally and rate-limit datacenter /
   CI ranges. Unchanged, and not solved here.
@@ -286,6 +301,24 @@ class Dedupe:
             return False
         return True
 
+    def forget_market(self, market: str) -> int:
+        """Drop every key claimed under one market key.
+
+        This closes a real resume hole, found live on 2026-08-27. Dedupe keys
+        are claimed as each lead is emitted, but a market is only checkpointed
+        once it FINISHES. Kill the process in between and the market is not
+        "done", so a resume re-runs it — and every lead it re-finds collides
+        with the claim its own aborted attempt left behind. The market reports
+        `0 kept, 18 dup` and those eighteen leads are gone for good, which is
+        the worst possible failure mode: silent, and it looks like success.
+
+        So before re-running any market that is not checkpointed, its claims are
+        withdrawn. A market is either finished and trusted, or forgotten and
+        redone. There is no half-done state."""
+        cur = self.db.execute("DELETE FROM seen WHERE market=?", (market,))
+        self.db.commit()
+        return cur.rowcount
+
     def commit(self):
         self.db.commit()
 
@@ -392,6 +425,13 @@ def sweep(catalog, keys, providers, tiers, max_signal, max_detail,
                       f"{prev.get('kept', 0)} kept)", file=sys.stderr)
                 ledger.append(prev)
                 continue
+
+            # This market is about to be (re)run, so nothing it claimed on a
+            # previous, unfinished attempt may block it. See forget_market().
+            withdrawn = dedupe.forget_market(key)
+            if withdrawn:
+                print(f"  .. {key}: withdrew {withdrawn} dedupe claim(s) from an "
+                      f"unfinished earlier attempt", file=sys.stderr)
 
             market = dict(catalog[key])
             market.setdefault("name", key)

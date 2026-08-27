@@ -53,6 +53,10 @@ FABRICATIONS = [
      "Your site says Since 2004, which puts you at 22 years. Pairing that with "
      "your GAF Master Elite badge would land harder. Worth a look?",
      "proper noun"),
+    ("invented a city at the start of a sentence (capitalization proves nothing there)",
+     "Your site says Since 2004, which puts you at 22 years. Amarillo customers "
+     "will never see that. Worth a look?",
+     "proper noun"),
     ("invented a city",
      "Your site says Since 2004, which puts you at 22 years. Customers in "
      "Amarillo will not find that. Worth a look?",
@@ -72,7 +76,7 @@ FABRICATIONS = [
     ("dropped the fact entirely",
      "Hey there, just wanted to see whether you had a minute this week to talk "
      "about the website and what could be better about it overall for you.",
-     "does not carry any content word"),
+     "content words from the fact"),
     ("model preamble",
      "Sure! Here's a draft:\nYour site says Since 2004, which puts you at 22 "
      "years. Worth a look?",
@@ -110,6 +114,10 @@ CLEAN = [
      "You've had Since 2004 sitting on your site and it's doing nothing for "
      "you. Lowry Roofing's 22 years should be the first thing a customer "
      "reads. Want me to show you where it would go?"),
+    ("ordinary words starting sentences are not proper nouns",
+     "Reading through your site, Since 2004 is sitting there doing nothing. "
+     "Adding it higher up would give a customer 22 years of reassurance "
+     "before they scroll. Would that be worth changing?"),
     ("shorter rephrase",
      "You have had Since 2004 on your site for a while now. 22 years is a real "
      "advantage and it is buried. Would it help to see where I would move it?"),
