@@ -536,6 +536,22 @@ _JUNK_URL = [
     (re.compile(r"/(marketplace|classifieds|for-sale|forsale)(/|$)", re.I),
      "classifieds/marketplace surface"),
     (re.compile(r"facebook\.com/marketplace", re.I), "Facebook Marketplace"),
+    # NOTE 2026-08-27: this rule makes craigslist_source.py structurally unable
+    # to contribute. A dry run had Craigslist answer 21 of 54 queries with 63
+    # real results and keep ZERO, because every craigslist.org URL dies here.
+    #
+    # That is mostly correct. Craigslist is overwhelmingly people SELLING, which
+    # is the opposite of demand. The exception is gigs > labor (the `lbg`
+    # section), where people ask for help hauling and cleaning out. Allowing
+    # that specific section cannot be done by URL, because a Craigslist search
+    # permalink is /view/d/<slug> and carries no section marker, so it would
+    # need the caller to pass the section through.
+    #
+    # Deliberately NOT doing that yet. Measured the same day: across 15
+    # section+phrase queries in the Dallas metro, 103 listings existed but only
+    # 2 were posted today, and both were the same competitor recruiting ad. So
+    # unblocking this would admit stale inventory, not leads. Fix the freshness
+    # problem first, then revisit. See the lead-gen-reality notes.
     (re.compile(r"(craigslist|offerup|letgo|mercari)\.", re.I), "resale marketplace"),
 ]
 

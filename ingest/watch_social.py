@@ -64,6 +64,7 @@ import trade_vocab                        # per-trade search phrasing + on-topic
 import relevance                          # scores/rejects a hit before it becomes a draft
 import client_voice                       # per-client reply voice, gated
 import watch_telemetry                    # last_scraped_at + watch_runs
+import craigslist_source                  # read-only Craigslist household/free/labor scrape
 
 try:
     from ddgs import DDGS
@@ -172,7 +173,16 @@ PLATFORMS = {
     "instagram": "site:instagram.com",
     "tiktok":    "site:tiktok.com",
     "x":         "site:x.com OR site:twitter.com",
+    # craigslist is handled entirely outside the DDGS index (see
+    # craigslist_source.py) -- this entry exists only so resolve_platforms()
+    # accepts "craigslist" in a client's crm_clients.channels.
+    "craigslist": None,
 }
+
+# Craigslist sections searched per query, in priority order. household/free
+# is the measured winner for junk-type demand; labor/gigs catches "need
+# someone to haul/help move" posts that never touch the for-sale board.
+CRAIGSLIST_SECTIONS = ["free", "household", "labor"]
 
 # Someone ASKING is the whole point. These are the phrases a person uses when
 # they are about to hire somebody, which is the only moment worth a reply.
@@ -461,8 +471,13 @@ def main():
     ap.add_argument("--platforms", default="",
                     help="DEBUG override; normally each client's crm_clients.channels is used")
     ap.add_argument("--limit", type=int, default=25, help="max drafts per run")
-    ap.add_argument("--phrases", type=int, default=3,
-                    help="intent phrases per city per platform (keeps a run bounded)")
+    ap.add_argument("--phrases", type=int, default=6,
+                    help="intent phrases per city per platform (keeps a run bounded). "
+                         "Raised from 2-3 to 6 to cover more of the 22-30 phrase "
+                         "vocabulary per run without loosening any gate; the "
+                         "rotation offset still advances by this amount each run "
+                         "so a full cycle completes in roughly vocab_size/phrases "
+                         "runs (printed per client at the top of its section).")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--show-queries", action="store_true",
                     help="print every query string and its raw result count")
@@ -487,6 +502,12 @@ def main():
     # than no number, because the OS renders it to Jack as a health signal.
     ledger = []
     health = IndexHealth()
+    # Craigslist is a direct HTML scrape, not the DDGS index, so a bad streak
+    # there says nothing about whether the search index is down. Tracked
+    # separately (streak_limit effectively disabled) so a Craigslist block
+    # is reported honestly without aborting the DDGS-backed platforms for
+    # every other client in the run.
+    cl_health = IndexHealth(streak_limit=10_000)
     # Advance the phrase window so consecutive runs ask DIFFERENT questions.
     # A dry run must not move it, or a debug run silently steals the next real
     # run's queries.
@@ -568,11 +589,22 @@ def main():
             cities = _csv(c.get("scrape_cities"))
             extra = _csv(c.get("scrape_terms"))
             allowed_subs = allowed_subreddits(cities)
+            allowed_cl_subs = craigslist_source.subdomains_for_cities(cities)
             print(f"\n=== {c['name']} — {trade} in {', '.join(cities)} "
                   f"[{','.join(plats)}]")
             if "reddit" in plats:
                 print(f"    reddit geo gate: allowed subs = "
                       f"{', '.join(sorted(allowed_subs)) or '(none, misconfigured)'}")
+            if "craigslist" in plats:
+                print(f"    craigslist geo gate: allowed metro subdomains = "
+                      f"{', '.join(sorted(allowed_cl_subs)) or '(none mapped for these cities)'}")
+            # Vocabulary coverage honesty: how much of this trade's phrase
+            # vocabulary a run actually touches, and how many runs the
+            # rotation takes to cycle through all of it once.
+            _voc_len = len(trade_vocab.intent_queries(trade, "", extra))
+            _runs_to_cover = -(-_voc_len // max(1, args.phrases))  # ceil div
+            print(f"    phrase vocabulary: {_voc_len} phrases, {args.phrases} used "
+                  f"per city per run -> full rotation every {_runs_to_cover} runs")
 
             for city in cities:
                 for plat in plats:
@@ -590,19 +622,37 @@ def main():
                     base = rot + ci * args.phrases
                     picked = [allp[(base + k) % len(allp)]
                               for k in range(min(args.phrases, len(allp)))]
-                    queries = []
-                    for phrase in picked:
-                        queries.extend(build_queries(plat, phrase, city))
+                    cl_sub = craigslist_source.subdomain_for_city(city) if plat == "craigslist" else ""
+                    if plat == "craigslist":
+                        if not cl_sub:
+                            note("craigslist has no metro subdomain mapped for "
+                                 "this city (not skipped as an error, just not "
+                                 "searchable here)", plat)
+                            queries = []
+                        else:
+                            queries = [(section, phrase) for phrase in picked
+                                      for section in CRAIGSLIST_SECTIONS]
+                    else:
+                        queries = []
+                        for phrase in picked:
+                            queries.extend(build_queries(plat, phrase, city))
                     for q in queries:
                         stats["queries"] += 1
                         per["queries"] += 1
                         by_channel.setdefault(plat, dict(queries=0, results=0,
                                                          kept=0, reasons={}))
                         by_channel[plat]["queries"] += 1
-                        status, res = search(q, 6)
-                        health.note(status)
+                        if plat == "craigslist":
+                            section, phrase = q
+                            status, res = craigslist_source.search(cl_sub, section, phrase, limit=15)
+                            q_display = f"craigslist/{section} \"{phrase}\" ({cl_sub})"
+                            cl_health.note(status)
+                        else:
+                            status, res = search(q, 6)
+                            q_display = q
+                            health.note(status)
                         if args.show_queries:
-                            print(f"    q[{status}:{len(res)}] {q}")
+                            print(f"    q[{status}:{len(res)}] {q_display}")
                         if status == "throttled":
                             stats["throttled"] += 1
                             per["throttled"] += 1
@@ -641,6 +691,14 @@ def main():
                             blob = f"{title} {body}"
                             if plat == "reddit":
                                 geo_ok, sub, geo_reason = geo_gate_reddit(u, allowed_subs)
+                                if not geo_ok:
+                                    stats["rejected"] += 1
+                                    per["rejected"] += 1
+                                    note(f"GEO REJECT: {geo_reason}", plat)
+                                    continue
+                            if plat == "craigslist":
+                                geo_ok, sub, geo_reason = craigslist_source.geo_gate(
+                                    cl_sub, allowed_cl_subs)
                                 if not geo_ok:
                                     stats["rejected"] += 1
                                     per["rejected"] += 1
@@ -832,6 +890,18 @@ def main():
         print(f"  {'yield':20}: {stats['results'] / answered:.2f} results/query "
               f"(ok={health.ok} empty={health.empty} throttled={health.throttled} "
               f"errors={health.errors}, longest dead streak={health.max_empty_streak})")
+    cl_answered = cl_health.ok + cl_health.empty + cl_health.throttled + cl_health.errors
+    if cl_answered:
+        cl_status = ("BLOCKED" if cl_health.ok == 0 and cl_health.throttled > 0
+                     else "ok" if cl_health.ok else "no listings matched")
+        print(f"  {'craigslist':20}: {cl_health.ok} ok, {cl_health.empty} empty, "
+              f"{cl_health.throttled} throttled, {cl_health.errors} errors "
+              f"({cl_answered} queries) -- {cl_status}")
+        if cl_health.ok == 0 and cl_health.throttled > 0:
+            print(f"        Craigslist is refusing every request from this host "
+                  f"(403/429/503 on all {cl_health.throttled} attempts). This is a "
+                  f"real block, not a quiet channel -- reporting it rather than "
+                  f"silently filing zero Craigslist leads.")
 
     # --- reconciliation -----------------------------------------------------
     # Every per-client row written to watch_runs must add up to the run summary
