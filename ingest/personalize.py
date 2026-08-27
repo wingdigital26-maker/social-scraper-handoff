@@ -21,15 +21,20 @@ left NULL. A null is the correct answer — it tells Jack that lead needs manual
 research before it is worth sending to. There is no category-level fallback,
 because the fallback IS the bug.
 
+This module makes NO model call of any kind. Every fact below is a regex match
+plus a count, a subtraction, or a set difference. There is no API key to leak,
+no token cost per lead, and no surface on which a model can invent a detail —
+which is what makes it safe to run across the whole candidate table at once.
+
     python personalize.py --dry-run --limit 12    # research + print, write nothing
     python personalize.py --limit 20              # research + store
     python personalize.py --recheck               # redo rows already looked at
+    python personalize.py --show-regexes          # repr() every pattern, then exit
 """
 import argparse
 import datetime
 import html as html_mod
 import json
-import os
 import pathlib
 import re
 import sys
@@ -90,6 +95,29 @@ NICHE_SERVICES = [
     "radiant barrier", "storm damage", "hail damage", "commercial roof",
 ]
 
+# Awards and standings a business either prints verbatim or does not. Same
+# rule as CERTIFICATIONS: literal substring, never inferred.
+AWARDS = [
+    "Super Service Award", "Angi Super Service", "Best of Houzz",
+    "Best of HomeAdvisor", "Neighborhood Favorite", "Torch Award",
+    "Best of Dallas", "Best of Fort Worth", "Best of Denton",
+    "Best of Plano", "Best of Frisco", "Best of McKinney",
+    "Contractor of the Year", "Top Rated Local", "Angie's List",
+    "Three Best Rated", "Readers' Choice", "Readers Choice",
+]
+
+# Offers that give a call an opening line. Literal text only.
+OFFERS = [
+    "financing available", "financing options", "0% financing",
+    "no interest", "no money down", "flexible financing",
+    "lifetime warranty", "lifetime workmanship warranty",
+    "workmanship warranty", "labor warranty", "50-year warranty",
+    "50 year warranty", "25-year warranty", "25 year warranty",
+    "10-year workmanship", "golden pledge", "system plus",
+    "free inspection", "free estimate", "free roof inspection",
+    "emergency service", "24/7 emergency", "same day service",
+]
+
 MONTHS = ("january february march april may june july august september "
           "october november december").split()
 MONTH_RE = re.compile(
@@ -101,6 +129,45 @@ YEARS_RE = re.compile(
     r"(?:of\s+)?(?:experience|in\s+business|serving|of\s+service|"
     r"in\s+the\s+roofing|of\s+roofing)", re.I)
 TAG_RE = re.compile(r"<(script|style|noscript)[^>]*>.*?</\1>", re.S | re.I)
+
+# --- deterministic finders added 2026-08-27 --------------------------------
+# Every one of these is a literal read. Run --show-regexes to see repr() of
+# each; this file has previously shipped a pattern containing a literal 0x08
+# byte and an "email" pattern that matched "slick-carousel@1.8.1", so the
+# reprs are printable on demand rather than trusted by eye.
+
+# A footer copyright. visible_text() unescapes &copy; to © before this runs.
+COPYRIGHT_RE = re.compile(
+    r"(?:©|\(c\)|copyright)\s*(?:©\s*)?"
+    r"((?:19|20)\d{2})(?:\s*[-–—]\s*((?:19|20)\d{2}))?", re.I)
+
+# "family owned and operated", optionally with a founding year.
+FAMILY_RE = re.compile(
+    r"\bfamily[\s–-]?(?:owned|run|operated)"
+    r"(?:\s*(?:and|&)\s*operated)?"
+    r"(?:\s+since\s+((?:19|20)\d{2}))?", re.I)
+
+# A countable production claim: "3,000 roofs installed", "500+ homes served".
+VOLUME_RE = re.compile(
+    r"\b((?:\d{1,3},)?\d{3,6}|\d{2,3})\s*\+?\s+"
+    r"(roofs|homes|houses|customers|clients|projects|jobs|properties|families|"
+    r"buildings|businesses)\s+"
+    r"(installed|completed|served|serviced|replaced|repaired|roofed|helped|"
+    r"protected)\b", re.I)
+
+# A crew-size claim. Capped at 3-4 digits so a phone number or a ZIP cannot
+# be read as a headcount.
+CREW_RE = re.compile(
+    r"\b(?:team|crew|staff)\s+of\s+(?:over\s+|more\s+than\s+)?(\d{1,4})\b"
+    r"|\b(\d{1,3})\s+(?:full[\s-]time\s+)?"
+    r"(?:crews|trucks|technicians|installers|employees)\b", re.I)
+
+# tel: links, read out of the RAW html rather than the visible text, so a
+# number rendered as an image or an icon-only button still counts.
+TEL_HREF_RE = re.compile(r'href=["\']\s*tel:([^"\']+)["\']', re.I)
+DIGITS_RE = re.compile(r"\D+")
+
+TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.S | re.I)
 SERVICE_AREA_RE = re.compile(
     r"(service\s+areas?|areas?\s+we\s+serve|area\s+served|we\s+serve|"
     r"proudly\s+serv|serving\s+|communities\s+we|surrounding\s+"
@@ -401,6 +468,279 @@ def find_self_claim(pages, row):
     return None
 
 
+def find_insecure_site(pages, row):
+    """Their site is served over plain http://. The browser says so out loud.
+
+    Read off the FINAL url after redirects, so a site that quietly upgrades to
+    https is not accused. Nothing is inferred: either the address bar shows
+    http:// and the "Not secure" chip, or it does not.
+    """
+    home_url = next(iter(pages))
+    if not home_url.lower().startswith("http://"):
+        return None
+    host = urlparse(home_url).netloc
+    return {
+        "kind": "insecure_site",
+        "fact": f"Your site still loads over plain http:// — Chrome shows "
+                f'"Not secure" in the address bar next to {host}.',
+        "evidence": None,          # url-derived, not page-text-derived
+        "source": home_url,
+    }
+
+
+def find_stale_copyright(pages, row):
+    """The footer copyright year has stopped moving.
+
+    Only the newest copyright year on the page is used, and only when it is at
+    least two years behind — a site touched last December is not stale in
+    January, and being wrong about that is worse than saying nothing.
+    """
+    for url, raw in pages.items():
+        text = visible_text(raw)
+        years = []
+        for m in COPYRIGHT_RE.finditer(text):
+            lit = m.group(0).strip()
+            y = int(m.group(2) or m.group(1))
+            if 1990 < y <= THIS_YEAR:
+                years.append((y, lit))
+        if not years:
+            continue
+        newest, lit = max(years, key=lambda t: t[0])
+        if newest >= THIS_YEAR - 1:
+            continue
+        if not _ev(lit, text):
+            continue
+        return {
+            "kind": "stale_copyright",
+            "fact": f'The copyright line in your footer still reads "{lit}" — '
+                    f"{THIS_YEAR - newest} years out of date.",
+            "evidence": lit,
+            "source": url,
+        }
+    return None
+
+
+def find_family_owned(pages, row):
+    """They say "family owned" on their own site. Quoted verbatim."""
+    for url, raw in pages.items():
+        text = visible_text(raw)
+        m = FAMILY_RE.search(text)
+        if not m:
+            continue
+        lit = m.group(0).strip()
+        if not _ev(lit, text):
+            continue
+        year = m.group(1)
+        if year and 1900 < int(year) <= THIS_YEAR:
+            return {
+                "kind": "family_owned",
+                "fact": f'Your site says "{lit}", which puts you '
+                        f"{THIS_YEAR - int(year)} years in.",
+                "evidence": lit,
+                "source": url,
+            }
+        # Deliberately neutral wording. Norman Roofing's page reads "a
+        # family-owned atmosphere for our trade partners" — the phrase is
+        # unarguably on the page, but "the business IS family owned" is a
+        # reading, not a reading-off. Say only that the phrase is there.
+        return {
+            "kind": "family_owned",
+            "fact": f'Your site uses the phrase "{lit}".',
+            "evidence": lit,
+            "source": url,
+        }
+    return None
+
+
+def find_award(pages, row):
+    """A named award or standing they publish. Literal substring, like certs."""
+    for url, raw in pages.items():
+        text = visible_text(raw)
+        for award in AWARDS:
+            m = re.search(re.escape(award), text, re.I)
+            if m:
+                # Quote the page's own casing: T-Rock prints "TOP RATED
+                # LOCAL®", and a human scanning for the quoted string should
+                # find exactly what we quoted.
+                lit = m.group(0)
+                return {
+                    "kind": "award",
+                    "fact": f'Your site mentions "{lit}".',
+                    "evidence": lit,
+                    "source": url,
+                }
+    return None
+
+
+def find_volume_claim(pages, row):
+    """A number they publish about their own output or crew."""
+    for url, raw in pages.items():
+        text = visible_text(raw)
+        m = VOLUME_RE.search(text)
+        if m:
+            lit = re.sub(r"\s+", " ", m.group(0).strip())
+            if _ev(lit, text):
+                return {
+                    "kind": "volume_claim",
+                    "fact": f'Your site claims "{lit}".',
+                    "evidence": lit,
+                    "source": url,
+                }
+        m = CREW_RE.search(text)
+        if m:
+            lit = re.sub(r"\s+", " ", m.group(0).strip())
+            if _ev(lit, text):
+                return {
+                    "kind": "crew_claim",
+                    "fact": f'Your site says "{lit}".',
+                    "evidence": lit,
+                    "source": url,
+                }
+    return None
+
+
+def find_offer(pages, row):
+    """Financing, warranty or free-inspection language they already publish.
+
+    Counted, because an offer that appears once in a footer and an offer the
+    whole site is built around are different conversations.
+    """
+    for url, raw in pages.items():
+        text = visible_text(raw)
+        for offer in OFFERS:
+            found = re.findall(re.escape(offer), text, re.I)
+            if not found:
+                continue
+            offer, n = found[0], len(found)   # the page's own casing
+            # A phrase that appears once, usually in a footer, is not an offer
+            # the business is built around and makes a limp opening line. Same
+            # threshold the niche-service finder already uses.
+            if n < 2:
+                continue
+            return {
+                "kind": "offer",
+                "fact": f'Your page uses the phrase "{offer}" '
+                        f"{n} time{'s' if n != 1 else ''}.",
+                "evidence": offer,
+                "source": url,
+            }
+    return None
+
+
+def find_phone_mismatch(pages, row):
+    """Two different phone numbers linked on the same page.
+
+    Read from tel: hrefs only. A tel: link is unambiguously a phone number —
+    a bare digit run in body text could be a licence number, a ZIP, or a year,
+    and this file has been burned before by a pattern that was almost right.
+    The claim made is only what is literally there: two different numbers.
+    """
+    home_url, home_raw = next(iter(pages.items()))
+    seen = []
+    for m in TEL_HREF_RE.finditer(home_raw):
+        d = DIGITS_RE.sub("", m.group(1))
+        if len(d) == 11 and d.startswith("1"):
+            d = d[1:]
+        if len(d) != 10:
+            continue
+        if d not in seen:
+            seen.append(d)
+    if len(seen) < 2:
+        return None
+    raw_digits = DIGITS_RE.sub("", home_raw)
+    if not all(d in raw_digits for d in seen[:2]):
+        return None
+    shown = ["({}) {}-{}".format(d[:3], d[3:6], d[6:]) for d in seen[:2]]
+    extra = f" (and {len(seen) - 2} more)" if len(seen) > 2 else ""
+    return {
+        "kind": "phone_mismatch",
+        "fact": f"Your homepage links {len(seen)} different phone numbers — "
+                f"{shown[0]} and {shown[1]}{extra}. Every one of them is a "
+                f"separate number Google has to reconcile with your listing.",
+        "evidence": None,          # html-derived, verified against raw digits
+        "source": home_url,
+    }
+
+
+def find_duplicate_title(pages, row):
+    """Two of their pages ship the identical <title>.
+
+    Visible in the browser tab, so a human can confirm it by opening both
+    URLs. Requires the title to be non-trivial so a one-word placeholder does
+    not produce a fussy non-observation.
+    """
+    titles = {}
+    for url, raw in pages.items():
+        m = TITLE_RE.search(raw or "")
+        if not m:
+            continue
+        t = re.sub(r"\s+", " ", html_mod.unescape(re.sub(r"<[^>]+>", " ",
+                                                         m.group(1)))).strip()
+        if len(t) < 12:
+            continue
+        titles.setdefault(t, []).append(url)
+    for t, urls in titles.items():
+        if len(urls) < 2:
+            continue
+        return {
+            "kind": "duplicate_title",
+            "fact": f'{len(urls)} of your pages share one browser-tab title, '
+                    f'"{t}" — including {urls[0]} and {urls[1]}, which Google '
+                    f"reads as the same page twice.",
+            "evidence": None,      # html-derived, checked in the browser tab
+            "source": urls[1],
+        }
+    return None
+
+
+def find_review_standing(row):
+    """Their Google review standing, from the count the audit pass stored.
+
+    Stated as a BAND, never as an exact count, and this is not fussiness. The
+    stored count is a snapshot: row 70 (Proficient Roofing) carries 29, and an
+    independent check on 2026-08-27 found third-party directories reporting 30
+    for the same listing. Review counts move. A fact that says "shows 29
+    reviews" is therefore wrong the first week somebody leaves one, and the
+    five-second test — open the source, see the claim — fails. "Fewer than 30"
+    survives the drift it was written to survive.
+
+    High counts are dropped entirely. Wing sells review generation; a roofer
+    with 155 reviews is not a lead for it, so an exact-count claim there would
+    carry all of the drift risk and none of the sales value.
+    """
+    n = row.get("gmb_reviews")
+    if n is None:
+        return None
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        return None
+    name = (row.get("title") or "").strip()
+    city = (row.get("place_name") or "").strip()
+    if not name:
+        return None
+    src = ("https://www.google.com/maps/search/"
+           + requests.utils.quote(f"{name} {city}".strip()))
+
+    if n == 0:
+        return {
+            "kind": "reviews",
+            "fact": "Your Google Business listing has no reviews on it at all.",
+            "evidence": "0",
+            "source": src,
+        }
+    for band in (10, 30):
+        if n < band:
+            return {
+                "kind": "reviews",
+                "fact": f"Your Google listing is still sitting under {band} "
+                        f"reviews.",
+                "evidence": str(n),
+                "source": src,
+            }
+    return None
+
+
 def find_bad_rank(row):
     """Their position for their own main term, only when it is genuinely poor.
 
@@ -449,52 +789,64 @@ def gather(website, links_from_home=None):
     return pages, links
 
 
-def rephrase(fact, evidence):
-    """Optional: let a FREE worker model tighten the wording.
+# The wording of every fact is written here, in Python, by hand. An earlier
+# version of this file could optionally hand each fact to a worker model to
+# "tighten the wording"; that path is gone. It was the only LLM dependency in
+# the whole lead pipeline outside intel_propose.py, it cost a call per lead at
+# a table size of 1,224, and a rewriter that is allowed to touch a sentence is
+# a rewriter that can drop a qualifier. There is no model in this module.
 
-    The model may only rewrite a fact that is already grounded. If its output
-    drops the verbatim evidence, or drifts in length, the original wins. The
-    model is never allowed to be the source of a fact.
+
+def finders_for(pages, row, links):
+    """The ordered finder list. First hit wins, so the strongest fact leads.
+
+    Order matters and is deliberate: the four original page-gap finders and
+    the self-claim finder run first and unchanged, so nothing that used to be
+    found changes shape. Everything after them only ever fires on a lead that
+    would otherwise have been a NULL.
     """
-    router = os.environ.get("LLM_ROUTER_PATH", r"C:\Users\wjack\ghl-cli\llm_router.py")
-    try:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("llm_router", router)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        out = mod.generate(
-            "seo",
-            "Rewrite this observation as one plain sentence a contractor would "
-            "read without cringing. Keep every fact and keep the quoted text "
-            f'"{evidence}" exactly as-is. No compliments, no adjectives, no '
-            f"greeting. Output only the sentence.\n\n{fact}",
-            temperature=0.3, max_tokens=120)
-        text = (out or "").strip().strip('"')
-        if text and evidence.lower() in text.lower() and 20 < len(text) < 320:
-            return text
-    except Exception as e:
-        print(f"      rephrase skipped: {str(e)[:70]}")
-    return fact
+    return [
+        lambda: find_stale_blog(pages, row),
+        lambda: find_service_area_gap(pages, row, links),
+        lambda: find_niche_service_gap(pages, row, links),
+        lambda: find_self_claim(pages, row),
+        # --- added 2026-08-27, all deterministic, all NULL-fillers ---
+        lambda: find_insecure_site(pages, row),
+        lambda: find_stale_copyright(pages, row),
+        lambda: find_family_owned(pages, row),
+        lambda: find_award(pages, row),
+        lambda: find_volume_claim(pages, row),
+        lambda: find_phone_mismatch(pages, row),
+        lambda: find_duplicate_title(pages, row),
+        lambda: find_offer(pages, row),
+        lambda: find_bad_rank(row),
+        lambda: find_review_standing(row),
+    ]
+
+
+def _row_only_facts(row, why):
+    """No page was read. The row itself may still carry numbers the audit pass
+    stored, and restating a stored number is not inventing one. If it carries
+    nothing either, NULL is the honest answer."""
+    for f in (lambda: find_bad_rank(row), lambda: find_review_standing(row)):
+        hit = f()
+        if hit:
+            return hit["fact"], hit["source"], hit["kind"], hit["evidence"]
+    return None, None, why, None
 
 
 def personalize(row):
     """Return (fact, source, kind, evidence); fact is None when nothing is grounded."""
     website = row.get("website")
     if not website:
-        return None, None, "no website to read — needs manual research", None
+        return _row_only_facts(row, "no website to read — needs manual research")
 
     pages, links = gather(website)
     if not pages:
-        return None, None, "site could not be fetched — needs manual research", None
+        return _row_only_facts(
+            row, "site could not be fetched — needs manual research")
 
-    finders = [
-        lambda: find_stale_blog(pages, row),
-        lambda: find_service_area_gap(pages, row, links),
-        lambda: find_niche_service_gap(pages, row, links),
-        lambda: find_self_claim(pages, row),
-        lambda: find_bad_rank(row),
-    ]
-    for f in finders:
+    for f in finders_for(pages, row, links):
         try:
             hit = f()
         except Exception as e:
@@ -513,9 +865,15 @@ def main():
     ap.add_argument("--limit", type=int, help="only this many prospects")
     ap.add_argument("--recheck", action="store_true",
                     help="redo rows that already have a personalization")
-    ap.add_argument("--rephrase", action="store_true",
-                    help="let the free worker model tighten wording (facts unchanged)")
+    ap.add_argument("--show-regexes", action="store_true",
+                    help="print repr() of every pattern in this file, then exit")
     args = ap.parse_args()
+
+    if args.show_regexes:
+        for nm, val in sorted(globals().items()):
+            if isinstance(val, re.Pattern):
+                print(f"{nm:22} {val.pattern!r}")
+        return
 
     env = load_env()
     url, key = env.get("SUPABASE_URL"), env.get("SUPABASE_SERVICE_KEY")
@@ -550,8 +908,6 @@ def main():
     for row in rows:
         name = row.get("title") or f"#{row['id']}"
         fact, source, kind, evidence = personalize(row)
-        if fact and args.rephrase and evidence:
-            fact = rephrase(fact, evidence)
         if fact:
             found += 1
             print(f"[{row['id']}] {name}  ({kind})")

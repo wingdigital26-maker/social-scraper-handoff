@@ -275,6 +275,54 @@ def _in_bbox(lat, lng, bbox) -> bool:
     return lo_a <= lat <= hi_a and lo_o <= lng <= hi_o
 
 
+def haversine_mi(lat1, lng1, lat2, lng2) -> float:
+    """Great-circle miles. Pure arithmetic."""
+    if None in (lat1, lng1, lat2, lng2):
+        return float("inf")
+    r = 3958.7613
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    a = (math.sin((p2 - p1) / 2) ** 2
+         + math.cos(p1) * math.cos(p2) * math.sin(math.radians(lng2 - lng1) / 2) ** 2)
+    return 2 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
+def market_bbox(market: dict):
+    """A market may carry an explicit bbox (the three hand-written markets do)
+    or a center + radius_mi (everything markets_build.py generates). Either is
+    valid; a center is preferred because it also enables the exact radius test
+    below, which a rectangle cannot express."""
+    bb = market.get("bbox")
+    if bb:
+        return tuple(bb)
+    center = market.get("center")
+    if not center:
+        return None
+    lat, lng = center[0], center[1]
+    rad = float(market.get("radius_mi") or 35.0)
+    dlat = rad / 69.0
+    dlng = rad / (69.0 * max(0.15, math.cos(math.radians(lat))))
+    return (lat - dlat, lat + dlat, lng - dlng, lng + dlng)
+
+
+def in_market(market: dict, lat, lng) -> bool:
+    """Bounding box first because it is one comparison, then the exact radius.
+    A rectangle drawn around a 35-mile circle is ~27% larger than the circle,
+    and that corner slop is precisely where the neighbouring-metro bleed-in
+    lives, so the radius test is not optional when a center is available."""
+    bb = market_bbox(market)
+    if bb is None:
+        # No geography supplied at all. Refusing to guess: a market with no
+        # geometry keeps nothing rather than keeping the whole country.
+        return False
+    if not _in_bbox(lat, lng, bb):
+        return False
+    center = market.get("center")
+    if not center:
+        return True
+    return haversine_mi(center[0], center[1], lat, lng) <= float(
+        market.get("radius_mi") or 35.0)
+
+
 def classify(title: str, body: str = "") -> tuple[str | None, list[str], str | None]:
     """Return (tier, matched_phrases, reject_reason).
 
@@ -381,13 +429,47 @@ class Health:
                 "kept": self.kept}
 
 
+# ---------------------------------------------------------------------------
+# Politeness hook.
+#
+# A single-market run does ~130 requests and nothing anywhere needs to care.
+# A 400-market sweep does tens of thousands, and the difference between "polite"
+# and "banned" is a token bucket. Rather than thread a session object through
+# every provider signature (and break every existing caller), the sweeper
+# installs a POLICY object here. It gets a say before every request and sees the
+# status code after every one, so it can slow down or stop the whole run.
+#
+# Contract:
+#   POLICY.before(url) -> None       may sleep; may raise Blocked to abort a host
+#   POLICY.after(url, status|None)   status is the HTTP code, or None on a
+#                                    transport error
+# Default is None, i.e. exactly the behaviour that shipped.
+# ---------------------------------------------------------------------------
+POLICY = None
+
+
+class Blocked(Exception):
+    """Raised by a POLICY that has decided a host must not be touched again."""
+
+
+def set_policy(policy):
+    global POLICY
+    POLICY = policy
+
+
 def _get(url, health: Health, params=None, timeout=30):
     health.attempts += 1
+    if POLICY is not None:
+        POLICY.before(url)
     try:
         r = requests.get(url, params=params, headers=UA, timeout=timeout)
     except Exception as e:
         health.transport_errors += 1
+        if POLICY is not None:
+            POLICY.after(url, None)
         return None, f"transport:{type(e).__name__}"
+    if POLICY is not None:
+        POLICY.after(url, r.status_code)
 
     # estatesales.net serves UTF-8 without declaring a charset, so requests
     # falls back to ISO-8859-1 per RFC 2616 and every apostrophe in a company
@@ -498,10 +580,13 @@ def _cl_detail(url, health: Health):
 def provider_craigslist(market: dict, max_detail: int = 90, delay: float = 0.35):
     h = Health("craigslist")
     leads, seen = [], set()
-    bbox = market["bbox"]
     shortlist = []
 
-    for path, query in CL_SEARCHES:
+    # Search set is data too: a market may narrow or widen it (a rural area with
+    # no gigs volume is better served by browsing `zip` alone than by ten
+    # keyword queries that all come back empty).
+    searches = market.get("cl_searches") or CL_SEARCHES
+    for path, query in searches:
         params = {"batch": f"{market['cl_area']}-0-360-0-0", "cc": "US",
                   "lang": "en", "searchPath": path}
         if query:
@@ -523,7 +608,7 @@ def provider_craigslist(market: dict, max_detail: int = 90, delay: float = 0.35)
                 continue
             # A keyword search spills postings from neighbouring metros in
             # under the same area id. Geo is the only reliable guard.
-            if not _in_bbox(it["lat"], it["lng"], bbox):
+            if not in_market(market, it["lat"], it["lng"]):
                 h.geo_dropped += 1
                 continue
             seen.add(it["url"])
@@ -573,6 +658,11 @@ ES_TITLE_RX = re.compile(r"^(.*?)\s+starts on\s+(\d{1,2}/\d{1,2}/\d{4})\s*$", re
 #  It is being run by Annie's Estate Sales."
 ES_RUNS_RX = re.compile(r"runs through\s+([A-Za-z]+,\s*[A-Za-z]+\s*\d{1,2})", re.I)
 ES_BY_RX = re.compile(r"being run by\s+(.+?)\.\s*$", re.I)
+# The sale detail page carries the real coordinates of the house. Verified live
+# on 2026-08-27: /TX/Waco/76710/5054553 -> "latitude":31.545595. This is what
+# lets the hand-maintained es_zips prefix list be retired in favour of a radius.
+ES_LAT_RX = re.compile(r'"latitude"\s*:\s*(-?\d+\.\d+)')
+ES_LNG_RX = re.compile(r'"longitude"\s*:\s*(-?\d+\.\d+)')
 
 
 def provider_estatesales(market: dict, max_detail: int = 40, delay: float = 0.4):
@@ -630,6 +720,28 @@ def provider_estatesales(market: dict, max_detail: int = 40, delay: float = 0.4)
         parts = link.strip("/").split("/")
         state, city, zipc, sid = parts[0], parts[1].replace("-", " "), parts[2], parts[3]
 
+        # Geo. A metro index page bleeds in sales from every ADJACENT metro it
+        # links to — the live DFW index carried Waco (~90mi), Ben Wheeler
+        # (~75mi) and Bonham (~65mi) on 2026-08-26. When the market supplies a
+        # center, the sale's own published coordinates decide, not a ZIP list.
+        slat = slng = None
+        lm, gm = ES_LAT_RX.search(d.text), ES_LNG_RX.search(d.text)
+        if lm and gm:
+            try:
+                slat, slng = float(lm.group(1)), float(gm.group(1))
+            except ValueError:
+                slat = slng = None
+        if market.get("center"):
+            if slat is None:
+                # No coordinates published. Do not guess and do not keep: an
+                # ungeocodable sale on a metro page that mixes metros is exactly
+                # the row that turns into a 90-mile drive.
+                h.geo_dropped += 1
+                continue
+            if not in_market(market, slat, slng):
+                h.geo_dropped += 1
+                continue
+
         tier, hits, why = classify(title, desc)
         if tier is None:
             # An estate sale index entry is a cleanout event by construction;
@@ -644,7 +756,7 @@ def provider_estatesales(market: dict, max_detail: int = 40, delay: float = 0.4)
             body += f" | Sale ends {ends} — leftovers need to leave the property."
         leads.append(_candidate(
             "estatesales", sid, url, title, body[:1200], tier, hits, market["name"],
-            place=f"{city}, {state} {zipc}",
+            lat=slat, lng=slng, place=f"{city}, {state} {zipc}",
             extra={"starts_on": starts, "ends_on": ends, "run_by": company,
                    "zip": zipc}))
         h.kept += 1
