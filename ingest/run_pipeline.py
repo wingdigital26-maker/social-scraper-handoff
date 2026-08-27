@@ -400,13 +400,39 @@ def main() -> int:
                 load_res.status = "SKIPPED"
                 load_res.reason = "collect stage did not run in this invocation, nothing to load"
 
+        # If load actually FAILED, everything after it would be judging and
+        # drafting from whatever happened to already be in the table, and would
+        # report cheerful OK numbers for work that has nothing to do with this
+        # run. That happened for real on 2026-08-27: load failed all 89 records
+        # and the report still showed categorize OK and draft OK below it.
+        #
+        # A run whose input never landed has not succeeded, so the later stages
+        # are skipped and say why. Note this is FAILED only. A load that ran and
+        # legitimately had nothing to write is not a failure and does not block.
+        load_failed = load_res is not None and load_res.status == "FAILED"
+        blocked_reason = (
+            "skipped because the load stage FAILED, so nothing from this run "
+            "reached the table. Judging now would report on stale rows and "
+            "look like success."
+        )
+
         if run_categorize:
-            categorize_res = run_downstream_stage(
-                "categorize_raw", CATEGORIZE_TOOL, client, args.confirm, [])
+            if load_failed:
+                categorize_res = SourceResult("categorize_raw")
+                categorize_res.status = "SKIPPED"
+                categorize_res.reason = blocked_reason
+            else:
+                categorize_res = run_downstream_stage(
+                    "categorize_raw", CATEGORIZE_TOOL, client, args.confirm, [])
 
         if run_draft:
-            draft_res = run_downstream_stage(
-                "draft_from_leads", DRAFT_TOOL, client, args.confirm, [])
+            if load_failed:
+                draft_res = SourceResult("draft_from_leads")
+                draft_res.status = "SKIPPED"
+                draft_res.reason = blocked_reason
+            else:
+                draft_res = run_downstream_stage(
+                    "draft_from_leads", DRAFT_TOOL, client, args.confirm, [])
 
         total = time.time() - client_t0
         print_report(client_name, source_results, load_res, categorize_res,

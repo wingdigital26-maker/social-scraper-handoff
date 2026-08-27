@@ -67,13 +67,31 @@ def load_env() -> tuple[str, str]:
              "Looked in: " + ", ".join(str(p) for p in ENV_CANDIDATES))
 
 
+def scrub(v):
+    """Strip lone surrogates so the value can actually be encoded as UTF-8.
+
+    Scraped pages come back with broken byte sequences, and a collector reading
+    them with errors="replace"/"surrogateescape" can leave unpaired surrogates
+    like \\udc9d in the text. Those are not real characters, they are the
+    wreckage of a failed decode, and json.dumps(...).encode("utf-8") raises on
+    them. That killed an entire real pipeline run.
+
+    They are replaced rather than dropped silently, and only in the mangled
+    positions, so the rest of the subject's own wording survives intact. That
+    matters because a later AI pass must quote this text verbatim.
+    """
+    if not isinstance(v, str):
+        return v
+    return v.encode("utf-8", "replace").decode("utf-8", "replace")
+
+
 def clean(rec: dict) -> dict | None:
     """Keep only contract fields. Return None if the record is unusable."""
     url = (rec.get("url") or "").strip()
     if not url.startswith("http"):
         return None
-    out = {k: rec.get(k) for k in COLLECTION_FIELDS}
-    out["url"] = url
+    out = {k: scrub(rec.get(k)) for k in COLLECTION_FIELDS}
+    out["url"] = scrub(url)
     # Empty strings are not data. Anything unknown is null, per the contract.
     for k, v in list(out.items()):
         if isinstance(v, str) and not v.strip():
@@ -138,7 +156,7 @@ def main() -> int:
     headers = {
         "apikey": key,
         "Authorization": f"Bearer {key}",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json; charset=utf-8",
         # merge-duplicates so a re-collected row refreshes its collection fields.
         # Because the payload contains ONLY collection fields, an existing
         # judgement on that row is left untouched.
@@ -147,8 +165,16 @@ def main() -> int:
     written = failed = 0
     for i in range(0, len(rows), args.batch):
         chunk = rows[i:i + args.batch]
+        # Encode to UTF-8 bytes explicitly. Passing a str here makes requests
+        # encode it as latin-1, which mangles any non-ASCII character in a
+        # scraped title and makes PostgREST reject the whole batch with
+        # "Empty or invalid json". That failed all 89 records on the first real
+        # pipeline run, while earlier tests passed only because Craigslist and
+        # estate sale titles happened to be plain ASCII.
         r = requests.post(f"{url}/rest/v1/leads_raw?on_conflict=url,client",
-                          headers=headers, data=json.dumps(chunk), timeout=60)
+                          headers=headers,
+                          data=json.dumps(chunk, ensure_ascii=False).encode("utf-8"),
+                          timeout=60)
         if r.ok:
             written += len(chunk)
         else:
