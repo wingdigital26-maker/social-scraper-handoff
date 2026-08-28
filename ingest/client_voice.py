@@ -6,6 +6,13 @@ Public API
 ----------
 draft_reply(client_slug, client_name, trade, city, post_title, post_snippet, urgent)
     -> (draft_text, voice_note)
+    Shaped for a PUBLIC FORUM REPLY (Reddit/Nextdoor/Facebook comment): short,
+    no greeting or signoff, reads like a helpful neighbour, not an ad.
+
+draft_email(client_slug, client_name, trade, city, post_title, post_snippet, urgent, recipient_name=None)
+    -> (subject, body, voice_note)
+    Shaped for an actual EMAIL: real subject line, greeting, short scannable
+    paragraphs, one clear ask, signoff. Never truncated.
 
 check_voice(text, client_slug=None) -> list[str]
     Returns a list of violation strings. Empty list means the text is clean.
@@ -488,14 +495,179 @@ def _append_signoff(body: str, signoff: str) -> str:
 
 
 _DETAIL_TEMPLATES = [
-    "Saw you mentioned {detail}. We do {trade} work around {city} and can help with that if you want a hand.",
-    "For what it's worth on \"{detail}\": that is the kind of job we handle around {city} for {trade}. Happy to help if useful.",
-    "Re: {detail} -- we cover {city} for {trade} and can take that off your hands if you want.",
+    "Saw you mentioned {detail}. Worth knowing that a lot of that kind of "
+    "damage does not show up as an obvious hole, so it is easy to miss from "
+    "ground level or a couple of photos. We do {trade} work around {city} "
+    "and are glad to take a real look if you want a second opinion, no "
+    "pressure either way.",
+    "For what it's worth on \"{detail}\": that is worth getting looked at in "
+    "person rather than judged from photos alone, since a lot of the actual "
+    "damage hides under the surface. We handle {trade} around {city} and "
+    "can walk through what we would check if that is useful.",
+    "Re: {detail}. That is the kind of thing that is hard to call from a "
+    "photo or a post, so do not take a stranger's guess as gospel either "
+    "way. We cover {city} for {trade} and are happy to come give you a "
+    "straight answer, whether or not you end up using us.",
 ]
 _DETAIL_URGENT_TEMPLATES = [
-    "Saw you mentioned {detail} -- that sounds time sensitive. We do {trade} around {city} and can move on it.",
-    "Re: {detail}. Worth handling soon. We cover {city} for {trade} if you want somebody out quick.",
+    "Saw you mentioned {detail}. If that is active right now, get something "
+    "over it to stop more water getting in before anyone even looks at it, "
+    "that matters more than who ends up doing the repair. We do {trade} "
+    "around {city} and can come take a look once it is covered.",
+    "Re: {detail}. That is worth handling soon rather than waiting it out, "
+    "since it tends to get worse fast once it starts. We cover {city} for "
+    "{trade} if you want somebody out to check it.",
 ]
+
+
+# ---------------------------------------------------------------------------
+# Email format.
+#
+# WHY THIS EXISTS. The public-reply templates above are shaped for a forum
+# post: short, no greeting, no signoff, read by a stranger scrolling a
+# thread. An email is read by one named person with an inbox, and needs a
+# subject line, a greeting, short paragraphs, one clear ask and a signoff.
+# Forcing the reply template into an email (or vice versa) is what produced
+# the "fragment" problem Jack flagged -- neither shape actually fit either
+# channel. This keeps the two shapes separate on purpose.
+# ---------------------------------------------------------------------------
+
+_EMAIL_SUBJECT_TEMPLATES = [
+    "About the {trade} question you posted",
+    "Following up on your {trade} post",
+    "Re: {detail}",
+]
+
+_EMAIL_BODY_TEMPLATES = [
+    (
+        "Hi{greeting_name},\n\n"
+        "I came across your post about {detail}.\n\n"
+        "That is genuinely hard to judge from photos or a text description "
+        "alone, so take any confident-sounding stranger's guess (including "
+        "mine) with a grain of salt until someone has actually looked at it "
+        "in person.\n\n"
+        "We do {trade} work around {city}. If it would help, I am glad to "
+        "come take a real look and give you a straight answer on what it "
+        "actually needs, whether or not that ends up being us.\n\n"
+        "{signoff_line}"
+    ),
+    (
+        "Hi{greeting_name},\n\n"
+        "Saw your post about {detail} and wanted to reach out.\n\n"
+        "A lot of that kind of issue looks worse or better than it actually "
+        "is until someone gets eyes on it directly, so I would not put too "
+        "much weight on guesses from photos alone.\n\n"
+        "We cover {city} for {trade}. Happy to swing by and take a look if "
+        "that is useful, no pressure either way.\n\n"
+        "{signoff_line}"
+    ),
+]
+
+
+def draft_email(
+    client_slug: str,
+    client_name: str,
+    trade: str,
+    city: str,
+    post_title: str,
+    post_snippet: str,
+    urgent: bool,
+    recipient_name: Optional[str] = None,
+) -> Tuple[Optional[str], Optional[str], str]:
+    """Draft a real, formatted EMAIL (subject + body) for leads that have an
+    actual email address, as opposed to draft_reply()'s public-forum-reply
+    shape.
+
+    Returns (subject, body, voice_note). subject and body are both None when
+    the post does not clear the same buying-intent + real-detail bar that
+    draft_reply() enforces -- an email built on a generic capability
+    statement is not an acceptable substitute for a genuine one, same rule
+    as the public reply.
+
+    The body is never truncated: it is built from complete template
+    sentences with no character cap, and always ends on a sentence-ending
+    punctuation mark because every template and every signoff line does.
+    """
+    profile = _load_profile(client_slug)
+    slug = profile.get("slug") or (client_slug or "_generic")
+
+    trade = (trade or profile.get("trade") or "").strip()
+    city = (city or profile.get("default_city") or "").strip()
+    client_name = (client_name or profile.get("display_name") or "").strip()
+
+    intent = score_buying_intent(post_title, post_snippet)
+    intent_note = (
+        f"buying-intent score={intent['score']:.2f} verdict={intent['verdict']} | "
+        + " ; ".join(intent["signals"])
+    )
+    if intent["verdict"] != "buy" or intent["score"] < MIN_BUYING_INTENT:
+        return None, None, (
+            f"voice={slug} | NO EMAIL: post failed the buying-intent gate | "
+            + intent_note
+        )
+
+    detail = _extract_situation_detail(post_title, post_snippet)
+    if not detail:
+        return None, None, (
+            f"voice={slug} | NO EMAIL: post shows buying intent but no specific, "
+            f"real detail about the poster's situation could be quoted -- refusing "
+            f"to send a generic capability statement | " + intent_note
+        )
+
+    greeting_name = f" {recipient_name.strip()}" if recipient_name else ""
+    signoff = (profile.get("signoff") or "").strip()
+    if client_name:
+        signoff_line = f"{signoff}\n\n{client_name}" if signoff else client_name
+    else:
+        signoff_line = signoff or "Thanks."
+
+    key = _post_key(post_title, post_snippet)
+    body_start = _pick_index(key, len(_EMAIL_BODY_TEMPLATES), salt=f"{slug}:email:body:")
+    subj_start = _pick_index(key, len(_EMAIL_SUBJECT_TEMPLATES), salt=f"{slug}:email:subj:")
+
+    notes: List[str] = []
+    chosen_subject = None
+    chosen_body = None
+    chosen_index = None
+
+    for step in range(len(_EMAIL_BODY_TEMPLATES)):
+        idx = (body_start + step) % len(_EMAIL_BODY_TEMPLATES)
+        body_candidate = _EMAIL_BODY_TEMPLATES[idx].format(
+            greeting_name=greeting_name,
+            detail=detail,
+            trade=trade or "",
+            city=city or "",
+            signoff_line=signoff_line,
+        )
+        body_candidate = re.sub(r"[ \t]{2,}", " ", body_candidate).strip()
+        subj_idx = (subj_start + step) % len(_EMAIL_SUBJECT_TEMPLATES)
+        subject_candidate = _EMAIL_SUBJECT_TEMPLATES[subj_idx].format(
+            trade=trade or "", detail=detail,
+        ).strip()
+        problems = check_voice(subject_candidate + " " + body_candidate, slug)
+        if not problems:
+            chosen_subject = subject_candidate
+            chosen_body = body_candidate
+            chosen_index = idx
+            if step:
+                notes.append(f"stepped forward from #{body_start} to #{idx}")
+            break
+        notes.append(f"email template #{idx} rejected: {'; '.join(problems)}")
+
+    if chosen_body is None:
+        notes.append("every email template failed the voice gate, no email made")
+        return None, None, (
+            f"voice={slug} | NO EMAIL: {'; '.join(notes)} | " + intent_note
+        )
+
+    label = profile.get("voice_note_label") or slug
+    voice_note = (
+        f"voice={slug} [{label}] | channel=email | body_template=#{chosen_index}"
+        f" | key={key[:10]} | detail=\"{detail}\" | {intent_note} | gate=clean"
+    )
+    if notes:
+        voice_note += " | " + " ; ".join(notes)
+    return chosen_subject, chosen_body, voice_note
 
 
 def draft_reply(
