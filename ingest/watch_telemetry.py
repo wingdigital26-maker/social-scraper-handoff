@@ -41,8 +41,17 @@ re-runnable, and reproduced here so the table can be rebuilt from source):
       throttled     int not null default 0,
       empty_queries int not null default 0,
       errors        int not null default 0,
-      unresolved_location int not null default 0
+      unresolved_location int not null default 0,
+      dup           int not null default 0,
+      no_intent     int not null default 0,
+      low_score     int not null default 0
     );
+    -- Migration for tables created before the drop-reason columns existed
+    -- (idempotent, safe to re-run):
+    alter table public.watch_runs add column if not exists unresolved_location int not null default 0;
+    alter table public.watch_runs add column if not exists dup int not null default 0;
+    alter table public.watch_runs add column if not exists no_intent int not null default 0;
+    alter table public.watch_runs add column if not exists low_score int not null default 0;
     create index if not exists watch_runs_client_ran_at_idx
       on public.watch_runs (client, ran_at desc);
     alter table public.watch_runs enable row level security;
@@ -123,10 +132,29 @@ def record_run(url: str, key: str, row: dict) -> bool:
         "empty_queries": int(row.get("empty_queries") or 0),
         "errors": int(row.get("errors") or 0),
         "unresolved_location": int(row.get("unresolved_location") or 0),
+        "dup": int(row.get("dup") or 0),
+        "no_intent": int(row.get("no_intent") or 0),
+        "low_score": int(row.get("low_score") or 0),
     }
     try:
         r = requests.post(f"{url}/rest/v1/watch_runs",
                           headers=_headers(key), json=payload, timeout=TIMEOUT)
+        if not r.ok and r.status_code == 400 and "column" in r.text.lower():
+            # The live table predates the newest drop-reason columns (PostgREST
+            # rejects unknown keys with PGRST204). Losing the whole row over
+            # them would be worse than losing the new buckets, so retry once
+            # without them — and say so, because the fix is running the
+            # documented ALTER TABLE migration above.
+            missing = [k for k in ("dup", "no_intent", "low_score",
+                                   "unresolved_location") if k in payload]
+            print(f"      telemetry: watch_runs rejected new columns "
+                  f"({r.text[:120]}); retrying without {missing} — run the "
+                  f"schema migration in watch_telemetry.py's docstring")
+            for k in missing:
+                payload.pop(k, None)
+            r = requests.post(f"{url}/rest/v1/watch_runs",
+                              headers=_headers(key), json=payload,
+                              timeout=TIMEOUT)
         if not r.ok:
             print(f"      telemetry: watch_runs insert FAILED "
                   f"{r.status_code} {r.text[:200]}")

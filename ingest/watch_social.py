@@ -534,6 +534,9 @@ def main():
             "kept": per["kept"], "rejected": per["rejected"],
             "throttled": per["throttled"], "empty_queries": per["empty_queries"],
             "errors": per["errors"],
+            "dup": per["dup"], "no_intent": per["no_intent"],
+            "low_score": per["low_score"],
+            "unresolved_location": per["unresolved_location"],
         })
         watch_telemetry.mark_scraped(url, key, c.get("slug"), ran_at)
 
@@ -541,7 +544,8 @@ def main():
         for c in clients:
             per = dict(queries=0, results=0, kept=0, rejected=0,
                        throttled=0, empty_queries=0, errors=0,
-                       unresolved_location=0, supply_side=0, no_draft=0)
+                       unresolved_location=0, supply_side=0, no_draft=0,
+                       dup=0, no_intent=0, low_score=0)
             # WHY nothing was kept. "kept 0" with no reason is the failure that
             # hid every one of the problems this run was written to find: a
             # channel whose whole indexed corpus is a marketplace, a query shape
@@ -675,6 +679,7 @@ def main():
                             u = (r.get("href") or "").split("?")[0]
                             if not u or u in seen:
                                 stats["dup"] += 1
+                                per["dup"] += 1
                                 note("already seen in an earlier run", plat)
                                 continue
                             title = r.get("title") or ""
@@ -726,6 +731,7 @@ def main():
                             # TX" post got kept for a health & beauty DTC brand.
                             if not trade_vocab.is_relevant(trade, title, body, u):
                                 stats["no_intent"] += 1
+                                per["no_intent"] += 1
                                 note("not about this trade, or marketplace/"
                                      "platform-marketing noise", plat)
                                 continue
@@ -794,6 +800,7 @@ def main():
                                 continue
                             if rel["score"] < MIN_RELEVANCE:
                                 stats["low_score"] += 1
+                                per["low_score"] += 1
                                 note(f"scored {rel['score']:.2f}, under the "
                                      f"{MIN_RELEVANCE} bar", plat)
                                 continue
@@ -911,7 +918,7 @@ def main():
     mismatch = []
     for field in ("queries", "results", "kept", "rejected", "throttled",
                   "empty_queries", "errors", "unresolved_location",
-                  "supply_side"):
+                  "supply_side", "dup", "no_intent", "low_score"):
         summed = sum(p.get(field, 0) for p in ledger)
         if summed != stats.get(field, 0):
             mismatch.append(f"{field}: per-client sum {summed} != run total "
