@@ -175,6 +175,13 @@ def main():
     records = records[: args.limit]
 
     if not records:
+        # Say WHY the run is empty — run_pipeline reports a bare exit 0 with no
+        # stdout as EMPTY, and an EMPTY with no reason is undebuggable.
+        log(f"estatesales_cli: 0 records after filtering — scanned "
+            f"{len(sales)} sales from the metro page, cities filter="
+            f"{cities or '(none)'}, query filter="
+            f"{[q.strip().lower() for grp in args.query for q in grp.split(',') if q.strip()] or '(none)'}, "
+            f"limit={args.limit}")
         sys.exit(0)
 
     if args.dry_run:
