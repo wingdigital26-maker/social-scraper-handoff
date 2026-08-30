@@ -111,7 +111,8 @@ def _ytdlp_available():
     """True if yt-dlp can be invoked as a python module (most portable form)."""
     try:
         r = subprocess.run([sys.executable, "-m", "yt_dlp", "--version"],
-                           capture_output=True, text=True, timeout=30)
+                           capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=30)
         return r.returncode == 0
     except Exception:
         return False
@@ -136,7 +137,11 @@ def discover_hashtag(tag, limit, health=None):
         "--ignore-errors",
     ]
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        # encoding pinned: on Windows text=True decodes with the ANSI codepage,
+        # and yt-dlp's UTF-8 JSON (TikTok titles are full of emoji) raises
+        # UnicodeDecodeError, killing the whole hashtag.
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=180)
     except subprocess.TimeoutExpired:
         print(f"   discover #{tag}: timed out (TikTok likely throttling) — skipping")
         if health:
