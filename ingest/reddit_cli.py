@@ -221,6 +221,12 @@ def make_record(post: dict, query: str, client: str | None) -> dict:
     }
 
 
+# Set whenever the Reddit API refuses a search request (403/429/other non-200).
+# main() reads it so a run where EVERY request was refused exits 2 (BLOCKED)
+# instead of exiting 0 with zero records — an invisible throttle otherwise.
+_ANY_BLOCKED = False
+
+
 def search_subreddit_or_all(
     token: str,
     query: str,
@@ -242,14 +248,18 @@ def search_subreddit_or_all(
         print(f"reddit_cli: search request failed for {url}: {exc}", file=sys.stderr)
         return []
 
+    global _ANY_BLOCKED
     if resp.status_code == 403:
+        _ANY_BLOCKED = True
         print(f"reddit_cli: 403 from Reddit API on {url} (query={query!r})", file=sys.stderr)
         return []
     if resp.status_code == 429:
+        _ANY_BLOCKED = True
         print(f"reddit_cli: 429 rate limited on {url}, backing off", file=sys.stderr)
         respect_rate_limit(resp)
         return []
     if resp.status_code != 200:
+        _ANY_BLOCKED = True
         print(
             f"reddit_cli: unexpected status {resp.status_code} from {url}: {resp.text[:200]}",
             file=sys.stderr,
@@ -309,7 +319,6 @@ def main() -> int:
         since_cutoff = time.time() - (args.since * 86400)
 
     emitted = 0
-    any_blocked = False
     seen_urls: set[str] = set()
 
     for query in queries:
@@ -337,12 +346,16 @@ def main() -> int:
                 if record["url"] in seen_urls:
                     continue
                 seen_urls.add(record["url"])
-                if not args.dry_run:
-                    print(json.dumps(record))
+                # Records are ALWAYS emitted, dry-run included. Per
+                # SOURCE-CLI-CONTRACT.md dry-run only skips side effects, and
+                # run_pipeline always passes --dry-run and counts stdout lines
+                # — suppressing output here made every reddit run read as
+                # EMPTY. This CLI has no side effects to skip.
+                print(json.dumps(record))
                 emitted += 1
 
     if emitted == 0:
-        if any_blocked:
+        if _ANY_BLOCKED:
             print("reddit_cli: 0 records, all requests were blocked", file=sys.stderr)
             return 2
         print(
