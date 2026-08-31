@@ -24,8 +24,12 @@ Exit codes (per SOURCE-CLI-CONTRACT.md):
 """
 import argparse
 import json
+import re
 import sys
 import time
+from datetime import datetime, timezone
+
+import requests
 
 try:
     from ddgs import DDGS
@@ -59,6 +63,165 @@ DEFAULT_SITES = [
 ]
 
 CLIENT_LABEL = None  # set from --client in main()
+
+# ---------------------------------------------------------------------------
+# Publication-date resolution
+#
+# A search index hands back a URL and a snippet and NO trustworthy post date.
+# That single gap is why leads_raw.posted_at was null on every websearch row,
+# why display and sorting silently fell back to collected_at, and therefore why
+# a 2017 Reddit thread read as a lead collected two days ago. Emitting null was
+# the honest thing to do; it was never the finished thing to do.
+#
+# So the date is fetched from the post's OWN page at collect time, per platform,
+# and only where a route has actually been verified to work:
+#
+#   reddit  -- old.reddit.com HTML carries the post's real epoch in a
+#              data-timestamp attribute on the post's own container div.
+#              MEASURED 2026-08-30:
+#                old.reddit.com/<permalink>        -> HTTP 200, date present
+#                www.reddit.com/<permalink>/.json  -> HTTP 403
+#                old.reddit.com/<permalink>/.json  -> HTTP 403
+#              The timestamp is read ONLY from the div anchored to this post's
+#              own t3_ id. Every comment on the page carries a data-timestamp
+#              too, so an unanchored regex would happily return the date of a
+#              reply and call it the post date.
+#
+#   everything else -- no verified route, so the date stays null and the reason
+#              is reported. A null that is counted and named is recoverable. An
+#              invented date is not.
+#
+# NOTHING here ever falls back to "now". A date is either read off the post or
+# it is null.
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# COLLECT-TIME AGE FILTER
+#
+# Dating a post is only half the fix. Without this, the pipeline still spends
+# every run collecting, storing, categorizing and AI-qualifying posts from 2016
+# and only discards them at the drafting stage -- wasting the whole run and
+# inflating the pool so it looks far healthier than it is. Measured on the live
+# table 2026-08-30: 61 of 107 actionable leads (57%) were a YEAR or older.
+#
+# WHY 365 DAYS AND NOT THE 45 THE DRAFTER USES
+#   Category is not known yet at collect time. categorize_raw.py decides
+#   consumer_lead vs partner LATER, and those have very different shelf lives
+#   (a homeowner's "who do you recommend" dies in weeks; an estate-sale operator
+#   is a durable partner). Filtering to 45 days here would silently destroy
+#   every partner lead before anything had a chance to recognize it as one.
+#
+#   So this is deliberately a COARSE pre-filter with a very different job from
+#   the drafter's gate. It removes only what is waste under ANY interpretation:
+#   past a year, a consumer request is long dead and a partner is better found
+#   from a current listing. The precise, category-aware cut stays in
+#   draft_from_leads.py where the category is actually known.
+#
+#   The asymmetry is deliberate. Dropping at collect time is IRREVERSIBLE -- the
+#   row never exists. Skipping at draft time is reversible, because the row is
+#   still in leads_raw and becomes draftable the moment its date resolves. So
+#   the collect-time cut is the conservative one and the draft-time cut is the
+#   strict one.
+#
+# UNKNOWN DATE IS KEPT HERE, NOT DROPPED
+#   The opposite of the drafter's rule, for the same reason: dropping is
+#   permanent. An undated row cannot be shown to be stale, and the drafter will
+#   refuse it anyway until backfill_posted_at.py resolves it. Kept, counted, and
+#   reported -- never silently.
+# ---------------------------------------------------------------------------
+
+MAX_AGE_DAYS_AT_COLLECT = 365
+
+DATE_FETCH_SLEEP = 2.0  # polite pacing between post-page fetches
+DATE_UA = ("WingDigitalResearch/1.0 (by /u/wingdigital, "
+           "contact: wjackwing1@gmail.com)")
+
+_REDDIT_POST_ID = re.compile(r"/comments/([a-z0-9]+)", re.I)
+_REDDIT_HOST = re.compile(r"^https?://(?:www\.|old\.|new\.|np\.)?reddit\.com", re.I)
+
+# A soft block answers HTTP 200 with a wall page. Treating that as "no date"
+# would be wrong in a quiet, permanent way, so it gets its own outcome.
+_BOTWALL_MARKERS = ("prove your humanity", "whoa there, pardner",
+                    "your request has been blocked")
+
+
+def _epoch_to_iso(seconds) -> str | None:
+    try:
+        return (datetime.fromtimestamp(float(seconds), tz=timezone.utc)
+                .isoformat().replace("+00:00", "Z"))
+    except (ValueError, OSError, OverflowError, TypeError):
+        return None
+
+
+def reddit_posted_at(url: str, session: requests.Session | None = None
+                     ) -> tuple[str | None, str]:
+    """Real publication date for one Reddit permalink.
+
+    Returns (iso8601_or_None, outcome). Outcome is always a specific,
+    reportable string -- never a bare success/failure boolean -- because
+    "we were blocked" and "this page genuinely has no date" demand different
+    responses from the caller.
+    """
+    post_id = _REDDIT_POST_ID.search(url or "")
+    if not post_id:
+        return None, "reddit:no-post-id-in-url"
+    pid = post_id.group(1)
+
+    old_url = _REDDIT_HOST.sub("https://old.reddit.com", url)
+    if not old_url.startswith("https://old.reddit.com"):
+        return None, "reddit:not-a-reddit-url"
+
+    get = (session or requests).get
+    try:
+        resp = get(old_url, headers={"User-Agent": DATE_UA}, timeout=25)
+    except requests.RequestException as exc:
+        return None, f"reddit:fetch-error:{type(exc).__name__}"
+
+    if resp.status_code != 200:
+        return None, f"reddit:http-{resp.status_code}"
+
+    body = resp.text
+    low = body.lower()
+    if any(m in low for m in _BOTWALL_MARKERS):
+        # HTTP 200 with a wall body. Explicitly NOT "no date found".
+        return None, "reddit:botwalled"
+
+    # Anchor strictly to THIS post's own container, never a comment's.
+    anchored = re.search(
+        r'<div[^>]*\bid="thing_t3_%s"[^>]*>' % re.escape(pid), body)
+    if anchored:
+        ts = re.search(r'data-timestamp="(\d+)"', anchored.group(0))
+        if ts:
+            iso = _epoch_to_iso(int(ts.group(1)) // 1000)
+            if iso:
+                return iso, "reddit:ok"
+
+    fullname = re.search(
+        r'data-fullname="t3_%s"[^>]*?data-timestamp="(\d+)"' % re.escape(pid),
+        body)
+    if fullname:
+        iso = _epoch_to_iso(int(fullname.group(1)) // 1000)
+        if iso:
+            return iso, "reddit:ok"
+
+    return None, "reddit:no-date-in-page"
+
+
+def resolve_posted_at(url: str, platform: str | None,
+                      session: requests.Session | None = None
+                      ) -> tuple[str | None, str]:
+    """Dispatch to whatever verified route exists for this platform.
+
+    Unsupported platforms return (None, reason). That is a real answer and it
+    gets counted and printed, so a source that can never date its own records
+    is visible in the run summary instead of quietly producing undateable rows
+    forever.
+    """
+    if not url:
+        return None, "no-url"
+    if _REDDIT_HOST.match(url):
+        return reddit_posted_at(url, session=session)
+    return None, f"unsupported-platform:{platform or 'unknown'}"
 
 
 def _csv(value):
@@ -96,11 +259,24 @@ def search(q, limit=8, tries=3):
     status is one of "ok", "empty", "throttled", "error" -- same three-way
     distinction as watch_social.py's search(), because a soft block answers
     HTTP 200 with an empty page and must not be read as a genuine empty
-    result. NOTE: timelimit is deliberately never passed here. Measured
-    2026-08-26/27: the index's timelimit="m" recency parameter is INERT on
-    site: queries (reproduced twice) and its Reddit corpus is stale regardless
-    of what timelimit claims, so passing it would buy false confidence, not
-    real freshness.
+    result.
+
+    NOTE: timelimit is deliberately never passed here. The index's recency
+    parameter is INERT on site: queries.
+
+    RE-MEASURED 2026-08-30, this time by resolving the TRUE date of every
+    returned result rather than trusting the parameter:
+        timelimit=None  -> 8 results, median true age 1144d, max 2301d
+        timelimit="m"   -> 8 results, median true age  748d, max  852d
+        timelimit="y"   -> 8 results, median true age  880d, max 2301d
+    A one-MONTH restriction returning a median 748-day-old post, and a one-YEAR
+    restriction returning a 2301-day-old post, settles it: the parameter shifts
+    which results come back but does not constrain them by date at all. Passing
+    it would buy false confidence, not real freshness.
+
+    Recency for this source is therefore enforced the only way that actually
+    works: fetch each result's real date (resolve_posted_at) and filter on it
+    after the fact. See MAX_AGE_DAYS_AT_COLLECT.
     """
     delay = 4
     for attempt in range(tries):
@@ -144,6 +320,11 @@ def make_record(site, query, city, client, hit):
         # HARD RULE (SOURCE-CLI-CONTRACT.md): a search index does not give a
         # reliable post date. Never substitute collection time. This is the
         # exact bug that made an 18 day old post look like a live lead.
+        #
+        # The index still cannot date a result -- so the date is fetched from
+        # the post's own page instead (see resolve_posted_at). Filled in by the
+        # caller, which owns the pacing; null here remains null unless a real
+        # date was actually read off the post.
         "posted_at": None,
         "event_date": None,
         "query": query,
@@ -172,6 +353,14 @@ def main():
                          "(this tool never writes anywhere regardless)")
     ap.add_argument("--per-query-results", type=int, default=8,
                     help="max results requested per individual query")
+    ap.add_argument("--max-age-days", type=int, default=MAX_AGE_DAYS_AT_COLLECT,
+                    help=f"drop results older than this at collect time "
+                         f"(default {MAX_AGE_DAYS_AT_COLLECT}). 0 disables the "
+                         f"filter and emits everything, dated or not.")
+    ap.add_argument("--no-resolve-dates", action="store_true",
+                    help="skip fetching each post's real publication date. "
+                         "Faster, but every record is emitted with a null "
+                         "posted_at and is undateable downstream.")
     args = ap.parse_args()
 
     queries = _collect_repeatable_or_csv(args.query)
@@ -204,6 +393,19 @@ def main():
     emitted = 0
     ok = empty = throttled = errors = 0
     per_site = {}
+    date_outcomes = {}
+    dated = undated = 0
+    seen_before_filter = 0
+    dropped_stale = 0
+    kept_ages: list[float] = []
+    dropped_ages: list[float] = []
+    date_session = requests.Session()
+    now = datetime.now(timezone.utc)
+
+    if args.no_resolve_dates and args.max_age_days:
+        print("--no-resolve-dates disables date lookup, so the age filter has "
+              "nothing to filter on and is INACTIVE this run. Every result will "
+              "be emitted with a null posted_at.", file=sys.stderr)
 
     for site, q, city in run_combos:
         query_str = build_query(site, q, city)
@@ -228,6 +430,44 @@ def main():
             seen_urls.add(url)
             per_site[site]["results"] += 1
             per_site[site]["kept"] += 1
+
+            if args.no_resolve_dates:
+                outcome = "skipped:--no-resolve-dates"
+            else:
+                rec["posted_at"], outcome = resolve_posted_at(
+                    url, rec.get("platform"), session=date_session)
+                time.sleep(DATE_FETCH_SLEEP)
+            date_outcomes[outcome] = date_outcomes.get(outcome, 0) + 1
+            seen_before_filter += 1
+
+            age = None
+            if rec["posted_at"]:
+                dated += 1
+                try:
+                    age = (now - datetime.fromisoformat(
+                        rec["posted_at"].replace("Z", "+00:00"))
+                    ).total_seconds() / 86400.0
+                except ValueError:
+                    age = None
+            else:
+                undated += 1
+
+            # Drop only what is PROVABLY too old. Unknown age is kept, per the
+            # asymmetry documented at MAX_AGE_DAYS_AT_COLLECT.
+            if args.max_age_days and age is not None and age > args.max_age_days:
+                dropped_stale += 1
+                dropped_ages.append(age)
+                print(f"      drop[{age:.0f}d > {args.max_age_days}d] {url[:88]}",
+                      file=sys.stderr)
+                continue
+
+            if age is not None:
+                kept_ages.append(age)
+
+            # The date is carried on the record itself, so a reader of the
+            # JSONL can see exactly which rows are undateable and why.
+            rec["posted_at_source"] = outcome
+
             print(json.dumps(rec, ensure_ascii=False))
             emitted += 1
             if args.limit and emitted >= args.limit:
@@ -251,6 +491,38 @@ def main():
             note = "  -- NOTHING came back for this site through the index"
         print(f"  [{site}] {s['queries']}q -> {s['results']} results, {s['kept']} kept{note}",
               file=sys.stderr)
+
+    print(f"  publication dates     : {dated} resolved, {undated} still null",
+          file=sys.stderr)
+    for outcome, n in sorted(date_outcomes.items(), key=lambda kv: -kv[1]):
+        print(f"      {n:>4}  {outcome}", file=sys.stderr)
+    if undated:
+        print(f"  {undated} record(s) carry NO publication date. Downstream must "
+              f"treat them as unknown age, never as fresh.", file=sys.stderr)
+
+    def _span(label, ages):
+        if not ages:
+            print(f"      {label}: (none dated)", file=sys.stderr)
+            return
+        a = sorted(ages)
+        print(f"      {label}: n={len(a)} min={a[0]:.0f}d "
+              f"median={a[len(a) // 2]:.0f}d max={a[-1]:.0f}d", file=sys.stderr)
+
+    print(f"\n  === collect-time age filter "
+          f"(max {args.max_age_days or 'OFF'} days) ===", file=sys.stderr)
+    print(f"      results before filter : {seen_before_filter}", file=sys.stderr)
+    print(f"      dropped as too old    : {dropped_stale}", file=sys.stderr)
+    print(f"      emitted after filter  : {emitted}", file=sys.stderr)
+    _span("age of KEPT   ", kept_ages)
+    _span("age of DROPPED", dropped_ages)
+    if seen_before_filter and emitted == 0:
+        print(f"      WARNING: the filter removed EVERYTHING. That is a starved "
+              f"pipeline, not a clean run. Loosen --max-age-days or widen the "
+              f"queries.", file=sys.stderr)
+    elif seen_before_filter and dropped_stale / max(seen_before_filter, 1) > 0.8:
+        print(f"      NOTE: over 80% of results were stale. This query set is "
+              f"mostly mining old threads; the yield per run is much smaller "
+              f"than the raw result count suggests.", file=sys.stderr)
 
     if answered == 0:
         print("no queries were answered at all", file=sys.stderr)

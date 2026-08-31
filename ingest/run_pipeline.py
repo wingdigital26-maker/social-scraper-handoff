@@ -39,6 +39,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import subprocess
 import sys
@@ -86,6 +87,94 @@ COLLECTORS = [
     ("permits",     HERE / "permits_cli.py",     {"takes_query": False}),
     ("reddit",      HERE / "reddit_cli.py",      {"takes_query": True}),
 ]
+
+# ---------------------------------------------------------------------------
+# COLLECTOR YIELD LEDGER
+#
+# The failure mode this exists to kill is the "confident zero": a collector
+# that exits 0 having found nothing, so every monitor reads it as healthy.
+# The per-run report already prints EMPTY/SKIPPED honestly, but nobody reads
+# every run, and a source that has been dead for a fortnight looks exactly
+# like a source that found nothing interesting this afternoon.
+#
+# So the streak is persisted. Each collector, per client, carries a count of
+# consecutive runs that produced no records and the timestamp of the last run
+# that did. Anything past DEAD_AFTER_RUNS is printed as a DEAD SOURCES block
+# at the end of the run -- which lands in logs/pipeline.log locally and in the
+# Actions log in the cloud -- and mirrored to ghl-cli/heartbeats where Da Boss
+# already looks for heartbeat files.
+#
+# Deliberately file-based and best-effort: a ledger write must never be able
+# to fail a scrape run.
+# ---------------------------------------------------------------------------
+YIELD_LEDGER = HERE.parent / "logs" / "collector_yield.json"
+BOSS_HEARTBEATS = Path(r"C:\Users\wjack\ghl-cli\heartbeats")
+DEAD_AFTER_RUNS = 3
+
+
+def load_ledger() -> dict:
+    try:
+        return json.loads(YIELD_LEDGER.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def update_ledger(ledger: dict, client_name: str, results: list) -> list[dict]:
+    """Fold this client's collector results into the ledger. Returns the list
+    of entries that are now dead (zero yield for DEAD_AFTER_RUNS runs)."""
+    stamp = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
+    dead = []
+    for res in results:
+        key = f"{client_name}::{res.name}"
+        entry = ledger.setdefault(key, {
+            "client": client_name, "collector": res.name,
+            "zero_streak": 0, "last_yield_at": None, "last_yield_records": 0,
+        })
+        produced = res.status == "OK" and (res.records or 0) > 0
+        entry["last_run_at"] = stamp
+        entry["last_status"] = res.status
+        entry["last_reason"] = (res.reason or "")[:300]
+        if produced:
+            entry["zero_streak"] = 0
+            entry["last_yield_at"] = stamp
+            entry["last_yield_records"] = res.records
+        else:
+            entry["zero_streak"] = int(entry.get("zero_streak", 0)) + 1
+            if entry["zero_streak"] >= DEAD_AFTER_RUNS:
+                dead.append(entry)
+    return dead
+
+
+def write_ledger(ledger: dict) -> None:
+    for target in (YIELD_LEDGER, BOSS_HEARTBEATS / "scraper-yield.json"):
+        try:
+            if target.parent.exists() or target is YIELD_LEDGER:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(json.dumps(ledger, indent=2, sort_keys=True),
+                                  encoding="utf-8")
+        except Exception:
+            pass  # a ledger write must never break a scrape run
+
+
+def print_dead_sources(dead: list[dict]) -> None:
+    if not dead:
+        print("collector yield: no source is past its "
+              f"{DEAD_AFTER_RUNS}-run zero-yield threshold.")
+        return
+    print("")
+    print("!" * 72)
+    print(f"DEAD SOURCES -- {len(dead)} collector(s) have produced ZERO records "
+          f"for {DEAD_AFTER_RUNS}+ consecutive runs.")
+    print("A source in this list is not 'quiet'. It is not working, or it is "
+          "pointed at something that no longer exists.")
+    for e in sorted(dead, key=lambda x: -x["zero_streak"]):
+        last = e.get("last_yield_at") or "never, since this ledger began"
+        print(f"  {e['collector']:<12} client={e['client']}")
+        print(f"      zero runs in a row: {e['zero_streak']}   last produced: {last}")
+        print(f"      last status: {e.get('last_status')} -- {e.get('last_reason') or 'no reason given'}")
+    print(f"  ledger: {YIELD_LEDGER}")
+    print("!" * 72)
+
 
 CATEGORIZE_TOOL = HERE / "categorize_raw.py"
 DRAFT_TOOL = HERE / "draft_from_leads.py"
@@ -377,6 +466,8 @@ def main() -> int:
     run_draft = args.only in (None, "draft")
 
     grand_t0 = time.time()
+    ledger = load_ledger()
+    dead_all: list[dict] = []
 
     for client in clients:
         client_t0 = time.time()
@@ -438,7 +529,17 @@ def main() -> int:
         print_report(client_name, source_results, load_res, categorize_res,
                     draft_res, total, args.only)
 
+        # Only a run that actually invoked the collectors is evidence about
+        # them. A --only load run must not count as a zero-yield run for every
+        # source, or the ledger would invent dead sources out of nothing.
+        if run_collect and source_results:
+            dead_all.extend(update_ledger(ledger, client_name, source_results))
+
     grand_total = time.time() - grand_t0
+    if run_collect:
+        write_ledger(ledger)
+        print("")
+        print_dead_sources(dead_all)
     print("")
     print("=" * 72)
     print(f"TOTAL RUN TIME: {fmt_secs(grand_total)} across {len(clients)} client(s)")

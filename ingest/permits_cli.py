@@ -3,7 +3,18 @@
 permits_cli.py - public building permit records source tool for the Sonar
 ingest pipeline. Follows ingest/SOURCE-CLI-CONTRACT.md exactly.
 
-Coverage as actually verified 2026-08-27:
+Coverage as re-verified 2026-08-30:
+
+- Collin County (dataset 82ee-gbj5, "Collin CAD Permits" on data.texas.gov,
+  Socrata / SoQL, no key needed). THIS IS THE LIVE ONE. Measured 2026-08-30:
+  110,969 rows, permitissueddate spanning 2023-01-01 to 2026-12-29, datadate
+  refreshed 2026-08-28. It carries a real permittypedescr including
+  "Roof/Re-Roof", "New Construction", "Demolition", a builder name, a permit
+  value, and a full situs address. It honours a recency window, which is the
+  signal this source exists to provide.
+  Covered situs cities include Plano, Frisco, McKinney, Allen, Prosper,
+  Wylie, Celina, Melissa, Anna, Princeton, Murphy, Sachse, Farmersville,
+  Josephine, Lucas, Fairview, Parker, Nevada, Blue Ridge, Weston.
 
 - Dallas (dataset e7gq-4sah, "Building Permits" on www.dallasopendata.com,
   Socrata / SoQL, no key needed). This is the only dataset the portal
@@ -33,6 +44,7 @@ as a general building-permit record.
 """
 
 import argparse
+import datetime
 import json
 import sys
 import time
@@ -43,10 +55,44 @@ import urllib.error
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) SonarLeadEngine/1.0 (+https://wingdigital.io)"
 
 DALLAS_BASE = "https://www.dallasopendata.com/resource/e7gq-4sah.json"
+COLLIN_BASE = "https://data.texas.gov/resource/82ee-gbj5.json"
 
-# city -> (dataset base url, dataset label). Only Dallas is live today.
+DALLAS_LABEL = "Dallas Building Permits (e7gq-4sah)"
+COLLIN_LABEL = "Collin CAD Permits (82ee-gbj5)"
+
+# The Dallas set is FROZEN: its issued_date stops at 2019-12-31. It is kept
+# only as a historic contractor-name lookup and is never used to answer a
+# recency window, because it cannot. See the file header.
+FROZEN_DATASETS = {DALLAS_BASE}
+
+# Situs cities that actually appear in the Collin CAD set.
+COLLIN_CITIES = [
+    "plano", "frisco", "mckinney", "allen", "prosper", "wylie", "celina",
+    "melissa", "anna", "princeton", "murphy", "sachse", "farmersville",
+    "josephine", "lucas", "fairview", "parker", "nevada", "blue ridge",
+    "weston", "new hope", "lavon", "copeville", "westminster",
+]
+
+# city -> (dataset base url, dataset label, schema key)
 CITY_DATASETS = {
-    "dallas": (DALLAS_BASE, "Dallas Building Permits (e7gq-4sah)"),
+    "dallas": (DALLAS_BASE, DALLAS_LABEL, "dallas"),
+}
+for _c in COLLIN_CITIES:
+    CITY_DATASETS[_c] = (COLLIN_BASE, COLLIN_LABEL, "collin")
+# Aliases so a caller can ask for the county directly.
+CITY_DATASETS["collin"] = (COLLIN_BASE, COLLIN_LABEL, "collin")
+CITY_DATASETS["collin county"] = (COLLIN_BASE, COLLIN_LABEL, "collin")
+
+# DFW cities with no dataset of their own. When one of these is requested we
+# still run Collin CAD county-wide and say so out loud, rather than returning
+# a confident zero. Nothing is fabricated: every emitted record carries the
+# real situs city it came from, which will be a Collin city, not the one that
+# was asked for. The caller can see that in location_text and platform.
+DFW_NO_DATASET = {
+    "fort worth", "arlington", "irving", "garland", "grand prairie",
+    "mesquite", "carrollton", "richardson", "denton", "lewisville",
+    "flower mound", "euless", "bedford", "hurst", "keller", "mansfield",
+    "north richland hills", "rowlett", "dallas",
 }
 
 
@@ -73,6 +119,70 @@ def normalize_issued_date(raw):
         return f"{yy_full:04d}-{int(mm):02d}-{int(dd):02d}"
     except Exception:
         return None
+
+
+def collin_row_to_record(row, client, dataset_label):
+    """Map a Collin CAD permit row onto the SOURCE-CLI-CONTRACT record shape.
+
+    permitissueddate arrives as a floating ISO timestamp ('2026-08-14T00:00:00.000');
+    we keep the date half only. situs* fields are split, so the address is
+    reassembled from the pre-joined situsconcat when present.
+    """
+    permit_type = row.get("permittypedescr") or None
+    permit_number = row.get("permitnum") or None
+    builder = row.get("permitbuildername") or None
+    if builder and builder.strip().upper() in ("NOT GIVEN", "N/A", "NONE", "UNKNOWN"):
+        builder = None
+
+    parts = []
+    if permit_type:
+        parts.append(permit_type)
+    comments = row.get("permitcomments")
+    if comments and comments.strip():
+        parts.append(comments.strip())
+    if builder:
+        parts.append("Builder: " + builder)
+    value = row.get("permitvalue")
+    if value and value not in ("0", "0.00", "NULL"):
+        parts.append("Permit value: $" + str(value))
+    res_com = row.get("proprescom")
+    if res_com:
+        parts.append(res_com)
+    body = " | ".join(parts) if parts else None
+
+    situs = row.get("situsconcat") or row.get("situsconcatshort")
+    situs_city = (row.get("situscity") or "").title() or None
+    if situs:
+        location_text = situs.replace(" ,", ",").strip()
+    elif situs_city:
+        location_text = situs_city
+    else:
+        location_text = None
+
+    posted_at = None
+    raw_date = row.get("permitissueddate")
+    if raw_date and len(raw_date) >= 10:
+        posted_at = raw_date[:10]
+
+    url = None
+    if permit_number:
+        url = (COLLIN_BASE + "?"
+               + urllib.parse.urlencode({"permitnum": permit_number,
+                                         "permitid": row.get("permitid") or ""}))
+
+    return {
+        "source": "permits",
+        "platform": dataset_label,
+        "url": url,
+        "title": permit_type,
+        "body": body,
+        "author_handle": builder,
+        "location_text": location_text,
+        "posted_at": posted_at,
+        "event_date": None,
+        "query": None,
+        "client": client,
+    }
 
 
 def row_to_record(row, city, client, dataset_label):
@@ -159,12 +269,48 @@ def main():
         log(f"permits_cli: no open, queryable permit dataset found for: "
             f"{', '.join(uncovered)}. Verified 2026-08-27: Fort Worth's "
             f"Socrata endpoint now 404s to an ArcGIS Hub migration notice; "
-            f"Arlington, Plano, Irving, Frisco, and Garland returned no "
-            f"Socrata catalog results at all. Skipping these, not fabricating.")
+            f"Arlington, Irving, and Garland returned no Socrata catalog "
+            f"results at all. Skipping these, not fabricating.")
+
+    # A recency window is the whole point of this source. Every dataset in
+    # FROZEN_DATASETS is structurally incapable of answering one, so when
+    # --since is given they are dropped here instead of being queried and
+    # then reported as a healthy "40 records" of 2019 data every single run.
+    if args.since is not None:
+        frozen = [c for c in covered if CITY_DATASETS[c][0] in FROZEN_DATASETS]
+        if frozen:
+            log(f"permits_cli: dropping {', '.join(frozen)} for this run -- that "
+                f"dataset's issued_date stops at 2019-12-31 and cannot satisfy a "
+                f"--since {args.since} window. It is historic-only; querying it "
+                f"here would report stale rows as fresh finds.")
+            covered = [c for c in covered if c not in frozen]
+
+    # DFW cities with no dataset of their own: fall back to Collin CAD
+    # county-wide rather than returning a confident zero. Announced loudly;
+    # every emitted record still carries its own real situs city.
+    if not covered:
+        metro_asked = [c for c in requested_cities if c in DFW_NO_DATASET]
+        if metro_asked:
+            log(f"permits_cli: no live per-city dataset for {', '.join(metro_asked)}. "
+                f"Falling back to {COLLIN_LABEL} county-wide, which is the only "
+                f"live permit feed in the metro today (verified 2026-08-30). "
+                f"Records will carry their real Collin County situs city, NOT "
+                f"the city that was requested. Adjacent coverage, not a match.")
+            covered = ["collin"]
 
     if not covered:
         log("permits_cli: none of the requested cities have a working dataset. No data pulled.")
         sys.exit(0)
+
+    # Collapse duplicate hits on the same county-wide dataset.
+    seen_bases, deduped = set(), []
+    for c in covered:
+        base = CITY_DATASETS[c][0]
+        if base in seen_bases:
+            continue
+        seen_bases.add(base)
+        deduped.append(c)
+    covered = deduped
 
     qterms = []
     for grp in args.query:
@@ -172,11 +318,29 @@ def main():
 
     all_records = []
     for city in covered:
-        base_url, label = CITY_DATASETS[city]
-        params = {"$limit": str(min(args.limit, 1000)), "$order": "issued_date DESC"}
-        where = build_where_clause(qterms)
-        if where:
-            params["$where"] = where
+        base_url, label, schema = CITY_DATASETS[city]
+        if schema == "collin":
+            params = {"$limit": str(min(args.limit, 1000)),
+                      "$order": "permitissueddate DESC"}
+            clauses = []
+            if args.since is not None:
+                cutoff = (datetime.date.today()
+                          - datetime.timedelta(days=int(args.since))).isoformat()
+                clauses.append(f"permitissueddate >= '{cutoff}T00:00:00'")
+            if city not in ("collin", "collin county"):
+                clauses.append("upper(situscity) = '%s'" % city.upper().replace("'", "''"))
+            if qterms:
+                ors = " OR ".join(
+                    "upper(permittypedescr) like upper('%%%s%%')" % q.replace("'", "''")
+                    for q in qterms)
+                clauses.append("(" + ors + ")")
+            if clauses:
+                params["$where"] = " AND ".join(clauses)
+        else:
+            params = {"$limit": str(min(args.limit, 1000)), "$order": "issued_date DESC"}
+            where = build_where_clause(qterms)
+            if where:
+                params["$where"] = where
         url = base_url + "?" + urllib.parse.urlencode(params)
 
         log(f"permits_cli: querying {label} for {city}")
@@ -200,23 +364,20 @@ def main():
             sys.exit(2)
 
         if not rows:
-            log(f"permits_cli: zero rows returned for {city} "
-                f"(query filter: {qterms if qterms else 'none'}). "
-                f"Note this Dallas dataset's issued_date data stops at "
-                f"2019-12-31 regardless of --since, see file header.")
+            log(f"permits_cli: zero rows returned for {city} from {label} "
+                f"(query filter: {qterms if qterms else 'none'}, "
+                f"since={args.since}). Genuine empty result, not an error.")
             time.sleep(1)
             continue
 
         for row in rows:
-            all_records.append(row_to_record(row, city, args.client, label))
+            if schema == "collin":
+                all_records.append(collin_row_to_record(row, args.client, label))
+            else:
+                all_records.append(row_to_record(row, city, args.client, label))
 
+        log(f"permits_cli: {label} returned {len(rows)} rows for {city}")
         time.sleep(1)  # polite delay between city requests
-
-    if args.since is not None:
-        log("permits_cli: --since requested, but this Dallas dataset's "
-            "issued_date field does not extend past 2019-12-31, so no rows "
-            "can satisfy a recent-days window. Reporting via stderr per "
-            "contract rather than silently filtering to zero.")
 
     all_records = all_records[: args.limit]
 

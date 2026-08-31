@@ -51,6 +51,36 @@ SEARCH_URL = "https://oauth.reddit.com/search"
 SUBREDDIT_SEARCH_URL = "https://oauth.reddit.com/r/{sub}/search"
 MIN_SLEEP = 0.7  # keeps us well under 100 req/min even without header info
 
+# ---------------------------------------------------------------------------
+# COLLECT-TIME RECENCY
+#
+# Reddit's search endpoints accept t=hour|day|week|month|year|all. Unlike the
+# web-search index's timelimit parameter (which is inert -- see websearch_cli),
+# Reddit's t IS honored.
+#
+# MEASURED 2026-08-30 against r/Dallas, q="junk removal", sort=new, reading the
+# true post date off every result (one constant artifact excluded: the
+# subreddit's own 2008 creation date appears in the sidebar of every response
+# regardless of t, which is exactly the kind of correlated noise that would
+# otherwise read as "the parameter is broken"):
+#     t=all    -> 12 real results, median age 712d
+#     t=year   ->  3 real results, ages 84d..<365d   <-- constraint respected
+#     t=month  ->  0 real results
+#     t=week   ->  0 real results
+#
+# So "year" is the TIGHTEST WINDOW THAT STILL RETURNS VOLUME for these queries.
+# month and week are not broken, they are genuinely empty: local-service demand
+# threads in one metro subreddit simply do not appear weekly. Shipping t=month
+# would look like a tighter filter while actually starving the pipeline to zero,
+# which is worse than collecting nothing, because it would be invisible.
+#
+# This is a coarse server-side pre-filter that saves fetching a decade of dead
+# threads. The precise cut still happens later: --since filters exactly here,
+# and draft_from_leads.py applies the category-aware limit.
+# ---------------------------------------------------------------------------
+DEFAULT_TIME_WINDOW = "year"
+VALID_TIME_WINDOWS = ("hour", "day", "week", "month", "year", "all")
+
 ENV_FILE = Path(r"C:\Users\wjack\ghl-cli\.env")
 
 CREDENTIAL_HELP = """\
@@ -195,6 +225,34 @@ def iso(ts) -> str | None:
         return None
 
 
+# Records that reached stdout with no publication date. The API sets
+# created_utc on every post, so a nonzero count here means something changed in
+# the response shape and we are about to ship undateable inventory downstream.
+# Counted and reported rather than shrugged off: an undated row sorts by
+# collected_at everywhere downstream and therefore renders as fresh.
+_UNDATED = 0
+
+
+def _fallback_posted_at(url: str | None) -> str | None:
+    """Last-resort date read off the post's own old.reddit.com page.
+
+    Only used when the API response somehow lacks created_utc. Imported from
+    websearch_cli so there is exactly ONE verified Reddit-dating implementation
+    in the repo rather than two that can drift apart.
+    """
+    if not url:
+        return None
+    try:
+        from websearch_cli import reddit_posted_at
+    except ImportError:
+        return None
+    try:
+        iso, _outcome = reddit_posted_at(url)
+        return iso
+    except Exception:
+        return None
+
+
 def make_record(post: dict, query: str, client: str | None) -> dict:
     permalink = post.get("permalink")
     url = f"https://www.reddit.com{permalink}" if permalink else post.get("url") or None
@@ -205,6 +263,14 @@ def make_record(post: dict, query: str, client: str | None) -> dict:
     subreddit = post.get("subreddit")
     location_text = f"r/{subreddit}" if subreddit else None
     posted_at = iso(post.get("created_utc"))
+    if not posted_at:
+        posted_at = _fallback_posted_at(url)
+    if not posted_at:
+        global _UNDATED
+        _UNDATED += 1
+        print(f"reddit_cli: NO publication date for {url} -- emitting posted_at "
+              f"null. This row must not be treated as fresh downstream.",
+              file=sys.stderr)
 
     return {
         "source": SOURCE,
@@ -232,12 +298,14 @@ def search_subreddit_or_all(
     query: str,
     subreddit: str | None,
     limit: int,
+    time_window: str = DEFAULT_TIME_WINDOW,
 ) -> list[dict]:
     headers = {"User-Agent": UA, "Authorization": f"bearer {token}"}
     params = {
         "q": query,
         "limit": min(limit, 100),
         "sort": "new",
+        "t": time_window,
         "restrict_sr": "true" if subreddit else "false",
     }
     url = SUBREDDIT_SEARCH_URL.format(sub=subreddit) if subreddit else SEARCH_URL
@@ -290,6 +358,12 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--subreddits", default="", help="comma separated, explicit subreddits")
     parser.add_argument("--all-reddit", action="store_true", help="also search all of Reddit, not just resolved subreddits")
+    parser.add_argument("--time-window", default=DEFAULT_TIME_WINDOW,
+                        choices=VALID_TIME_WINDOWS,
+                        help=f"Reddit-side recency restriction (default "
+                             f"{DEFAULT_TIME_WINDOW}). 'month'/'week' are honored "
+                             f"but return near-zero volume for local-service "
+                             f"queries -- see the note at DEFAULT_TIME_WINDOW.")
     args = parser.parse_args()
 
     queries: list[str] = []
@@ -320,6 +394,11 @@ def main() -> int:
 
     emitted = 0
     seen_urls: set[str] = set()
+    fetched = 0
+    dropped_stale = 0
+    print(f"reddit_cli: server-side time window t={args.time_window}"
+          + (f", plus --since {args.since}d applied after fetch"
+             if args.since is not None else ""), file=sys.stderr)
 
     for query in queries:
         targets: list[str | None] = list(subreddits)
@@ -329,7 +408,9 @@ def main() -> int:
         for sub in targets:
             if emitted >= args.limit:
                 break
-            posts = search_subreddit_or_all(token, query, sub, args.limit - emitted)
+            posts = search_subreddit_or_all(token, query, sub, args.limit - emitted,
+                                            time_window=args.time_window)
+            fetched += len(posts)
             for post in posts:
                 if emitted >= args.limit:
                     break
@@ -337,6 +418,9 @@ def main() -> int:
                 if since_cutoff is not None and created is not None:
                     try:
                         if float(created) < since_cutoff:
+                            # Dropped for age, and counted so the drop is
+                            # visible in the run summary rather than silent.
+                            dropped_stale += 1
                             continue
                     except ValueError:
                         pass
@@ -353,6 +437,17 @@ def main() -> int:
                 # EMPTY. This CLI has no side effects to skip.
                 print(json.dumps(record))
                 emitted += 1
+
+    print(f"reddit_cli: fetched {fetched} posts (t={args.time_window}), "
+          f"dropped {dropped_stale} for age, emitted {emitted}", file=sys.stderr)
+    if fetched and emitted == 0 and dropped_stale:
+        print(f"reddit_cli: the age filter removed EVERYTHING fetched. That is a "
+              f"starved run, not a clean one -- widen --since or --time-window.",
+              file=sys.stderr)
+
+    if _UNDATED:
+        print(f"reddit_cli: {_UNDATED} of {emitted} emitted records have NO "
+              f"publication date.", file=sys.stderr)
 
     if emitted == 0:
         if _ANY_BLOCKED:

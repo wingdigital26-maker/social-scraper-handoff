@@ -133,6 +133,27 @@ def main() -> int:
     print(f"[load_raw] {len(rows)} usable records "
           f"({dated} carry a real date, {len(rows) - dated} have none)",
           file=sys.stderr)
+
+    # Per-source date coverage. A source that emits ZERO dates is not a small
+    # data-quality nit -- it is undateable inventory, and downstream sorting
+    # falls back to collected_at and renders it as fresh. That is exactly how a
+    # 2017 Reddit thread ended up looking two days old. Reported per source so a
+    # collector that silently stops dating its records is loud, not invisible.
+    by_source = {}
+    for r in rows:
+        s = r.get("source") or "(no source)"
+        agg = by_source.setdefault(s, [0, 0])
+        agg[0] += 1
+        if r.get("posted_at") or r.get("event_date"):
+            agg[1] += 1
+    for s, (total, has_date) in sorted(by_source.items()):
+        flag = ""
+        if has_date == 0:
+            flag = "   <-- NO record from this source carries a date"
+        elif has_date < total:
+            flag = f"   ({total - has_date} undateable)"
+        print(f"[load_raw]   source={s}: {has_date}/{total} dated{flag}",
+              file=sys.stderr)
     if bad_json:
         print(f"[load_raw] {bad_json} lines were not valid JSON and were skipped",
               file=sys.stderr)

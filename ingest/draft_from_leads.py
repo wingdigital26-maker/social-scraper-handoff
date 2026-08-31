@@ -59,6 +59,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
@@ -76,6 +77,131 @@ ACTIONABLE_CATEGORIES = ("consumer_lead", "partner")
 URGENCY_RANK = {"high": 0, "urgent": 0, "medium": 1, "normal": 1, "low": 2}
 
 _PHONE_RE = re.compile(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}")
+
+# ---------------------------------------------------------------------------
+# RECENCY GATE
+#
+# Until now this file had no age check at all, so a 2016 Reddit thread was as
+# draftable as one from this morning. Worse, the only date most rows carried was
+# collected_at -- when WE looked, not when the thing happened -- so everything
+# read as two days old regardless of true age.
+#
+# A lead's shelf life is a property of what KIND of lead it is, so the threshold
+# is per category and source rather than one global number:
+#
+#   consumer_lead, 45 days
+#       Someone asking "who do you recommend for junk removal" has hired
+#       somebody within a few weeks. Messaging them at six weeks is already
+#       late; at six months it reads as a bot that cannot tell time. 45 days is
+#       deliberately a little generous rather than tight, because every draft is
+#       human-reviewed before it goes anywhere, so the cost of a marginal
+#       borderline lead is one glance and the cost of over-trimming is a real
+#       lost job.
+#
+#   craigslist consumer_lead, 14 days
+#       A "come haul this away" listing is a right-now request against a
+#       specific pile of stuff. Craigslist expires its own listings on roughly
+#       this cadence for the same reason. After two weeks the pile is gone.
+#
+#   partner, 365 days
+#       An estate-sale operator is not an event, it is a business. A company
+#       running sales most weekends still needs a hauler most weekends whether
+#       the listing that surfaced them was from March or from last week. Age
+#       barely matters here, so the gate exists only to drop genuinely dead
+#       operators rather than to enforce freshness.
+#
+# UNKNOWN AGE MEANS SKIP, NOT PASS.
+#   This is the whole point. Letting an undated row through "because we cannot
+#   prove it is old" is precisely the fallback that created this bug: unknown
+#   silently became fresh. The safe direction is the opposite one. Skipping
+#   costs a draft that a human never saw; passing costs Jack's credibility with
+#   a real prospect, and the row is never deleted, so any lead skipped this way
+#   becomes draftable the moment backfill_posted_at.py resolves its date.
+#   --allow-unknown-age exists as a deliberate, explicit override, and drafts
+#   produced under it are STAMPED as unknown-age in the row rather than passing
+#   as if they were dated.
+# ---------------------------------------------------------------------------
+
+MAX_AGE_DAYS = {
+    ("consumer_lead", "craigslist"): 14,
+    ("consumer_lead", None): 45,
+    ("partner", None): 365,
+}
+
+
+def max_age_for(row: dict) -> int | None:
+    category = (row.get("category") or "").strip()
+    source = (row.get("source") or "").strip().lower() or None
+    if (category, source) in MAX_AGE_DAYS:
+        return MAX_AGE_DAYS[(category, source)]
+    return MAX_AGE_DAYS.get((category, None))
+
+
+def parse_iso(value) -> datetime | None:
+    if not value:
+        return None
+    s = str(value).strip().replace("Z", "+00:00")
+    try:
+        dt = datetime.fromisoformat(s)
+    except ValueError:
+        try:
+            dt = datetime.fromisoformat(s[:10])
+        except ValueError:
+            return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def effective_date(row: dict):
+    """The date describing WHEN this lead is about.
+
+    posted_at, then event_date (an estate sale's operative date is the sale
+    itself). collected_at is deliberately absent: it records when we looked, not
+    when anything happened, and treating it as a date is the original bug.
+    """
+    return row.get("posted_at") or row.get("event_date")
+
+
+def lead_age_days(row: dict, now: datetime | None = None) -> float | None:
+    """Age in days, or None when genuinely unknown. Never guesses."""
+    dt = parse_iso(effective_date(row))
+    if dt is None:
+        return None
+    now = now or datetime.now(timezone.utc)
+    return (now - dt).total_seconds() / 86400.0
+
+
+def recency_verdict(row: dict, allow_unknown: bool,
+                    now: datetime | None = None) -> tuple[bool, str, str]:
+    """(ok_to_draft, reason, age_label).
+
+    age_label is written into the draft's personalization so the age -- known or
+    unknown -- is visible on the row a human reviews, never silent.
+    """
+    age = lead_age_days(row, now)
+    limit = max_age_for(row)
+
+    if age is None:
+        if allow_unknown:
+            return True, "", "age UNKNOWN (no publication date on this row)"
+        return (False,
+                "age UNKNOWN: no posted_at and no event_date, so this lead "
+                "cannot be shown to be current. Run backfill_posted_at.py to "
+                "resolve it, or pass --allow-unknown-age to draft anyway.",
+                "age UNKNOWN")
+
+    # An event_date in the future is not an old lead, it is an upcoming one.
+    if age < 0:
+        return True, "", f"upcoming in {abs(age):.0f} days"
+
+    if limit is not None and age > limit:
+        return (False,
+                f"too old: {age:.0f} days, limit for "
+                f"{row.get('category')}/{row.get('source')} is {limit} days",
+                f"{age:.0f} days old")
+
+    return True, "", f"{age:.0f} days old"
 
 
 def load_env() -> tuple[str, str]:
@@ -131,9 +257,21 @@ def fetch_drafted_urls(url: str, key: str, client: str) -> set[str]:
 def sort_key(row: dict) -> tuple:
     urgency = (row.get("urgency") or "").strip().lower()
     rank = URGENCY_RANK.get(urgency, 3)
-    freshness = row.get("posted_at") or row.get("collected_at") or ""
-    # freshest first within the same urgency rank
-    return (rank, "" if not freshness else "".join(str(freshness)))
+    # collected_at is NOT a freshness signal and must never stand in for one.
+    # It used to be the fallback here, which is precisely why an ancient post
+    # sorted to the top as though it were new: every row's collected_at is a
+    # couple of days old, so everything looked equally current. A row with no
+    # real date now sorts LAST within its urgency rank instead of masquerading
+    # as the freshest thing in the queue.
+    #
+    # The ordering itself was also backwards: the old key sorted the ISO string
+    # ASCENDING while its comment claimed "freshest first", so within an urgency
+    # rank the OLDEST post came out on top. Negating the epoch makes the stated
+    # intent and the actual behaviour agree.
+    dt = parse_iso(effective_date(row))
+    if dt is None:
+        return (rank, 1, 0.0)
+    return (rank, 0, -dt.timestamp())
 
 
 def find_voice_profile(client_name: str) -> dict | None:
@@ -247,8 +385,30 @@ def slug_of(profile: dict | None) -> str | None:
     return (profile or {}).get("slug")
 
 
-def build_draft(row: dict, profile: dict | None) -> dict | None:
+def source_url(row: dict) -> str | None:
+    """The one real, human-openable URL this draft is evidenced by.
+
+    Returns None rather than anything invented. There is no fallback, no
+    constructed profile link, no platform search URL. If the row cannot prove
+    where it came from, the caller must not write a draft at all -- a message
+    Jack cannot click back to its source is a message he cannot trust.
+    """
+    u = (row.get("url") or "").strip()
+    return u if u.startswith("http") else None
+
+
+def build_draft(row: dict, profile: dict | None,
+                allow_unknown_age: bool = False) -> dict | None:
     category = row.get("category")
+
+    # Age is checked FIRST, before any message is composed. A stale lead should
+    # not consume a voice-gate pass, and more importantly the skip reason a
+    # human reads should be the real one ("too old") rather than whatever
+    # incidental thing the drafter happened to trip over afterwards.
+    fresh, why, age_label = recency_verdict(row, allow_unknown_age)
+    if not fresh:
+        return {"skipped": True, "row": row, "reason": why}
+
     if category == "consumer_lead":
         subject, body, note = build_consumer_draft(row, profile)
     elif category == "partner":
@@ -259,6 +419,15 @@ def build_draft(row: dict, profile: dict | None) -> dict | None:
     if not body:
         return {"skipped": True, "row": row, "reason": note}
 
+    # Evidence is not optional. A draft with no source link cannot be reviewed,
+    # so it is skipped here rather than written with a NULL (or guessed)
+    # evidence_url. This also protects the dedup in fetch_drafted_urls, which
+    # only ever sees non-null evidence_url values.
+    evidence = source_url(row)
+    if not evidence:
+        return {"skipped": True, "row": row,
+                "reason": "no source url on the leads_raw row (nothing to link back to)"}
+
     violations = cv.check_voice(body, slug_of(profile))
     if violations:
         return {"skipped": True, "row": row, "reason": "voice gate failed: " + "; ".join(violations)}
@@ -267,7 +436,7 @@ def build_draft(row: dict, profile: dict | None) -> dict | None:
     phone = extract_phone(row.get("body"), row.get("title"))
 
     if category == "partner":
-        channel = "phone" if phone else ("web" if row.get("url") else None)
+        channel = "phone" if phone else "web"
         recipient = phone
         recipient_handle = company
     else:
@@ -281,6 +450,11 @@ def build_draft(row: dict, profile: dict | None) -> dict | None:
 
     tier = row.get("urgency")
 
+    # The lead's age travels WITH the draft. A reviewer should never have to go
+    # back to leads_raw to find out whether they are about to answer a post from
+    # last week or from 2016, and an unknown age says so in words.
+    note = f"{note} | Lead age: {age_label}"
+
     return {
         "skipped": False,
         "row": row,
@@ -290,11 +464,11 @@ def build_draft(row: dict, profile: dict | None) -> dict | None:
             "direction": "outbound",
             "recipient": recipient,
             "recipient_handle": recipient_handle,
-            "recipient_url": row.get("url") if not phone else None,
+            "recipient_url": evidence if not phone else None,
             "subject": subject,
             "body": body,
             "personalization": note,
-            "evidence_url": row.get("url"),
+            "evidence_url": evidence,
             "status": "draft",
             "tier": tier,
         },
@@ -307,6 +481,12 @@ def main() -> int:
     ap.add_argument("--confirm", action="store_true",
                     help="Actually write draft rows. Without this, nothing is written.")
     ap.add_argument("--limit", type=int, default=0, help="Cap how many drafts to create this run.")
+    ap.add_argument("--allow-unknown-age", action="store_true",
+                    help="Draft leads whose publication date is unknown. OFF by "
+                         "default: an undated lead cannot be shown to be current, "
+                         "and treating unknown as fresh is the bug this gate "
+                         "exists to prevent. Drafts made this way are stamped "
+                         "'age UNKNOWN' in their personalization.")
     args = ap.parse_args()
 
     url, key = load_env()
@@ -320,7 +500,7 @@ def main() -> int:
 
     drafted, skipped = [], []
     for row in leads:
-        result = build_draft(row, profile)
+        result = build_draft(row, profile, allow_unknown_age=args.allow_unknown_age)
         if result is None:
             continue
         if not result["skipped"]:
@@ -330,8 +510,14 @@ def main() -> int:
         else:
             skipped.append(result)
 
+    stale = sum(1 for s in skipped if s["reason"].startswith("too old"))
+    unknown = sum(1 for s in skipped if s["reason"].startswith("age UNKNOWN"))
     print(f"[draft_from_leads] client={args.client!r} candidates={len(leads)} "
           f"would_draft={len(drafted)} skipped={len(skipped)}", file=sys.stderr)
+    print(f"[draft_from_leads] recency gate: {stale} skipped as TOO OLD, "
+          f"{unknown} skipped as UNKNOWN AGE, "
+          f"{len(skipped) - stale - unknown} skipped for other reasons. "
+          f"No rows were deleted.", file=sys.stderr)
     for s in skipped:
         row = s["row"]
         print(f"    SKIP id={row.get('id')} category={row.get('category')} "

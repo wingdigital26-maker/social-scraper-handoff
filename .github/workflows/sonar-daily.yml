@@ -42,10 +42,38 @@ jobs:
           # Only the 3pm slot is audit-only. 3am and 9pm both discover, so the
           # evening is no longer a ten-hour hole.
           if [ "${{ github.event.inputs.audit_only }}" = "true" ] || [ "${{ github.event.schedule }}" = "0 20 * * *" ]; then
-            python cloud_run.py --audit-only
+            ARGS="--audit-only"
           else
-            python cloud_run.py --pairs "${{ github.event.inputs.pairs || 4 }}"
+            ARGS="--pairs ${{ github.event.inputs.pairs || 4 }}"
           fi
+
+          # RETRY ON TRANSIENT FAILURE, 2026-08-31.
+          #
+          # cloud_run exits 2 when discovery gets nothing back, which is a
+          # deliberate guard: a slice that silently finds nothing must not
+          # report success. That guard stays. The problem was that a ONE-OFF
+          # network blip triggered it and mailed "All jobs have failed" even
+          # though the audit step went on to finish 60 of 60. Observed:
+          #   h2 connection driver error: peer closed connection without
+          #   sending TLS close_notify
+          #
+          # A transient blip passes on the second attempt. A real block fails
+          # both, and then the run fails as it should. This lowers the false
+          # alarm rate without weakening what the exit code means.
+          for attempt in 1 2; do
+            echo "--- sonar attempt $attempt ---"
+            if python cloud_run.py $ARGS; then
+              exit 0
+            fi
+            rc=$?
+            if [ "$attempt" = "1" ]; then
+              echo "attempt 1 failed (exit $rc). Waiting 120s before one retry."
+              sleep 120
+            fi
+          done
+          echo "Both attempts failed (exit $rc). This is not a blip: the index"
+          echo "refused this runner twice, 2 minutes apart. Treat as a real block."
+          exit $rc
 
       - name: Report queue depth
         if: always()
