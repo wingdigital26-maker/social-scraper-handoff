@@ -60,12 +60,21 @@ jobs:
           # A transient blip passes on the second attempt. A real block fails
           # both, and then the run fails as it should. This lowers the false
           # alarm rate without weakening what the exit code means.
+          # Capture the exit code from the command itself. Do NOT read $? after
+          # an `if cmd; then ... fi` -- once the if completes with its branch
+          # untaken, $? is the status of the IF, which is 0. That mistake made a
+          # real failure exit 0 and report green on 2026-08-31, which is exactly
+          # the silent-success bug the exit-2 guard exists to prevent.
+          rc=1
           for attempt in 1 2; do
             echo "--- sonar attempt $attempt ---"
-            if python cloud_run.py $ARGS; then
+            set +e
+            python cloud_run.py $ARGS
+            rc=$?
+            set -e
+            if [ "$rc" -eq 0 ]; then
               exit 0
             fi
-            rc=$?
             if [ "$attempt" = "1" ]; then
               echo "attempt 1 failed (exit $rc). Waiting 120s before one retry."
               sleep 120
@@ -73,7 +82,7 @@ jobs:
           done
           echo "Both attempts failed (exit $rc). This is not a blip: the index"
           echo "refused this runner twice, 2 minutes apart. Treat as a real block."
-          exit $rc
+          exit "$rc"
 
       - name: Report queue depth
         if: always()
